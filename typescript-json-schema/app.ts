@@ -5,42 +5,6 @@ import {readFileSync} from "fs";
 import * as glob from "glob"
  
 
-/*
-export function delint(sourceFile: ts.SourceFile) {
-    delintNode(sourceFile);
-
-    function delintNode(node: ts.Node) {
-     
-        if (node.kind == ts.SyntaxKind.ClassDeclaration) {
-            let clazz = <ts.ClassDeclaration>node;
-            clazz.members.forEach((member) => {
-                if (member.kind == ts.SyntaxKind.PropertyDeclaration) {
-                    let property = <ts.PropertyDeclaration>member;
-                    let propertyType = property.type.getText();
-                    let propertyName = property.name.getText();
-                    console.log(propertyName + " - " + propertyType);
-                }
-            });
-        } else {
-
-            ts.forEachChild(node, delintNode);
-        }
-    }
-
-}
-
-
-
-
-const fileNames = ["C:\\Users\\Yousef\\Documents\\Programming\\tweetbeam-client\\Beam\\view\\classic\\Settings.ts"];//process.argv.slice(2);
-fileNames.forEach(fileName => {
-    // Parse a file
-    let sourceFile = ts.createSourceFile(fileName, readFileSync(fileName).toString(), ts.ScriptTarget.ES6, true);
-    
-    // delint it
-    delint(sourceFile);
-});*/
-
 function inspect(node: ts.Node, tc: ts.TypeChecker) {
     if (node.kind == ts.SyntaxKind.ClassDeclaration) {
         let clazz = <ts.ClassDeclaration>node;
@@ -53,22 +17,7 @@ function inspect(node: ts.Node, tc: ts.TypeChecker) {
             let propertyType = tc.getTypeOfSymbolAtLocation(prop, node);
             console.log(propertyName + " - " + tc.typeToString(propertyType));
         });
-        debugger;
-        /*clazz.members.forEach((member) => {
-            if (member.kind == ts.SyntaxKind.PropertyDeclaration) {
-                let property = <ts.PropertyDeclaration>member;
-                let propertyType = tc.getTypeAtLocation(member);
-                let propertyName = property.name.getText();
-
-               
-                
-            
-                console.log(propertyName + " - " + tc.typeToString(propertyType));
-                if (property.decorators) {
-                    property.decorators.forEach((decorator) => console.log(decorator.getText()));
-                }
-            }
-        });*/
+        
     } else {
         ts.forEachChild(node, (node) => inspect(node, tc));
     }

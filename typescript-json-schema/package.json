@@ -1,0 +1,10 @@
+{
+  "name": "typescript-json-schema",
+  "version": "0.0.0",
+  "description": "typescript-json-schema",
+  "main": "app.js",
+  "author": {
+    "name": "Yousef",
+    "email": ""
+  }
+}

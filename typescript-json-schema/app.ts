@@ -10,9 +10,19 @@ import * as glob from "glob";
 
 module TJS {
     class JsonSchemaGenerator {
-        private validationKeywords = ["ignore", "description", "type", "minimum", "exclusiveMinimum", "maximum", "exclusiveMaximum", "multipleOf", "minLength", "maxLength", "format", "pattern", "minItems", "maxItems", "uniqueItems", "default", "additionalProperties"];
-        private annotedValidationKeywordPattern = /@[a-z.-]+\s*[^@\s]+/gi;
+        private static validationKeywords = ["ignore", "description", "type", "minimum", "exclusiveMinimum", "maximum", "exclusiveMaximum", "multipleOf", "minLength", "maxLength", "format", "pattern", "minItems", "maxItems", "uniqueItems", "default", "additionalProperties", "enum"];
+        private static annotedValidationKeywordPattern = /@[a-z.-]+\s*[^@\s]+/gi;
         //private static primitiveTypes = ["string", "number", "boolean", "any"];
+
+        private allSymbols: { [name: string]: ts.Type };
+        private inheritingTypes: { [baseName: string]: string[] };
+        private tc: ts.TypeChecker;
+
+        constructor(allSymbols: { [name: string]: ts.Type }, inheritingTypes: {[baseName: string]: string[]}, tc: ts.TypeChecker) {
+            this.allSymbols = allSymbols;
+            this.inheritingTypes = inheritingTypes;
+            this.tc = tc;  
+        }
 
         /**
          * (source: Typson)
@@ -23,10 +33,10 @@ module TJS {
          * @param to {object} the destination variable.
          */
         private copyValidationKeywords(comment, to) {
-            this.annotedValidationKeywordPattern.lastIndex = 0;
+            JsonSchemaGenerator.annotedValidationKeywordPattern.lastIndex = 0;
             // TODO: to improve the use of the exec method: it could make the tokenization
             var annotation;
-            while ((annotation = this.annotedValidationKeywordPattern.exec(comment))) {
+            while ((annotation = JsonSchemaGenerator.annotedValidationKeywordPattern.exec(comment))) {
                 var annotationTokens = annotation[0].split(" ");
                 var keyword: string = annotationTokens[0].slice(1);
                 var path = keyword.split(".");
@@ -41,7 +51,7 @@ module TJS {
                 keyword = keyword.replace("TJS-", "");
 
                 // case sensitive check inside the dictionary
-                if (this.validationKeywords.indexOf(keyword) >= 0 || this.validationKeywords.indexOf("TJS-" + keyword) >= 0) {
+                if (JsonSchemaGenerator.validationKeywords.indexOf(keyword) >= 0 || JsonSchemaGenerator.validationKeywords.indexOf("TJS-" + keyword) >= 0) {
                     var value = annotationTokens.length > 1 ? annotationTokens[1] : "";
                     try {
                         value = JSON.parse(value);
@@ -127,8 +137,6 @@ module TJS {
             let propertyType = tc.getTypeOfSymbolAtLocation(prop, node);
             let propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
-
-
             let definition: any = this.getDefinitionForType(propertyType, tc);
             definition.title = propertyName;
 
@@ -144,30 +152,47 @@ module TJS {
             return definition;
         }
 
-        public getClassDefinition(clazzType: ts.Type, tc: ts.TypeChecker) {
+        public getClassDefinitionByName(clazzName: string): any {
+            return this.getClassDefinition(this.allSymbols[clazzName], this.tc);
+        }
+
+        public getClassDefinition(clazzType: ts.Type, tc: ts.TypeChecker): any {
             let node = clazzType.getSymbol().getDeclarations()[0];
             let clazz = <ts.ClassDeclaration>node;
             let props = tc.getPropertiesOfType(clazzType);
+            let fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
-            let propertyDefinitions = props.reduce((all, prop) => {
-                let propertyName = prop.getName();
-                let definition = this.getDefinitionForProperty(prop, tc, node);
-                if (definition != null) {
-                    all[propertyName] = definition;
-                }
-                return all;
-            }, {});
+            if (clazz.flags & ts.NodeFlags.Abstract) {
+                //debugger;
+                let oneOf = this.inheritingTypes[fullName].map((typename) => {
+                    return this.getClassDefinition(this.allSymbols[typename], tc)
+                });
 
-            let definition = {
-                "type": "object",
-                "defaultProperties": [], // TODO: set via comment instead of hardcode here, json-editor specific
-                properties: propertyDefinitions
-            };
-            return definition;
+                let definition = {
+                    "oneOf": oneOf
+                };
+
+                return definition;
+            } else {
+                let propertyDefinitions = props.reduce((all, prop) => {
+                    let propertyName = prop.getName();
+                    let definition = this.getDefinitionForProperty(prop, tc, node);
+                    if (definition != null) {
+                        all[propertyName] = definition;
+                    }
+                    return all;
+                }, {});
+
+                let definition = {
+                    "type": "object",
+                    "title": fullName,
+                    "defaultProperties": [], // TODO: set via comment instead of hardcode here, json-editor specific
+                    properties: propertyDefinitions
+                };
+                return definition;
+            }
         }
     }
-
-
 
     export function generateSchema(compileFiles: string[], fullTypeName: string) {
         let options: ts.CompilerOptions = { noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5 };
@@ -184,6 +209,7 @@ module TJS {
         if (diagnostics.length == 0) {
 
             let allSymbols: { [name: string]: ts.Type } = {};
+            let inheritingTypes: { [baseName: string]: string[] } = {};
 
             program.getSourceFiles().forEach(sourceFile => {
                 function inspect(node: ts.Node, tc: ts.TypeChecker) {
@@ -193,6 +219,13 @@ module TJS {
                         //console.log(clazzType.getSymbol().name);
                         let fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
                         allSymbols[fullName] = clazzType;
+                        clazzType.getBaseTypes().forEach(baseType => {
+                            let baseName = tc.typeToString(baseType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+                            if (!inheritingTypes[baseName]) {
+                                inheritingTypes[baseName] = [];
+                            }
+                            inheritingTypes[baseName].push(fullName);
+                        });
                     } else {
                         ts.forEachChild(node, (node) => inspect(node, tc));
                     }
@@ -200,9 +233,8 @@ module TJS {
                 inspect(sourceFile, tc);
             });
 
-            let clazztype = allSymbols[fullTypeName];
-            let generator = new JsonSchemaGenerator();
-            let definition = generator.getClassDefinition(clazztype, tc);
+            let generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc);
+            let definition = generator.getClassDefinitionByName(fullTypeName);
             return definition;
         } else {
             diagnostics.forEach((diagnostic) => console.warn(diagnostic.messageText + " " + diagnostic.file.fileName + " " + diagnostic.start));
@@ -213,7 +245,7 @@ module TJS {
 }
 
 var files: string[] = glob.sync("C:/Users/Yousef/Documents/Programming/tweetbeam-client/Beam/**/*.ts");
-var fullTypeName = "beam.ViewSettings";
+var fullTypeName = "beam.Settings";
 
 let definition = TJS.generateSchema(files, fullTypeName);
 

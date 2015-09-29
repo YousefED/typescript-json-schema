@@ -36,15 +36,20 @@
     <TypeScriptCompile Include="app.ts" />
     <Content Include="package.json" />
     <Content Include="README.md" />
+    <TypeScriptCompile Include="typings\glob\glob.d.ts" />
+    <TypeScriptCompile Include="typings\minimatch\minimatch.d.ts" />
     <TypeScriptCompile Include="typings\node\node.d.ts" />
     <TypeScriptCompile Include="typings\typescript\typescript.d.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="typings\" />
+    <Folder Include="typings\glob\" />
+    <Folder Include="typings\minimatch\" />
     <Folder Include="typings\typescript\" />
     <Folder Include="typings\node\" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsTools.targets" />
   <ProjectExtensions>

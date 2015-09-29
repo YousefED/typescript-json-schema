@@ -1,10 +1,13 @@
 {
-  "name": "typescript-json-schema",
-  "version": "0.0.0",
-  "description": "typescript-json-schema",
-  "main": "app.js",
-  "author": {
-    "name": "Yousef",
-    "email": ""
-  }
+    "name": "typescript-json-schema",
+    "version": "0.0.0",
+    "description": "typescript-json-schema",
+    "main": "app.js",
+    "author": {
+        "name": "Yousef",
+        "email": ""
+    },
+    "dependencies": { 
+        "glob": "isaacs/node-glob"
+    }
 }

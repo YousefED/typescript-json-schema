@@ -6,7 +6,8 @@ declare var require: any;
 import * as ts from "typescript";
 import {readFileSync} from "fs";
 import * as glob from "glob";
-//import JsonSchemaGenerator = require("./jsonschemagenerator");
+
+var vm = require('vm');
 
 module TJS {
     class JsonSchemaGenerator {
@@ -18,10 +19,15 @@ module TJS {
         private inheritingTypes: { [baseName: string]: string[] };
         private tc: ts.TypeChecker;
 
+        private sandbox = { sandboxvar: null };
+
         constructor(allSymbols: { [name: string]: ts.Type }, inheritingTypes: {[baseName: string]: string[]}, tc: ts.TypeChecker) {
             this.allSymbols = allSymbols;
             this.inheritingTypes = inheritingTypes;
             this.tc = tc;  
+ 
+            
+
         }
 
         /**
@@ -137,6 +143,8 @@ module TJS {
             let propertyType = tc.getTypeOfSymbolAtLocation(prop, node);
             let propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
+            
+            
             let definition: any = this.getDefinitionForType(propertyType, tc);
             definition.title = propertyName;
 
@@ -146,9 +154,34 @@ module TJS {
             if (definition.hasOwnProperty("ignore")) {
                 return null;
             }
-            
-            //for (var k in extraInfo) definition[k] = extraInfo[k];
 
+            // try to get default value
+            let initial = (<ts.VariableDeclaration>prop.valueDeclaration).initializer;
+
+            if (initial) {
+                if ((<any>initial).expression) { // node
+                    console.warn("initializer is expression for property " + propertyName);
+                } else if ((<any>initial).kind && (<any>initial).kind == ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
+                    definition.default = initial.getText();
+                } else {
+                    try {
+                        var sandbox = { sandboxvar: null };
+                        vm.runInNewContext('sandboxvar=' + initial.getText(), sandbox);
+
+                        initial = sandbox.sandboxvar;
+                        if (initial == null) {
+
+                        } else if (typeof (initial) === "string" || typeof (initial) === "number" || typeof (initial) === "boolean" || Object.prototype.toString.call(initial) === '[object Array]') {
+                            definition.default = initial;
+                        } else {
+                            console.warn("unknown initializer for property " + propertyName + ": " + initial);
+                        }
+                    } catch (e) {
+                        console.warn("exception evaluating initializer for property " + propertyName);
+                    }
+                }
+            }
+            
             return definition;
         }
 
@@ -163,7 +196,6 @@ module TJS {
             let fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
             if (clazz.flags & ts.NodeFlags.Abstract) {
-                //debugger;
                 let oneOf = this.inheritingTypes[fullName].map((typename) => {
                     return this.getClassDefinition(this.allSymbols[typename], tc)
                 });
@@ -186,7 +218,7 @@ module TJS {
                 let definition = {
                     "type": "object",
                     "title": fullName,
-                    "defaultProperties": [], // TODO: set via comment instead of hardcode here, json-editor specific
+                    "defaultProperties": [], // TODO: set via comment or parameter instead of hardcode here, json-editor specific
                     properties: propertyDefinitions
                 };
                 return definition;
@@ -216,7 +248,6 @@ module TJS {
                     if (node.kind == ts.SyntaxKind.ClassDeclaration) {
                         let clazz = <ts.ClassDeclaration>node;
                         let clazzType = tc.getTypeAtLocation(clazz);
-                        //console.log(clazzType.getSymbol().name);
                         let fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
                         allSymbols[fullName] = clazzType;
                         clazzType.getBaseTypes().forEach(baseType => {
@@ -239,8 +270,6 @@ module TJS {
         } else {
             diagnostics.forEach((diagnostic) => console.warn(diagnostic.messageText + " " + diagnostic.file.fileName + " " + diagnostic.start));
         }
-        debugger;
-
     }
 }
 

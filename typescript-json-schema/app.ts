@@ -4,7 +4,7 @@
 
 declare var require: any;
 import * as ts from "typescript";
-import {readFileSync} from "fs";
+import * as fs from "fs";
 import * as glob from "glob";
 
 var vm = require('vm');
@@ -12,7 +12,7 @@ var vm = require('vm');
 module TJS {
     class JsonSchemaGenerator {
         private static validationKeywords = ["ignore", "description", "type", "minimum", "exclusiveMinimum", "maximum", "exclusiveMaximum", "multipleOf", "minLength", "maxLength", "format", "pattern", "minItems", "maxItems", "uniqueItems", "default", "additionalProperties", "enum"];
-        private static annotedValidationKeywordPattern = /@[a-z.-]+\s*[^@\s]+/gi;
+        private static annotedValidationKeywordPattern = /@[a-z.-]+\s*[^@]+/gi;
         //private static primitiveTypes = ["string", "number", "boolean", "any"];
 
         private allSymbols: { [name: string]: ts.Type };
@@ -58,7 +58,7 @@ module TJS {
 
                 // case sensitive check inside the dictionary
                 if (JsonSchemaGenerator.validationKeywords.indexOf(keyword) >= 0 || JsonSchemaGenerator.validationKeywords.indexOf("TJS-" + keyword) >= 0) {
-                    var value = annotationTokens.length > 1 ? annotationTokens[1] : "";
+                    var value = annotationTokens.length > 1 ? annotationTokens.slice(1).join(' ') : "";
                     try {
                         value = JSON.parse(value);
                     } catch (e) {
@@ -273,10 +273,14 @@ module TJS {
     }
 }
 
+var outFile = "C:/Users/Yousef/Documents/Programming/JavaWorkspace/TweetBeam/resources/schemas/settings.json";
 var files: string[] = glob.sync("C:/Users/Yousef/Documents/Programming/tweetbeam-client/Beam/**/*.ts");
 var fullTypeName = "beam.Settings";
 
 let definition = TJS.generateSchema(files, fullTypeName);
 
-console.log(JSON.stringify(definition));
+//console.log(JSON.stringify(definition));
+
+fs.writeFile(outFile, JSON.stringify(definition, null, 4));
+
 debugger;

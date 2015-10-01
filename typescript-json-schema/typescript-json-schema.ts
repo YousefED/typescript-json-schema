@@ -2,7 +2,6 @@
 /// <reference path="typings/glob/glob.d.ts" />
 
 
-declare var require: any;
 import * as ts from "typescript";
 import * as fs from "fs";
 import * as glob from "glob";

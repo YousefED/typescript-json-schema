@@ -15,23 +15,18 @@
         },
         typescript: {
             dist: {
-                src: ["**/*.ts"],
+                src: ["typescript-json-schema.ts"],
                 dest: 'dist/typescript-json-schema.js',
                 options: {
-                    declaration: true
-                }
-            },
-            dev: {
-                src: ["**/*.ts"],
-                dest: 'dist/typescript-json-schema.js',
-                options: {
-                    watch: 'src',
-                    declaration: true
+                    module: "commonjs",
+                    target: "es5",
+                    references: [
+                        "typings/typescript/typescript.d.ts"
+                    ]
                 }
             }
         }
     });
     
-    grunt.registerTask("default", ["typescript:dist"]);
-    grunt.registerTask("dev", ["typescript:dev"]);
+    grunt.registerTask("default", ["exec:compile"]);
 }

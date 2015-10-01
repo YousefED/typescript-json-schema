@@ -249,4 +249,3 @@ if (typeof window === "undefined" && require.main === module) {
 //var outFile = "C:/Users/Yousef/Documents/Programming/JavaWorkspace/TweetBeam/resources/schemas/settings.json";
 //var fullTypeName = "beam.Settings";
 //node typescript-json-schema.js C:/Users/Yousef/Documents/Programming/tweetbeam-client/Beam/**/*.ts beam.Settings 
-//# sourceMappingURL=typescript-json-schema.js.map

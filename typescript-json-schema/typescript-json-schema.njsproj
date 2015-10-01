@@ -35,6 +35,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="typescript-json-schema.ts" />
     <Content Include="package.json" />
+    <Content Include="BUILD.md" />
     <Content Include="README.md" />
     <TypeScriptCompile Include="typings\glob\glob.d.ts" />
     <TypeScriptCompile Include="typings\minimatch\minimatch.d.ts" />

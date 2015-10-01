@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="bin\typescript-json-schema" />
+    <Compile Include="dist\typescript-json-schema.js" />
     <Compile Include="Gruntfile.js" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->

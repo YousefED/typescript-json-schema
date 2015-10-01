@@ -12,7 +12,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>1cdb5c92-7be5-43ed-881b-fba2caad6886</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>app.ts</StartupFile>
+    <StartupFile>typescript-json-schema.ts</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -33,7 +33,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="app.ts" />
+    <TypeScriptCompile Include="typescript-json-schema.ts" />
     <Content Include="package.json" />
     <Content Include="README.md" />
     <TypeScriptCompile Include="typings\glob\glob.d.ts" />
@@ -42,14 +42,23 @@
     <TypeScriptCompile Include="typings\typescript\typescript.d.ts" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="bin\" />
+    <Folder Include="dist\" />
     <Folder Include="typings\" />
     <Folder Include="typings\glob\" />
     <Folder Include="typings\minimatch\" />
     <Folder Include="typings\typescript\" />
     <Folder Include="typings\node\" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="bin\typescript-json-schema" />
+    <Compile Include="Gruntfile.js" />
+  </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptOutDir>dist</TypeScriptOutDir>
+    <TypeScriptOutFile>typescript-json-schema.js</TypeScriptOutFile>
+  </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsTools.targets" />
   <ProjectExtensions>

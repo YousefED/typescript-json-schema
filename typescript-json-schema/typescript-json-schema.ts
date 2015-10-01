@@ -9,7 +9,7 @@ import * as glob from "glob";
 
 var vm = require('vm');
 
-module TJS {
+export module TJS {
     class JsonSchemaGenerator {
         private static validationKeywords = ["ignore", "description", "type", "minimum", "exclusiveMinimum", "maximum", "exclusiveMaximum", "multipleOf", "minLength", "maxLength", "format", "pattern", "minItems", "maxItems", "uniqueItems", "default", "additionalProperties", "enum"];
         private static annotedValidationKeywordPattern = /@[a-z.-]+\s*[^@]+/gi;
@@ -228,7 +228,7 @@ module TJS {
 
     export function generateSchema(compileFiles: string[], fullTypeName: string) {
         let options: ts.CompilerOptions = { noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5 };
-        let program = ts.createProgram(files, options);
+        let program = ts.createProgram(compileFiles, options);
         let tc = program.getTypeChecker();
 
         var diagnostics = [
@@ -271,16 +271,27 @@ module TJS {
             diagnostics.forEach((diagnostic) => console.warn(diagnostic.messageText + " " + diagnostic.file.fileName + " " + diagnostic.start));
         }
     }
+
+    export function exec(filePattern: string, fullTypeName: string) {
+        var files: string[] = glob.sync(filePattern);
+        let definition = TJS.generateSchema(files, fullTypeName);
+        console.log(JSON.stringify(definition, null, 4));
+        //fs.writeFile(outFile, JSON.stringify(definition, null, 4));
+    }
 }
 
-var outFile = "C:/Users/Yousef/Documents/Programming/JavaWorkspace/TweetBeam/resources/schemas/settings.json";
-var files: string[] = glob.sync("C:/Users/Yousef/Documents/Programming/tweetbeam-client/Beam/**/*.ts");
-var fullTypeName = "beam.Settings";
+if (typeof window === "undefined" && require.main === module) {
 
-let definition = TJS.generateSchema(files, fullTypeName);
+    if (process.argv[3]) {
+        TJS.exec(process.argv[2], process.argv[3]);
+    } else {
+        console.log("Usage: node typescript-json-schema.js <path-to-typescript-files> <type>\n");
+    }
+}
 
-//console.log(JSON.stringify(definition));
 
-fs.writeFile(outFile, JSON.stringify(definition, null, 4));
+//var files: string[] = glob.sync("C:/Users/Yousef/Documents/Programming/tweetbeam-client/Beam/**/*.ts");
+//var outFile = "C:/Users/Yousef/Documents/Programming/JavaWorkspace/TweetBeam/resources/schemas/settings.json";
+//var fullTypeName = "beam.Settings";
 
-debugger;
+//node typescript-json-schema.js C:/Users/Yousef/Documents/Programming/tweetbeam-client/Beam/**/*.ts beam.Settings

@@ -1,7 +1,0 @@
-﻿#!/usr/bin/env node
-if (process.argv[2] !== undefined && process.argv[3] !== undefined) {
-    var app = require('../dist/typescript-json-schema.js')
-    app.TJS.exec(process.argv[2], process.argv[3]);
-} else {
-    console.log('Usage: typescript-json-schema <path-to-typescript-files> <type>\n');
-}

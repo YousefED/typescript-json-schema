@@ -201,12 +201,11 @@ var TJS;
             var inheritingTypes = {};
             program.getSourceFiles().forEach(function (sourceFile) {
                 function inspect(node, tc) {
-                    if (node.kind == 212 /* ClassDeclaration */) {
-                        var clazz = node;
-                        var clazzType = tc.getTypeAtLocation(clazz);
-                        var fullName = tc.typeToString(clazzType, undefined, 128 /* UseFullyQualifiedType */);
-                        allSymbols[fullName] = clazzType;
-                        clazzType.getBaseTypes().forEach(function (baseType) {
+                    if (node.kind == 212 /* ClassDeclaration */ || node.kind == 213 /* InterfaceDeclaration */) {
+                        var nodeType = tc.getTypeAtLocation(node);
+                        var fullName = tc.typeToString(nodeType, undefined, 128 /* UseFullyQualifiedType */);
+                        allSymbols[fullName] = nodeType;
+                        nodeType.getBaseTypes().forEach(function (baseType) {
                             var baseName = tc.typeToString(baseType, undefined, 128 /* UseFullyQualifiedType */);
                             if (!inheritingTypes[baseName]) {
                                 inheritingTypes[baseName] = [];
@@ -245,7 +244,7 @@ if (typeof window === "undefined" && require.main === module) {
         console.log("Usage: node typescript-json-schema.js <path-to-typescript-files> <type>\n");
     }
 }
-//var files: string[] = glob.sync("C:/Users/Yousef/Documents/Programming/tweetbeam-client/Beam/**/*.ts");
-//var outFile = "C:/Users/Yousef/Documents/Programming/JavaWorkspace/TweetBeam/resources/schemas/settings.json";
-//var fullTypeName = "beam.Settings";
-//node typescript-json-schema.js C:/Users/Yousef/Documents/Programming/tweetbeam-client/Beam/**/*.ts beam.Settings 
+//TJS.exec("example/**/*.ts", "Invoice");
+//node typescript-json-schema.js example/**/*.ts Invoice
+debugger;
+//# sourceMappingURL=typescript-json-schema.js.map

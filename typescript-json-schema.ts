@@ -244,12 +244,11 @@ export module TJS {
 
             program.getSourceFiles().forEach(sourceFile => {
                 function inspect(node: ts.Node, tc: ts.TypeChecker) {
-                    if (node.kind == ts.SyntaxKind.ClassDeclaration) {
-                        let clazz = <ts.ClassDeclaration>node;
-                        let clazzType = tc.getTypeAtLocation(clazz);
-                        let fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-                        allSymbols[fullName] = clazzType;
-                        clazzType.getBaseTypes().forEach(baseType => {
+                    if (node.kind == ts.SyntaxKind.ClassDeclaration || node.kind == ts.SyntaxKind.InterfaceDeclaration) {
+                        let nodeType = tc.getTypeAtLocation(node);
+                        let fullName = tc.typeToString(nodeType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+                        allSymbols[fullName] = nodeType;
+                        nodeType.getBaseTypes().forEach(baseType => {
                             let baseName = tc.typeToString(baseType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
                             if (!inheritingTypes[baseName]) {
                                 inheritingTypes[baseName] = [];
@@ -288,9 +287,6 @@ if (typeof window === "undefined" && require.main === module) {
     }
 }
 
-
-//var files: string[] = glob.sync("C:/Users/Yousef/Documents/Programming/tweetbeam-client/Beam/**/*.ts");
-//var outFile = "C:/Users/Yousef/Documents/Programming/JavaWorkspace/TweetBeam/resources/schemas/settings.json";
-//var fullTypeName = "beam.Settings";
-
-//node typescript-json-schema.js C:/Users/Yousef/Documents/Programming/tweetbeam-client/Beam/**/*.ts beam.Settings
+//TJS.exec("example/**/*.ts", "Invoice");
+//node typescript-json-schema.js example/**/*.ts Invoice
+debugger;

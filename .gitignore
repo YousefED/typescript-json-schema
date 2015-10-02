@@ -13,7 +13,6 @@
 x64/
 build/
 bld/
-[Bb]in/
 [Oo]bj/
 
 # Roslyn cache directories
@@ -193,3 +192,4 @@ typescript-json-schema/dist/typescript-json-schema.js.map
 dist/typescript-json-schema.js.map
 typescript-json-schema.sln
 local.ts
+bin/Microsoft.NodejsTools.WebRole.dll

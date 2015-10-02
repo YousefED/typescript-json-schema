@@ -246,5 +246,5 @@ if (typeof window === "undefined" && require.main === module) {
 }
 //TJS.exec("example/**/*.ts", "Invoice");
 //node typescript-json-schema.js example/**/*.ts Invoice
-debugger;
+//debugger; 
 //# sourceMappingURL=typescript-json-schema.js.map

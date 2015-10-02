@@ -24,9 +24,6 @@ export module TJS {
             this.allSymbols = allSymbols;
             this.inheritingTypes = inheritingTypes;
             this.tc = tc;  
- 
-            
-
         }
 
         /**
@@ -289,4 +286,4 @@ if (typeof window === "undefined" && require.main === module) {
 
 //TJS.exec("example/**/*.ts", "Invoice");
 //node typescript-json-schema.js example/**/*.ts Invoice
-debugger;
+//debugger;

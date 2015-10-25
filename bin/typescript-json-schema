@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env node
+#!/usr/bin/env node
 if (process.argv[2] !== undefined && process.argv[3] !== undefined) {
     var app = require('../dist/typescript-json-schema.js')
     app.TJS.exec(process.argv[2], process.argv[3]);

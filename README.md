@@ -2,7 +2,7 @@
 
 Generate json-schemas from your Typescript sources.
 
-Inspired and builds upon [Typson](https://github.com/lbovet/typson/).
+Inspired and builds upon [Typson](https://github.com/lbovet/typson/), but typescript-json-schema is compatible with more recent Typescript versions. Also, since it uses the Typescript compiler internally, more advanced scenarios are possible.
 
 ## Features
 * Compiles your Typescript program to get complete type information.

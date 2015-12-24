@@ -28,9 +28,7 @@ var TJS;
                     try {
                         value = JSON.parse(value);
                     }
-                    catch (e) {
-                        console.error(e);
-                    }
+                    catch (e) { }
                     if (context) {
                         if (!to[context]) {
                             to[context] = {};

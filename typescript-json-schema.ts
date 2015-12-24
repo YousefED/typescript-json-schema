@@ -101,6 +101,17 @@ export module TJS {
     }
 
     private getDefinitionForType(propertyType: ts.Type, tc: ts.TypeChecker) {
+      if (propertyType.flags & ts.TypeFlags.Union) {
+        const unionType = <ts.UnionType>propertyType;
+        let oneOf = unionType.types.map((propType) => {
+          return this.getDefinitionForType(propType, tc);
+        });
+
+        return {
+          "oneOf": oneOf
+        };
+      }
+
       let propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
       let definition: any = {

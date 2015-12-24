@@ -12,8 +12,8 @@
     "url": "http://www.twitter.com/yousefed"
   },
   "dependencies": {
-    "typescript": "1.6.2",
-    "glob": "5.0.15"
+    "typescript": "~1.7.5",
+    "glob": "~6.0.2"
   },
   "repository": {
     "type": "git",

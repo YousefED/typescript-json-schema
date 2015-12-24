@@ -183,7 +183,7 @@ var TJS;
             var inheritingTypes = {};
             program.getSourceFiles().forEach(function (sourceFile) {
                 function inspect(node, tc) {
-                    if (node.kind == 212 || node.kind == 213) {
+                    if (node.kind == 214 || node.kind == 215) {
                         var nodeType = tc.getTypeAtLocation(node);
                         var fullName = tc.typeToString(nodeType, undefined, 128);
                         allSymbols[fullName] = nodeType;

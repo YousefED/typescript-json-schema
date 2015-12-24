@@ -59,6 +59,16 @@ var TJS;
             this.copyValidationKeywords(joined, definition);
         };
         JsonSchemaGenerator.prototype.getDefinitionForType = function (propertyType, tc) {
+            var _this = this;
+            if (propertyType.flags & 16384) {
+                var unionType = propertyType;
+                var oneOf = unionType.types.map(function (propType) {
+                    return _this.getDefinitionForType(propType, tc);
+                });
+                return {
+                    "oneOf": oneOf
+                };
+            }
             var propertyTypeString = tc.typeToString(propertyType, undefined, 128);
             var definition = {};
             switch (propertyTypeString.toLowerCase()) {
@@ -155,9 +165,9 @@ var TJS;
                     return all;
                 }, {});
                 var definition = {
-                    "type": "object",
-                    "title": fullName,
-                    "defaultProperties": [],
+                    type: "object",
+                    title: fullName,
+                    defaultProperties: [],
                     properties: propertyDefinitions
                 };
                 return definition;

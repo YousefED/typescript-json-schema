@@ -58,7 +58,6 @@ export module TJS {
           try {
             value = JSON.parse(value);
           } catch (e) {
-            console.error(e);
           }
           if (context) {
             if (!to[context]) {

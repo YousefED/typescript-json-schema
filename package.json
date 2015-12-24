@@ -30,6 +30,9 @@
         "typescript": "1.6.2",
 	    "grunt-typescript":"0.7.0"
     },
+    "scripts": {
+      "build": "tsc typescript-json-schema.ts --module commonjs -outDir dist --sourceMap"
+    },
     "optionalDependencies": {},
     "keywords": [
         "typescript",

@@ -24,7 +24,7 @@
     "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
   }],
   "scripts": {
-    "build": "tsc typescript-json-schema.ts --module commonjs -outDir dist --sourceMap"
+    "build": "tsc -p ."
   },
   "optionalDependencies": {},
   "keywords": [

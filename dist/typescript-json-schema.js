@@ -2,7 +2,7 @@
 /// <reference path="typings/glob/glob.d.ts" />
 var ts = require("typescript");
 var glob = require("glob");
-var vm = require('vm');
+var vm = require("vm");
 var TJS;
 (function (TJS) {
     var JsonSchemaGenerator = (function () {
@@ -37,11 +37,12 @@ var TJS;
                 keyword = keyword.replace("TJS-", "");
                 // case sensitive check inside the dictionary
                 if (JsonSchemaGenerator.validationKeywords.indexOf(keyword) >= 0 || JsonSchemaGenerator.validationKeywords.indexOf("TJS-" + keyword) >= 0) {
-                    var value = annotationTokens.length > 1 ? annotationTokens.slice(1).join(' ') : "";
+                    var value = annotationTokens.length > 1 ? annotationTokens.slice(1).join(" ") : "";
                     try {
                         value = JSON.parse(value);
                     }
                     catch (e) {
+                        console.error(e);
                     }
                     if (context) {
                         if (!to[context]) {
@@ -133,7 +134,7 @@ var TJS;
                 else {
                     try {
                         var sandbox = { sandboxvar: null };
-                        vm.runInNewContext('sandboxvar=' + initial.getText(), sandbox);
+                        vm.runInNewContext("sandboxvar=" + initial.getText(), sandbox);
                         initial = sandbox.sandboxvar;
                         if (initial == null) {
                         }
@@ -187,7 +188,11 @@ var TJS;
                 return definition;
             }
         };
-        JsonSchemaGenerator.validationKeywords = ["ignore", "description", "type", "minimum", "exclusiveMinimum", "maximum", "exclusiveMaximum", "multipleOf", "minLength", "maxLength", "format", "pattern", "minItems", "maxItems", "uniqueItems", "default", "additionalProperties", "enum"];
+        JsonSchemaGenerator.validationKeywords = [
+            "ignore", "description", "type", "minimum", "exclusiveMinimum", "maximum",
+            "exclusiveMaximum", "multipleOf", "minLength", "maxLength", "format",
+            "pattern", "minItems", "maxItems", "uniqueItems", "default",
+            "additionalProperties", "enum"];
         JsonSchemaGenerator.annotedValidationKeywordPattern = /@[a-z.-]+\s*[^@]+/gi;
         return JsonSchemaGenerator;
     })();
@@ -246,5 +251,5 @@ if (typeof window === "undefined" && require.main === module) {
 }
 //TJS.exec("example/**/*.ts", "Invoice");
 //node typescript-json-schema.js example/**/*.ts Invoice
-//debugger; 
+//debugger;
 //# sourceMappingURL=typescript-json-schema.js.map

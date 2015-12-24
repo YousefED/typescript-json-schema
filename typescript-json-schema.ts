@@ -11,6 +11,7 @@ export module TJS {
       "exclusiveMaximum", "multipleOf", "minLength", "maxLength", "format",
       "pattern", "minItems", "maxItems", "uniqueItems", "default",
       "additionalProperties", "enum"];
+
     private static annotedValidationKeywordPattern = /@[a-z.-]+\s*[^@]+/gi;
     //private static primitiveTypes = ["string", "number", "boolean", "any"];
 
@@ -34,7 +35,7 @@ export module TJS {
      * @param comment {string} the full comment.
      * @param to {object} the destination variable.
      */
-    private copyValidationKeywords(comment, to) {
+    private copyValidationKeywords(comment: string, to) {
       JsonSchemaGenerator.annotedValidationKeywordPattern.lastIndex = 0;
       // TODO: to improve the use of the exec method: it could make the tokenization
       var annotation;
@@ -57,8 +58,7 @@ export module TJS {
           var value = annotationTokens.length > 1 ? annotationTokens.slice(1).join(" ") : "";
           try {
             value = JSON.parse(value);
-          } catch (e) {
-          }
+          } catch (e) {}
           if (context) {
             if (!to[context]) {
               to[context] = {};
@@ -81,7 +81,7 @@ export module TJS {
      * @param to {object} the destination variable or definition.
      * @returns {string} the full comment minus the beginning description part.
      */
-    private copyDescription(comment, to) {
+    private copyDescription(comment: string, to): string {
       var delimiter = "@";
       var delimiterIndex = comment.indexOf(delimiter);
       var description = comment.slice(0, delimiterIndex < 0 ? comment.length : delimiterIndex);
@@ -101,7 +101,6 @@ export module TJS {
     }
 
     private getDefinitionForType(propertyType: ts.Type, tc: ts.TypeChecker) {
-
       let propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
       let definition: any = {
@@ -212,9 +211,9 @@ export module TJS {
         }, {});
 
         let definition = {
-          "type": "object",
-          "title": fullName,
-          "defaultProperties": [], // TODO: set via comment or parameter instead of hardcode here, json-editor specific
+          type: "object",
+          title: fullName,
+          defaultProperties: [], // TODO: set via comment or parameter instead of hardcode here, json-editor specific
           properties: propertyDefinitions
         };
         return definition;

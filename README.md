@@ -6,7 +6,7 @@ Inspired and builds upon [Typson](https://github.com/lbovet/typson/), but typesc
 
 ## Features
 * Compiles your Typescript program to get complete type information.
-* Translates required properties, extends, annotation keywords, property intializers as defaults.
+* Translates required properties, extends, annotation keywords, property initializers as defaults.
 
 ## Usage
 

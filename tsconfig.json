@@ -1,0 +1,38 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "isolatedModules": false,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "declaration": false,
+        "noImplicitAny": false,
+        "removeComments": true,
+        "noLib": false,
+        "preserveConstEnums": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "outDir": "dist/",
+        "sourceMap": true
+    },
+    "filesGlob": [
+        "**/*.ts",
+        "**/*.tsx"
+    ],
+    "exclude": [
+        "node_modules",
+        "example"
+    ],
+    "compileOnSave": true,
+    "buildOnSave": false,
+    "files": [
+        "typescript-json-schema.ts",
+        "typings/glob/glob.d.ts",
+        "typings/minimatch/minimatch.d.ts",
+        "typings/node/node.d.ts",
+        "typings/typescript/typescript.d.ts"
+    ],
+    "atom": {
+        "rewriteTsconfig": true
+    }
+}

@@ -55,7 +55,8 @@ export module TJS {
 
         // case sensitive check inside the dictionary
         if (JsonSchemaGenerator.validationKeywords.indexOf(keyword) >= 0 || JsonSchemaGenerator.validationKeywords.indexOf("TJS-" + keyword) >= 0) {
-          let value = annotationTokens.length > 1 ? annotationTokens.slice(1).join(" ") : "";
+          let value: string = annotationTokens.length > 1 ? annotationTokens.slice(1).join(" ") : "";
+          value = value.replace(/^\s+|\s+$/gm, "");  // trim all whitepsace characters, including newlines
           try {
             value = JSON.parse(value);
           } catch (e) { }

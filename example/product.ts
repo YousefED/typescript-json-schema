@@ -23,6 +23,7 @@ interface Category {
     name: string | number;
 
     /** Classification level from 1 to 5 (highest)
-     * @type integer */
+     * @type integer
+     */
     level: number;
 }

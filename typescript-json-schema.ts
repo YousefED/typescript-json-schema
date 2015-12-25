@@ -38,12 +38,12 @@ export module TJS {
     private copyValidationKeywords(comment: string, to) {
       JsonSchemaGenerator.annotedValidationKeywordPattern.lastIndex = 0;
       // TODO: to improve the use of the exec method: it could make the tokenization
-      var annotation;
+      let annotation;
       while ((annotation = JsonSchemaGenerator.annotedValidationKeywordPattern.exec(comment))) {
-        var annotationTokens = annotation[0].split(" ");
-        var keyword: string = annotationTokens[0].slice(1);
-        var path = keyword.split(".");
-        var context = null;
+        const annotationTokens = annotation[0].split(" ");
+        let keyword: string = annotationTokens[0].slice(1);
+        const path = keyword.split(".");
+        let context = null;
 
         // TODO: paths etc. originate from Typson, not supported atm.
         if (path.length > 1) {
@@ -55,10 +55,10 @@ export module TJS {
 
         // case sensitive check inside the dictionary
         if (JsonSchemaGenerator.validationKeywords.indexOf(keyword) >= 0 || JsonSchemaGenerator.validationKeywords.indexOf("TJS-" + keyword) >= 0) {
-          var value = annotationTokens.length > 1 ? annotationTokens.slice(1).join(" ") : "";
+          let value = annotationTokens.length > 1 ? annotationTokens.slice(1).join(" ") : "";
           try {
             value = JSON.parse(value);
-          } catch (e) {}
+          } catch (e) { }
           if (context) {
             if (!to[context]) {
               to[context] = {};
@@ -82,9 +82,9 @@ export module TJS {
      * @returns {string} the full comment minus the beginning description part.
      */
     private copyDescription(comment: string, to): string {
-      var delimiter = "@";
-      var delimiterIndex = comment.indexOf(delimiter);
-      var description = comment.slice(0, delimiterIndex < 0 ? comment.length : delimiterIndex);
+      const delimiter = "@";
+      const delimiterIndex = comment.indexOf(delimiter);
+      const description = comment.slice(0, delimiterIndex < 0 ? comment.length : delimiterIndex);
       if (description.length > 0) {
         to.description = description.replace(/\s+$/g, "");
       }
@@ -95,7 +95,7 @@ export module TJS {
       if (!comments || !comments.length) {
         return;
       }
-      var joined = comments.map(comment => comment.text.trim()).join("\n");
+      let joined = comments.map(comment => comment.text.trim()).join("\n");
       joined = this.copyDescription(joined, definition);
       this.copyValidationKeywords(joined, definition);
     }
@@ -103,7 +103,7 @@ export module TJS {
     private getDefinitionForType(propertyType: ts.Type, tc: ts.TypeChecker) {
       if (propertyType.flags & ts.TypeFlags.Union) {
         const unionType = <ts.UnionType>propertyType;
-        let oneOf = unionType.types.map((propType) => {
+        const oneOf = unionType.types.map((propType) => {
           return this.getDefinitionForType(propType, tc);
         });
 
@@ -112,10 +112,9 @@ export module TJS {
         };
       }
 
-      let propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+      const propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
       let definition: any = {
-
       };
 
       switch (propertyTypeString.toLowerCase()) {
@@ -133,11 +132,11 @@ export module TJS {
           break;
         default:
           if (propertyType.getSymbol().getName() == "Array") {
-            let arrayType = (<ts.TypeReference>propertyType).typeArguments[0];
+            const arrayType = (<ts.TypeReference>propertyType).typeArguments[0];
             definition.type = "array";
             definition.items = this.getDefinitionForType(arrayType, tc);
           } else {
-            let definition = this.getClassDefinition(propertyType, tc);
+            const definition = this.getClassDefinition(propertyType, tc);
             return definition;
           }
       }
@@ -145,16 +144,16 @@ export module TJS {
     }
 
     private getDefinitionForProperty(prop: ts.Symbol, tc: ts.TypeChecker, node: ts.Node) {
-      let propertyName = prop.getName();
-      let propertyType = tc.getTypeOfSymbolAtLocation(prop, node);
-      let propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+      const propertyName = prop.getName();
+      const propertyType = tc.getTypeOfSymbolAtLocation(prop, node);
+      const propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
 
 
       let definition: any = this.getDefinitionForType(propertyType, tc);
       definition.title = propertyName;
 
-      let comments = prop.getDocumentationComment();
+      const comments = prop.getDocumentationComment();
       this.parseCommentsIntoDefinition(comments, definition);
 
       if (definition.hasOwnProperty("ignore")) {
@@ -171,7 +170,7 @@ export module TJS {
           definition.default = initial.getText();
         } else {
           try {
-            var sandbox = { sandboxvar: null };
+            const sandbox = { sandboxvar: null };
             vm.runInNewContext("sandboxvar=" + initial.getText(), sandbox);
 
             initial = sandbox.sandboxvar;
@@ -196,32 +195,32 @@ export module TJS {
     }
 
     public getClassDefinition(clazzType: ts.Type, tc: ts.TypeChecker): any {
-      let node = clazzType.getSymbol().getDeclarations()[0];
-      let clazz = <ts.ClassDeclaration>node;
-      let props = tc.getPropertiesOfType(clazzType);
-      let fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+      const node = clazzType.getSymbol().getDeclarations()[0];
+      const clazz = <ts.ClassDeclaration>node;
+      const props = tc.getPropertiesOfType(clazzType);
+      const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
       if (clazz.flags & ts.NodeFlags.Abstract) {
-        let oneOf = this.inheritingTypes[fullName].map((typename) => {
+        const oneOf = this.inheritingTypes[fullName].map((typename) => {
           return this.getClassDefinition(this.allSymbols[typename], tc);
         });
 
-        let definition = {
+        const definition = {
           "oneOf": oneOf
         };
 
         return definition;
       } else {
-        let propertyDefinitions = props.reduce((all, prop) => {
-          let propertyName = prop.getName();
-          let definition = this.getDefinitionForProperty(prop, tc, node);
+        const propertyDefinitions = props.reduce((all, prop) => {
+          const propertyName = prop.getName();
+          const definition = this.getDefinitionForProperty(prop, tc, node);
           if (definition != null) {
             all[propertyName] = definition;
           }
           return all;
         }, {});
 
-        let definition = {
+        const definition = {
           type: "object",
           title: fullName,
           defaultProperties: [], // TODO: set via comment or parameter instead of hardcode here, json-editor specific
@@ -233,9 +232,9 @@ export module TJS {
   }
 
   export function generateSchema(compileFiles: string[], fullTypeName: string) {
-    let options: ts.CompilerOptions = { noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS };
-    let program = ts.createProgram(compileFiles, options);
-    let tc = program.getTypeChecker();
+    const options: ts.CompilerOptions = { noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS };
+    const program = ts.createProgram(compileFiles, options);
+    const tc = program.getTypeChecker();
 
     var diagnostics = [
       ...program.getGlobalDiagnostics(),
@@ -246,17 +245,17 @@ export module TJS {
 
     if (diagnostics.length == 0) {
 
-      let allSymbols: { [name: string]: ts.Type } = {};
-      let inheritingTypes: { [baseName: string]: string[] } = {};
+      const allSymbols: { [name: string]: ts.Type } = {};
+      const inheritingTypes: { [baseName: string]: string[] } = {};
 
       program.getSourceFiles().forEach(sourceFile => {
         function inspect(node: ts.Node, tc: ts.TypeChecker) {
           if (node.kind == ts.SyntaxKind.ClassDeclaration || node.kind == ts.SyntaxKind.InterfaceDeclaration) {
-            let nodeType = tc.getTypeAtLocation(node);
-            let fullName = tc.typeToString(nodeType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+            const nodeType = tc.getTypeAtLocation(node);
+            const fullName = tc.typeToString(nodeType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             allSymbols[fullName] = nodeType;
             nodeType.getBaseTypes().forEach(baseType => {
-              let baseName = tc.typeToString(baseType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+              const baseName = tc.typeToString(baseType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
               if (!inheritingTypes[baseName]) {
                 inheritingTypes[baseName] = [];
               }
@@ -269,8 +268,8 @@ export module TJS {
         inspect(sourceFile, tc);
       });
 
-      let generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc);
-      let definition = generator.getClassDefinitionByName(fullTypeName);
+      const generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc);
+      const definition = generator.getClassDefinitionByName(fullTypeName);
       return definition;
     } else {
       diagnostics.forEach((diagnostic) => console.warn(diagnostic.messageText + " " + diagnostic.file.fileName + " " + diagnostic.start));
@@ -278,8 +277,8 @@ export module TJS {
   }
 
   export function exec(filePattern: string, fullTypeName: string) {
-    var files: string[] = glob.sync(filePattern);
-    let definition = TJS.generateSchema(files, fullTypeName);
+    const files: string[] = glob.sync(filePattern);
+    const definition = TJS.generateSchema(files, fullTypeName);
     console.log(JSON.stringify(definition, null, 4));
     //fs.writeFile(outFile, JSON.stringify(definition, null, 4));
   }

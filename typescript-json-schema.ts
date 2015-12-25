@@ -233,7 +233,7 @@ export module TJS {
   }
 
   export function generateSchema(compileFiles: string[], fullTypeName: string) {
-    let options: ts.CompilerOptions = { noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5 };
+    let options: ts.CompilerOptions = { noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS };
     let program = ts.createProgram(compileFiles, options);
     let tc = program.getTypeChecker();
 

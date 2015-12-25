@@ -25,6 +25,7 @@ var TJS;
                 keyword = keyword.replace("TJS-", "");
                 if (JsonSchemaGenerator.validationKeywords.indexOf(keyword) >= 0 || JsonSchemaGenerator.validationKeywords.indexOf("TJS-" + keyword) >= 0) {
                     var value = annotationTokens.length > 1 ? annotationTokens.slice(1).join(" ") : "";
+                    value = value.replace(/^\s+|\s+$/gm, "");
                     try {
                         value = JSON.parse(value);
                     }
@@ -182,7 +183,7 @@ var TJS;
         return JsonSchemaGenerator;
     })();
     function generateSchema(compileFiles, fullTypeName) {
-        var options = { noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: 1 };
+        var options = { noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: 1, module: 1 };
         var program = ts.createProgram(compileFiles, options);
         var tc = program.getTypeChecker();
         var diagnostics = program.getGlobalDiagnostics().concat(program.getDeclarationDiagnostics(), program.getSemanticDiagnostics());

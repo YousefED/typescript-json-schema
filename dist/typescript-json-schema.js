@@ -4,12 +4,22 @@ var vm = require("vm");
 var TJS;
 (function (TJS) {
     var JsonSchemaGenerator = (function () {
-        function JsonSchemaGenerator(allSymbols, inheritingTypes, tc) {
+        function JsonSchemaGenerator(allSymbols, inheritingTypes, tc, useRef) {
+            if (useRef === void 0) { useRef = false; }
+            this.useRef = useRef;
             this.sandbox = { sandboxvar: null };
+            this.reffedDefinitions = {};
             this.allSymbols = allSymbols;
             this.inheritingTypes = inheritingTypes;
             this.tc = tc;
         }
+        Object.defineProperty(JsonSchemaGenerator.prototype, "ReffedDefinitions", {
+            get: function () {
+                return this.reffedDefinitions;
+            },
+            enumerable: true,
+            configurable: true
+        });
         JsonSchemaGenerator.prototype.copyValidationKeywords = function (comment, to) {
             JsonSchemaGenerator.annotedValidationKeywordPattern.lastIndex = 0;
             var annotation;
@@ -138,11 +148,9 @@ var TJS;
             }
             return definition;
         };
-        JsonSchemaGenerator.prototype.getClassDefinitionByName = function (clazzName) {
-            return this.getClassDefinition(this.allSymbols[clazzName], this.tc);
-        };
-        JsonSchemaGenerator.prototype.getClassDefinition = function (clazzType, tc) {
+        JsonSchemaGenerator.prototype.getClassDefinition = function (clazzType, tc, asRef) {
             var _this = this;
+            if (asRef === void 0) { asRef = this.useRef; }
             var node = clazzType.getSymbol().getDeclarations()[0];
             var clazz = node;
             var props = tc.getPropertiesOfType(clazzType);
@@ -171,8 +179,24 @@ var TJS;
                     defaultProperties: [],
                     properties: propertyDefinitions
                 };
-                return definition;
+                if (asRef) {
+                    this.reffedDefinitions[fullName] = definition;
+                    return {
+                        "$ref": "#/definitions/" + fullName
+                    };
+                }
+                else {
+                    return definition;
+                }
             }
+        };
+        JsonSchemaGenerator.prototype.getClassDefinitionByName = function (clazzName, includeReffedDefinitions) {
+            if (includeReffedDefinitions === void 0) { includeReffedDefinitions = true; }
+            var def = this.getClassDefinition(this.allSymbols[clazzName], this.tc);
+            if (this.useRef && includeReffedDefinitions) {
+                def.definitions = this.reffedDefinitions;
+            }
+            return def;
         };
         JsonSchemaGenerator.validationKeywords = [
             "ignore", "description", "type", "minimum", "exclusiveMinimum", "maximum",
@@ -210,7 +234,8 @@ var TJS;
                 }
                 inspect(sourceFile, tc);
             });
-            var generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc);
+            var useRef = true;
+            var generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc, useRef);
             var definition = generator.getClassDefinitionByName(fullTypeName);
             return definition;
         }

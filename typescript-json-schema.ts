@@ -279,7 +279,9 @@ export module TJS {
 
   export function exec(filePattern: string, fullTypeName: string) {
     const files: string[] = glob.sync(filePattern);
-    const definition = TJS.generateSchema(files, fullTypeName);
+    let definition = TJS.generateSchema(files, fullTypeName);
+    definition["$schema"] = "http://json-schema.org/draft-04/schema#";
+
     console.log(JSON.stringify(definition, null, 4));
     //fs.writeFile(outFile, JSON.stringify(definition, null, 4));
   }

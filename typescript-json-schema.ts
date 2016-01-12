@@ -270,7 +270,8 @@ export module TJS {
       });
 
       const generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc);
-      const definition = generator.getClassDefinitionByName(fullTypeName);
+      let definition = generator.getClassDefinitionByName(fullTypeName);
+      definition["$schema"] = "http://json-schema.org/draft-04/schema#";
       return definition;
     } else {
       diagnostics.forEach((diagnostic) => console.warn(diagnostic.messageText + " " + diagnostic.file.fileName + " " + diagnostic.start));
@@ -279,8 +280,7 @@ export module TJS {
 
   export function exec(filePattern: string, fullTypeName: string) {
     const files: string[] = glob.sync(filePattern);
-    let definition = TJS.generateSchema(files, fullTypeName);
-    definition["$schema"] = "http://json-schema.org/draft-04/schema#";
+    const definition = TJS.generateSchema(files, fullTypeName);
 
     console.log(JSON.stringify(definition, null, 4));
     //fs.writeFile(outFile, JSON.stringify(definition, null, 4));

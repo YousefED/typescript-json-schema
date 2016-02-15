@@ -279,7 +279,6 @@ var TJS;
                         var nodeType = tc.getTypeAtLocation(node);
                         var fullName = tc.typeToString(nodeType, undefined, 128);
                         if (node.kind == 217) {
-                            console.warn("####### enum: " + JSON.stringify(fullName));
                             allSymbols[fullName] = nodeType;
                         }
                         else {

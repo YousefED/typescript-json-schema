@@ -344,7 +344,6 @@ export module TJS {
                         const fullName = tc.typeToString(nodeType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
                         if (node.kind == ts.SyntaxKind.EnumDeclaration) {
-                            console.warn("####### enum: " + JSON.stringify(fullName));
                             allSymbols[fullName] = nodeType;
                         } else {
                             allSymbols[fullName] = nodeType;

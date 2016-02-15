@@ -315,36 +315,5 @@ var TJS;
         console.log(JSON.stringify(definition, null, 4));
     }
     TJS.exec = exec;
-    function main(args) {
-        var args = process.argv;
-        if (args.length >= 4) {
-            var useRef = true;
-            var useRootRef = false;
-            args.forEach(function (arg) {
-                switch (arg) {
-                    case "-useRef":
-                        useRef = true;
-                        break;
-                    case "-noRef":
-                        useRef = false;
-                        break;
-                    case "-useRootRef":
-                        useRootRef = true;
-                        break;
-                    case "-noRootRef":
-                        useRootRef = false;
-                        break;
-                }
-            });
-            exec(args[args.length - 2], args[args.length - 1], useRef, useRootRef);
-        }
-        else {
-            console.log("Usage: node typescript-json-schema.js <path-to-typescript-files> <type>\n");
-        }
-    }
-    TJS.main = main;
 })(TJS = exports.TJS || (exports.TJS = {}));
-if (typeof window === "undefined" && require.main === module) {
-    TJS.main(process.argv);
-}
 //# sourceMappingURL=typescript-json-schema.js.map

@@ -376,40 +376,6 @@ export module TJS {
         console.log(JSON.stringify(definition, null, 4));
         //fs.writeFile(outFile, JSON.stringify(definition, null, 4));
     }
-
-    export function main(args: string[]) {
-        var args = process.argv;
-
-        if (args.length >= 4) {
-            var useRef = true;
-            var useRootRef = false;
-            args.forEach(arg => {
-                switch (arg) {
-                    case "-useRef": 
-                        useRef = true;
-                        break;
-                    case "-noRef": 
-                        useRef = false;
-                        break;
-                    case "-useRootRef": 
-                        useRootRef = true;
-                        break;
-                    case "-noRootRef": 
-                        useRootRef = false;
-                        break;
-                }
-            });
-
-            exec(args[args.length-2], args[args.length-1], useRef, useRootRef);
-        } else {
-            console.log("Usage: node typescript-json-schema.js <path-to-typescript-files> <type>\n");
-        }
-    }
-
-}
-
-if (typeof window === "undefined" && require.main === module) {
-    TJS.main(process.argv);
 }
 
 //TJS.exec("example/**/*.ts", "Invoice");

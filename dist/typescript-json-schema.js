@@ -102,7 +102,7 @@ var TJS;
                         definition.items = this.getDefinitionForType(arrayType, tc);
                     }
                     else {
-                        var definition_1 = this.getClassDefinition(propertyType, tc);
+                        var definition_1 = this.getTypeDefinition(propertyType, tc);
                         return definition_1;
                     }
             }
@@ -148,6 +148,58 @@ var TJS;
             }
             return definition;
         };
+        JsonSchemaGenerator.prototype.getTypeDefinition = function (typ, tc) {
+            var node = typ.getSymbol().getDeclarations()[0];
+            if (node.kind == 217) {
+                return this.getEnumDefinition(typ, tc);
+            }
+            else {
+                return this.getClassDefinition(typ, tc);
+            }
+        };
+        JsonSchemaGenerator.prototype.getEnumDefinition = function (clazzType, tc, asRef) {
+            if (asRef === void 0) { asRef = this.useRef; }
+            var node = clazzType.getSymbol().getDeclarations()[0];
+            var fullName = tc.typeToString(clazzType, undefined, 128);
+            var enm = node;
+            var values = tc.getIndexTypeOfType(clazzType, 0);
+            var enumValues = [];
+            enm.members.forEach(function (member) {
+                var caseLabel = member.name.text;
+                var initial = member.initializer;
+                if (initial) {
+                    if (initial.expression) {
+                        var exp = initial.expression;
+                        var text = exp.text;
+                        if (text) {
+                            enumValues.push(text);
+                        }
+                        else {
+                            console.warn("initializer is expression for enum: " + fullName + "." + caseLabel);
+                        }
+                    }
+                    else if (initial.kind && initial.kind == 11) {
+                        enumValues.push(initial.getText());
+                    }
+                }
+            });
+            var definition = {
+                type: "string",
+                title: fullName
+            };
+            if (enumValues.length > 0) {
+                definition["enum"] = enumValues;
+            }
+            if (asRef) {
+                this.reffedDefinitions[fullName] = definition;
+                return {
+                    "$ref": "#/definitions/" + fullName
+                };
+            }
+            else {
+                return definition;
+            }
+        };
         JsonSchemaGenerator.prototype.getClassDefinition = function (clazzType, tc, asRef) {
             var _this = this;
             if (asRef === void 0) { asRef = this.useRef; }
@@ -157,7 +209,7 @@ var TJS;
             var fullName = tc.typeToString(clazzType, undefined, 128);
             if (clazz.flags & 256) {
                 var oneOf = this.inheritingTypes[fullName].map(function (typename) {
-                    return _this.getClassDefinition(_this.allSymbols[typename], tc);
+                    return _this.getTypeDefinition(_this.allSymbols[typename], tc);
                 });
                 var definition = {
                     "oneOf": oneOf
@@ -173,11 +225,16 @@ var TJS;
                     }
                     return all;
                 }, {});
+                var propertyOrder = props.reduce(function (order, prop) {
+                    order.push(prop.getName());
+                    return order;
+                }, []);
                 var definition = {
                     type: "object",
                     title: fullName,
                     defaultProperties: [],
-                    properties: propertyDefinitions
+                    properties: propertyDefinitions,
+                    propertyOrder: propertyOrder
                 };
                 if (asRef) {
                     this.reffedDefinitions[fullName] = definition;
@@ -216,17 +273,25 @@ var TJS;
             var inheritingTypes = {};
             program.getSourceFiles().forEach(function (sourceFile) {
                 function inspect(node, tc) {
-                    if (node.kind == 214 || node.kind == 215) {
+                    if (node.kind == 214
+                        || node.kind == 215
+                        || node.kind == 217) {
                         var nodeType = tc.getTypeAtLocation(node);
                         var fullName = tc.typeToString(nodeType, undefined, 128);
-                        allSymbols[fullName] = nodeType;
-                        nodeType.getBaseTypes().forEach(function (baseType) {
-                            var baseName = tc.typeToString(baseType, undefined, 128);
-                            if (!inheritingTypes[baseName]) {
-                                inheritingTypes[baseName] = [];
-                            }
-                            inheritingTypes[baseName].push(fullName);
-                        });
+                        if (node.kind == 217) {
+                            console.warn("####### enum: " + JSON.stringify(fullName));
+                            allSymbols[fullName] = nodeType;
+                        }
+                        else {
+                            allSymbols[fullName] = nodeType;
+                            nodeType.getBaseTypes().forEach(function (baseType) {
+                                var baseName = tc.typeToString(baseType, undefined, 128);
+                                if (!inheritingTypes[baseName]) {
+                                    inheritingTypes[baseName] = [];
+                                }
+                                inheritingTypes[baseName].push(fullName);
+                            });
+                        }
                     }
                     else {
                         ts.forEachChild(node, function (node) { return inspect(node, tc); });

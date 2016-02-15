@@ -142,7 +142,7 @@ export module TJS {
                         definition.type = "array";
                         definition.items = this.getDefinitionForType(arrayType, tc);
                     } else {
-                        const definition = this.getClassDefinition(propertyType, tc);
+                        const definition = this.getTypeDefinition(propertyType, tc);
                         return definition;
                     }
             }
@@ -196,6 +196,65 @@ export module TJS {
             return definition;
         }
 
+        private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker): any {
+            const node = typ.getSymbol().getDeclarations()[0];
+            if (node.kind == ts.SyntaxKind.EnumDeclaration) {
+                return this.getEnumDefinition(typ, tc);
+            } else {
+                return this.getClassDefinition(typ, tc);
+            }
+        }
+
+        private getEnumDefinition(clazzType: ts.Type, tc: ts.TypeChecker, asRef = this.useRef): any {
+            const node = clazzType.getSymbol().getDeclarations()[0];
+            const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+            const enm = <ts.EnumDeclaration>node;
+            const values = tc.getIndexTypeOfType(clazzType, ts.IndexKind.String);
+
+            var enumValues: string[] = [];
+
+            enm.members.forEach(member => {
+                const caseLabel = (<ts.Identifier>member.name).text;
+
+                // try to extract the enums value; it will probably by a cast expression
+                let initial = <ts.Expression>member.initializer;
+
+                if (initial) {
+                    if ((<any>initial).expression) { // node
+                        const exp = (<any>initial).expression;
+                        const text = (<any>exp).text;
+                        // if it is an expression with a text literal, chances are it is the enum convension:
+                        // CASELABEL = 'literal' as any
+                        if (text) {
+                            enumValues.push(text);
+                        } else {
+                            console.warn("initializer is expression for enum: " + fullName + "." + caseLabel);
+                        }
+                    } else if ((<any>initial).kind && (<any>initial).kind == ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
+                        enumValues.push(initial.getText());
+                    }
+                }
+            });
+
+            var definition = {
+                type: "string",
+                title: fullName
+            };
+
+            if (enumValues.length > 0) {
+                definition["enum"] = enumValues;
+            }
+
+            if (asRef) {
+                this.reffedDefinitions[fullName] = definition;
+                return {
+                    "$ref": "#/definitions/" + fullName
+                };
+            } else {
+                return definition;
+            }
+        }
+
         private getClassDefinition(clazzType: ts.Type, tc: ts.TypeChecker, asRef = this.useRef): any {
             const node = clazzType.getSymbol().getDeclarations()[0];
             const clazz = <ts.ClassDeclaration>node;
@@ -204,7 +263,7 @@ export module TJS {
 
             if (clazz.flags & ts.NodeFlags.Abstract) {
                 const oneOf = this.inheritingTypes[fullName].map((typename) => {
-                    return this.getClassDefinition(this.allSymbols[typename], tc);
+                    return this.getTypeDefinition(this.allSymbols[typename], tc);
                 });
 
                 const definition = {
@@ -222,11 +281,19 @@ export module TJS {
                     return all;
                 }, {});
 
+                // propertyOrder is non-standard, but useful:
+                // https://github.com/json-schema/json-schema/issues/87
+                const propertyOrder = props.reduce((order, prop) => {
+                    order.push(prop.getName());
+                    return order;
+                }, []);
+
                 const definition = {
                     type: "object",
                     title: fullName,
                     defaultProperties: [], // TODO: set via comment or parameter instead of hardcode here, json-editor specific
-                    properties: propertyDefinitions
+                    properties: propertyDefinitions,
+                    propertyOrder: propertyOrder
                 };
 
                 if (asRef) {
@@ -270,17 +337,25 @@ export module TJS {
 
             program.getSourceFiles().forEach(sourceFile => {
                 function inspect(node: ts.Node, tc: ts.TypeChecker) {
-                    if (node.kind == ts.SyntaxKind.ClassDeclaration || node.kind == ts.SyntaxKind.InterfaceDeclaration) {
+                    if (node.kind == ts.SyntaxKind.ClassDeclaration
+                        || node.kind == ts.SyntaxKind.InterfaceDeclaration
+                        || node.kind == ts.SyntaxKind.EnumDeclaration) {
                         const nodeType = tc.getTypeAtLocation(node);
                         const fullName = tc.typeToString(nodeType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-                        allSymbols[fullName] = nodeType;
-                        nodeType.getBaseTypes().forEach(baseType => {
-                            const baseName = tc.typeToString(baseType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-                            if (!inheritingTypes[baseName]) {
-                                inheritingTypes[baseName] = [];
-                            }
-                            inheritingTypes[baseName].push(fullName);
-                        });
+
+                        if (node.kind == ts.SyntaxKind.EnumDeclaration) {
+                            console.warn("####### enum: " + JSON.stringify(fullName));
+                            allSymbols[fullName] = nodeType;
+                        } else {
+                            allSymbols[fullName] = nodeType;
+                            nodeType.getBaseTypes().forEach(baseType => {
+                                const baseName = tc.typeToString(baseType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+                                if (!inheritingTypes[baseName]) {
+                                    inheritingTypes[baseName] = [];
+                                }
+                                inheritingTypes[baseName].push(fullName);
+                            });
+                        }
                     } else {
                         ts.forEachChild(node, (node) => inspect(node, tc));
                     }

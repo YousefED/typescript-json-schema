@@ -23,7 +23,7 @@ export module TJS {
 
         private reffedDefinitions: { [key: string]: any } = {};
 
-        constructor(allSymbols: { [name: string]: ts.Type }, inheritingTypes: { [baseName: string]: string[] }, tc: ts.TypeChecker, private useRef: boolean = false) {
+        constructor(allSymbols: { [name: string]: ts.Type }, inheritingTypes: { [baseName: string]: string[] }, tc: ts.TypeChecker, private useRef: boolean = false, private useRootRef: boolean = false) {
             this.allSymbols = allSymbols;
             this.inheritingTypes = inheritingTypes;
             this.tc = tc;
@@ -308,7 +308,7 @@ export module TJS {
         }
 
         public getClassDefinitionByName(clazzName: string, includeReffedDefinitions: boolean = true): any {
-            let def = this.getClassDefinition(this.allSymbols[clazzName], this.tc);
+            let def = this.getClassDefinition(this.allSymbols[clazzName], this.tc, this.useRootRef);
 
             if (this.useRef && includeReffedDefinitions) {
                 def.definitions = this.reffedDefinitions;
@@ -318,7 +318,7 @@ export module TJS {
         }
     }
 
-    export function generateSchema(compileFiles: string[], fullTypeName: string) {
+    export function generateSchema(compileFiles: string[], fullTypeName: string, useRef: boolean, useRootRef: boolean) {
         const options: ts.CompilerOptions = { noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS };
         const program = ts.createProgram(compileFiles, options);
         const tc = program.getTypeChecker();
@@ -362,8 +362,7 @@ export module TJS {
                 inspect(sourceFile, tc);
             });
 
-            const useRef = true;
-            const generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc, useRef);
+            const generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc, useRef, useRootRef);
             const definition = generator.getClassDefinitionByName(fullTypeName);
             return definition;
         } else {
@@ -371,21 +370,46 @@ export module TJS {
         }
     }
 
-    export function exec(filePattern: string, fullTypeName: string) {
+    export function exec(filePattern: string, fullTypeName: string, useRef: boolean, useRootRef: boolean) {
         const files: string[] = glob.sync(filePattern);
-        const definition = TJS.generateSchema(files, fullTypeName);
+        const definition = TJS.generateSchema(files, fullTypeName, useRef, useRootRef);
         console.log(JSON.stringify(definition, null, 4));
         //fs.writeFile(outFile, JSON.stringify(definition, null, 4));
     }
+
+    export function main(args: string[]) {
+        var args = process.argv;
+
+        if (args.length >= 4) {
+            var useRef = true;
+            var useRootRef = false;
+            args.forEach(arg => {
+                switch (arg) {
+                    case "-useRef": 
+                        useRef = true;
+                        break;
+                    case "-noRef": 
+                        useRef = false;
+                        break;
+                    case "-useRootRef": 
+                        useRootRef = true;
+                        break;
+                    case "-noRootRef": 
+                        useRootRef = false;
+                        break;
+                }
+            });
+
+            exec(args[args.length-2], args[args.length-1], useRef, useRootRef);
+        } else {
+            console.log("Usage: node typescript-json-schema.js <path-to-typescript-files> <type>\n");
+        }
+    }
+
 }
 
 if (typeof window === "undefined" && require.main === module) {
-
-    if (process.argv[3]) {
-        TJS.exec(process.argv[2], process.argv[3]);
-    } else {
-        console.log("Usage: node typescript-json-schema.js <path-to-typescript-files> <type>\n");
-    }
+    TJS.main(process.argv);
 }
 
 //TJS.exec("example/**/*.ts", "Invoice");

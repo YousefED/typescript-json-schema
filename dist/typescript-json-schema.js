@@ -4,9 +4,11 @@ var vm = require("vm");
 var TJS;
 (function (TJS) {
     var JsonSchemaGenerator = (function () {
-        function JsonSchemaGenerator(allSymbols, inheritingTypes, tc, useRef) {
+        function JsonSchemaGenerator(allSymbols, inheritingTypes, tc, useRef, useRootRef) {
             if (useRef === void 0) { useRef = false; }
+            if (useRootRef === void 0) { useRootRef = false; }
             this.useRef = useRef;
+            this.useRootRef = useRootRef;
             this.sandbox = { sandboxvar: null };
             this.reffedDefinitions = {};
             this.allSymbols = allSymbols;
@@ -249,7 +251,7 @@ var TJS;
         };
         JsonSchemaGenerator.prototype.getClassDefinitionByName = function (clazzName, includeReffedDefinitions) {
             if (includeReffedDefinitions === void 0) { includeReffedDefinitions = true; }
-            var def = this.getClassDefinition(this.allSymbols[clazzName], this.tc);
+            var def = this.getClassDefinition(this.allSymbols[clazzName], this.tc, this.useRootRef);
             if (this.useRef && includeReffedDefinitions) {
                 def.definitions = this.reffedDefinitions;
             }
@@ -263,7 +265,7 @@ var TJS;
         JsonSchemaGenerator.annotedValidationKeywordPattern = /@[a-z.-]+\s*[^@]+/gi;
         return JsonSchemaGenerator;
     })();
-    function generateSchema(compileFiles, fullTypeName) {
+    function generateSchema(compileFiles, fullTypeName, useRef, useRootRef) {
         var options = { noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: 1, module: 1 };
         var program = ts.createProgram(compileFiles, options);
         var tc = program.getTypeChecker();
@@ -298,8 +300,7 @@ var TJS;
                 }
                 inspect(sourceFile, tc);
             });
-            var useRef = true;
-            var generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc, useRef);
+            var generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc, useRef, useRootRef);
             var definition = generator.getClassDefinitionByName(fullTypeName);
             return definition;
         }
@@ -308,19 +309,42 @@ var TJS;
         }
     }
     TJS.generateSchema = generateSchema;
-    function exec(filePattern, fullTypeName) {
+    function exec(filePattern, fullTypeName, useRef, useRootRef) {
         var files = glob.sync(filePattern);
-        var definition = TJS.generateSchema(files, fullTypeName);
+        var definition = TJS.generateSchema(files, fullTypeName, useRef, useRootRef);
         console.log(JSON.stringify(definition, null, 4));
     }
     TJS.exec = exec;
+    function main(args) {
+        var args = process.argv;
+        if (args.length >= 4) {
+            var useRef = true;
+            var useRootRef = false;
+            args.forEach(function (arg) {
+                switch (arg) {
+                    case "-useRef":
+                        useRef = true;
+                        break;
+                    case "-noRef":
+                        useRef = false;
+                        break;
+                    case "-useRootRef":
+                        useRootRef = true;
+                        break;
+                    case "-noRootRef":
+                        useRootRef = false;
+                        break;
+                }
+            });
+            exec(args[args.length - 2], args[args.length - 1], useRef, useRootRef);
+        }
+        else {
+            console.log("Usage: node typescript-json-schema.js <path-to-typescript-files> <type>\n");
+        }
+    }
+    TJS.main = main;
 })(TJS = exports.TJS || (exports.TJS = {}));
 if (typeof window === "undefined" && require.main === module) {
-    if (process.argv[3]) {
-        TJS.exec(process.argv[2], process.argv[3]);
-    }
-    else {
-        console.log("Usage: node typescript-json-schema.js <path-to-typescript-files> <type>\n");
-    }
+    TJS.main(process.argv);
 }
 //# sourceMappingURL=typescript-json-schema.js.map

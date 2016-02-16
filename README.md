@@ -1,4 +1,6 @@
-﻿# typescript-json-schema
+# typescript-json-schema
+
+[![npm version](https://img.shields.io/npm/v/typescript-json-schema.svg)](https://www.npmjs.com/package/typescript-json-schema)
 
 Generate json-schemas from your Typescript sources.
 

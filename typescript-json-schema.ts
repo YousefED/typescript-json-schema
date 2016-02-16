@@ -363,10 +363,11 @@ export module TJS {
             });
 
             const generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc, useRef, useRootRef);
-            const definition = generator.getClassDefinitionByName(fullTypeName);
+            let definition = generator.getClassDefinitionByName(fullTypeName);
+            definition["$schema"] = "http://json-schema.org/draft-04/schema#";
             return definition;
         } else {
-            diagnostics.forEach((diagnostic) => console.warn(diagnostic.messageText + " " + diagnostic.file.fileName + " " + diagnostic.start));
+          diagnostics.forEach((diagnostic) => console.warn(diagnostic.messageText + " " + diagnostic.file.fileName + " " + diagnostic.start));
         }
     }
 
@@ -376,6 +377,25 @@ export module TJS {
         console.log(JSON.stringify(definition, null, 4));
         //fs.writeFile(outFile, JSON.stringify(definition, null, 4));
     }
+
+    export function run() {
+        var helpText = "Usage: node typescript-json-schema.js <path-to-typescript-files> <type>";
+
+        var args = require('yargs')
+            .usage(helpText)
+            .demand(2)
+            .boolean('r').alias('r', 'refs').default('r', true)
+            .describe('r', 'Create shared ref definitions.')
+            .boolean('t').alias('t', 'topRef').default('t', false)
+            .describe('t', 'Create a top-level ref definition.')
+            .argv;
+        
+        exec(args._[0], args._[1], args.r, args.t);
+    }
+}
+
+if (typeof window === "undefined" && require.main === module) {
+    TJS.run();    
 }
 
 //TJS.exec("example/**/*.ts", "Invoice");

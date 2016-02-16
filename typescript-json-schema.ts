@@ -5,293 +5,377 @@ import * as glob from "glob";
 var vm = require("vm");
 
 export module TJS {
-  class JsonSchemaGenerator {
-    private static validationKeywords = [
-      "ignore", "description", "type", "minimum", "exclusiveMinimum", "maximum",
-      "exclusiveMaximum", "multipleOf", "minLength", "maxLength", "format",
-      "pattern", "minItems", "maxItems", "uniqueItems", "default",
-      "additionalProperties", "enum"];
+    class JsonSchemaGenerator {
+        private static validationKeywords = [
+            "ignore", "description", "type", "minimum", "exclusiveMinimum", "maximum",
+            "exclusiveMaximum", "multipleOf", "minLength", "maxLength", "format",
+            "pattern", "minItems", "maxItems", "uniqueItems", "default",
+            "additionalProperties", "enum"];
 
-    private static annotedValidationKeywordPattern = /@[a-z.-]+\s*[^@]+/gi;
-    //private static primitiveTypes = ["string", "number", "boolean", "any"];
+        private static annotedValidationKeywordPattern = /@[a-z.-]+\s*[^@]+/gi;
+        //private static primitiveTypes = ["string", "number", "boolean", "any"];
 
-    private allSymbols: { [name: string]: ts.Type };
-    private inheritingTypes: { [baseName: string]: string[] };
-    private tc: ts.TypeChecker;
+        private allSymbols: { [name: string]: ts.Type };
+        private inheritingTypes: { [baseName: string]: string[] };
+        private tc: ts.TypeChecker;
 
-    private sandbox = { sandboxvar: null };
+        private sandbox = { sandboxvar: null };
 
-    constructor(allSymbols: { [name: string]: ts.Type }, inheritingTypes: { [baseName: string]: string[] }, tc: ts.TypeChecker) {
-      this.allSymbols = allSymbols;
-      this.inheritingTypes = inheritingTypes;
-      this.tc = tc;
-    }
+        private reffedDefinitions: { [key: string]: any } = {};
 
-    /**
-     * (source: Typson)
-     * Extracts the schema validation keywords stored in a comment and register them as properties.
-     * A validation keyword starts by a @. It has a name and a value. Several keywords may occur.
-     *
-     * @param comment {string} the full comment.
-     * @param to {object} the destination variable.
-     */
-    private copyValidationKeywords(comment: string, to) {
-      JsonSchemaGenerator.annotedValidationKeywordPattern.lastIndex = 0;
-      // TODO: to improve the use of the exec method: it could make the tokenization
-      let annotation;
-      while ((annotation = JsonSchemaGenerator.annotedValidationKeywordPattern.exec(comment))) {
-        const annotationTokens = annotation[0].split(" ");
-        let keyword: string = annotationTokens[0].slice(1);
-        const path = keyword.split(".");
-        let context = null;
-
-        // TODO: paths etc. originate from Typson, not supported atm.
-        if (path.length > 1) {
-          context = path[0];
-          keyword = path[1];
+        constructor(allSymbols: { [name: string]: ts.Type }, inheritingTypes: { [baseName: string]: string[] }, tc: ts.TypeChecker, private useRef: boolean = false, private useRootRef: boolean = false) {
+            this.allSymbols = allSymbols;
+            this.inheritingTypes = inheritingTypes;
+            this.tc = tc;
         }
 
-        keyword = keyword.replace("TJS-", "");
+        public get ReffedDefinitions(): { [key: string]: any } {
+            return this.reffedDefinitions;
+        }
+        /**
+         * (source: Typson)
+         * Extracts the schema validation keywords stored in a comment and register them as properties.
+         * A validation keyword starts by a @. It has a name and a value. Several keywords may occur.
+         *
+         * @param comment {string} the full comment.
+         * @param to {object} the destination variable.
+         */
+        private copyValidationKeywords(comment: string, to) {
+            JsonSchemaGenerator.annotedValidationKeywordPattern.lastIndex = 0;
+            // TODO: to improve the use of the exec method: it could make the tokenization
+            let annotation;
+            while ((annotation = JsonSchemaGenerator.annotedValidationKeywordPattern.exec(comment))) {
+                const annotationTokens = annotation[0].split(" ");
+                let keyword: string = annotationTokens[0].slice(1);
+                const path = keyword.split(".");
+                let context = null;
 
-        // case sensitive check inside the dictionary
-        if (JsonSchemaGenerator.validationKeywords.indexOf(keyword) >= 0 || JsonSchemaGenerator.validationKeywords.indexOf("TJS-" + keyword) >= 0) {
-          let value: string = annotationTokens.length > 1 ? annotationTokens.slice(1).join(" ") : "";
-          value = value.replace(/^\s+|\s+$/gm, "");  // trim all whitepsace characters, including newlines
-          try {
-            value = JSON.parse(value);
-          } catch (e) { }
-          if (context) {
-            if (!to[context]) {
-              to[context] = {};
+                // TODO: paths etc. originate from Typson, not supported atm.
+                if (path.length > 1) {
+                    context = path[0];
+                    keyword = path[1];
+                }
+
+                keyword = keyword.replace("TJS-", "");
+
+                // case sensitive check inside the dictionary
+                if (JsonSchemaGenerator.validationKeywords.indexOf(keyword) >= 0 || JsonSchemaGenerator.validationKeywords.indexOf("TJS-" + keyword) >= 0) {
+                    let value: string = annotationTokens.length > 1 ? annotationTokens.slice(1).join(" ") : "";
+                    value = value.replace(/^\s+|\s+$/gm, "");  // trim all whitepsace characters, including newlines
+                    try {
+                        value = JSON.parse(value);
+                    } catch (e) { }
+                    if (context) {
+                        if (!to[context]) {
+                            to[context] = {};
+                        }
+                        to[context][keyword] = value;
+                    }
+                    else {
+                        to[keyword] = value;
+                    }
+                }
             }
-            to[context][keyword] = value;
-          }
-          else {
-            to[keyword] = value;
-          }
         }
-      }
-    }
 
-    /**
-     * (source: Typson)
-     * Extracts the description part of a comment and register it in the description property.
-     * The description is supposed to start at first position and may be delimited by @.
-     *
-     * @param comment {string} the full comment.
-     * @param to {object} the destination variable or definition.
-     * @returns {string} the full comment minus the beginning description part.
-     */
-    private copyDescription(comment: string, to): string {
-      const delimiter = "@";
-      const delimiterIndex = comment.indexOf(delimiter);
-      const description = comment.slice(0, delimiterIndex < 0 ? comment.length : delimiterIndex);
-      if (description.length > 0) {
-        to.description = description.replace(/\s+$/g, "");
-      }
-      return delimiterIndex < 0 ? "" : comment.slice(delimiterIndex);
-    }
+        /**
+         * (source: Typson)
+         * Extracts the description part of a comment and register it in the description property.
+         * The description is supposed to start at first position and may be delimited by @.
+         *
+         * @param comment {string} the full comment.
+         * @param to {object} the destination variable or definition.
+         * @returns {string} the full comment minus the beginning description part.
+         */
+        private copyDescription(comment: string, to): string {
+            const delimiter = "@";
+            const delimiterIndex = comment.indexOf(delimiter);
+            const description = comment.slice(0, delimiterIndex < 0 ? comment.length : delimiterIndex);
+            if (description.length > 0) {
+                to.description = description.replace(/\s+$/g, "");
+            }
+            return delimiterIndex < 0 ? "" : comment.slice(delimiterIndex);
+        }
 
-    private parseCommentsIntoDefinition(comments: ts.SymbolDisplayPart[], definition: any): void {
-      if (!comments || !comments.length) {
-        return;
-      }
-      let joined = comments.map(comment => comment.text.trim()).join("\n");
-      joined = this.copyDescription(joined, definition);
-      this.copyValidationKeywords(joined, definition);
-    }
+        private parseCommentsIntoDefinition(comments: ts.SymbolDisplayPart[], definition: any): void {
+            if (!comments || !comments.length) {
+                return;
+            }
+            let joined = comments.map(comment => comment.text.trim()).join("\n");
+            joined = this.copyDescription(joined, definition);
+            this.copyValidationKeywords(joined, definition);
+        }
 
-    private getDefinitionForType(propertyType: ts.Type, tc: ts.TypeChecker) {
-      if (propertyType.flags & ts.TypeFlags.Union) {
-        const unionType = <ts.UnionType>propertyType;
-        const oneOf = unionType.types.map((propType) => {
-          return this.getDefinitionForType(propType, tc);
-        });
+        private getDefinitionForType(propertyType: ts.Type, tc: ts.TypeChecker) {
+            if (propertyType.flags & ts.TypeFlags.Union) {
+                const unionType = <ts.UnionType>propertyType;
+                const oneOf = unionType.types.map((propType) => {
+                    return this.getDefinitionForType(propType, tc);
+                });
 
-        return {
-          "oneOf": oneOf
-        };
-      }
+                return {
+                    "oneOf": oneOf
+                };
+            }
 
-      const propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+            const propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
-      let definition: any = {
-      };
+            let definition: any = {
+            };
 
-      switch (propertyTypeString.toLowerCase()) {
-        case "string":
-          definition.type = "string";
-          break;
-        case "number":
-          definition.type = "number";
-          break;
-        case "boolean":
-          definition.type = "boolean";
-          break;
-        case "any":
-          definition.type = "object";
-          break;
-        default:
-          if (propertyType.getSymbol().getName() == "Array") {
-            const arrayType = (<ts.TypeReference>propertyType).typeArguments[0];
-            definition.type = "array";
-            definition.items = this.getDefinitionForType(arrayType, tc);
-          } else {
-            const definition = this.getClassDefinition(propertyType, tc);
+            switch (propertyTypeString.toLowerCase()) {
+                case "string":
+                    definition.type = "string";
+                    break;
+                case "number":
+                    definition.type = "number";
+                    break;
+                case "boolean":
+                    definition.type = "boolean";
+                    break;
+                case "any":
+                    definition.type = "object";
+                    break;
+                default:
+                    if (propertyType.getSymbol().getName() == "Array") {
+                        const arrayType = (<ts.TypeReference>propertyType).typeArguments[0];
+                        definition.type = "array";
+                        definition.items = this.getDefinitionForType(arrayType, tc);
+                    } else {
+                        const definition = this.getTypeDefinition(propertyType, tc);
+                        return definition;
+                    }
+            }
             return definition;
-          }
-      }
-      return definition;
-    }
+        }
 
-    private getDefinitionForProperty(prop: ts.Symbol, tc: ts.TypeChecker, node: ts.Node) {
-      const propertyName = prop.getName();
-      const propertyType = tc.getTypeOfSymbolAtLocation(prop, node);
-      const propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+        private getDefinitionForProperty(prop: ts.Symbol, tc: ts.TypeChecker, node: ts.Node) {
+            const propertyName = prop.getName();
+            const propertyType = tc.getTypeOfSymbolAtLocation(prop, node);
+            const propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
 
 
-      let definition: any = this.getDefinitionForType(propertyType, tc);
-      definition.title = propertyName;
+            let definition: any = this.getDefinitionForType(propertyType, tc);
+            definition.title = propertyName;
 
-      const comments = prop.getDocumentationComment();
-      this.parseCommentsIntoDefinition(comments, definition);
+            const comments = prop.getDocumentationComment();
+            this.parseCommentsIntoDefinition(comments, definition);
 
-      if (definition.hasOwnProperty("ignore")) {
-        return null;
-      }
-
-      // try to get default value
-      let initial = (<ts.VariableDeclaration>prop.valueDeclaration).initializer;
-
-      if (initial) {
-        if ((<any>initial).expression) { // node
-          console.warn("initializer is expression for property " + propertyName);
-        } else if ((<any>initial).kind && (<any>initial).kind == ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
-          definition.default = initial.getText();
-        } else {
-          try {
-            const sandbox = { sandboxvar: null };
-            vm.runInNewContext("sandboxvar=" + initial.getText(), sandbox);
-
-            initial = sandbox.sandboxvar;
-            if (initial == null) {
-
-            } else if (typeof (initial) === "string" || typeof (initial) === "number" || typeof (initial) === "boolean" || Object.prototype.toString.call(initial) === '[object Array]') {
-              definition.default = initial;
-            } else {
-              console.warn("unknown initializer for property " + propertyName + ": " + initial);
+            if (definition.hasOwnProperty("ignore")) {
+                return null;
             }
-          } catch (e) {
-            console.warn("exception evaluating initializer for property " + propertyName);
-          }
+
+            // try to get default value
+            let initial = (<ts.VariableDeclaration>prop.valueDeclaration).initializer;
+
+            if (initial) {
+                if ((<any>initial).expression) { // node
+                    console.warn("initializer is expression for property " + propertyName);
+                } else if ((<any>initial).kind && (<any>initial).kind == ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
+                    definition.default = initial.getText();
+                } else {
+                    try {
+                        const sandbox = { sandboxvar: null };
+                        vm.runInNewContext("sandboxvar=" + initial.getText(), sandbox);
+
+                        initial = sandbox.sandboxvar;
+                        if (initial == null) {
+
+                        } else if (typeof (initial) === "string" || typeof (initial) === "number" || typeof (initial) === "boolean" || Object.prototype.toString.call(initial) === '[object Array]') {
+                            definition.default = initial;
+                        } else {
+                            console.warn("unknown initializer for property " + propertyName + ": " + initial);
+                        }
+                    } catch (e) {
+                        console.warn("exception evaluating initializer for property " + propertyName);
+                    }
+                }
+            }
+
+            return definition;
         }
-      }
 
-      return definition;
-    }
+        private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker): any {
+            const node = typ.getSymbol().getDeclarations()[0];
+            if (node.kind == ts.SyntaxKind.EnumDeclaration) {
+                return this.getEnumDefinition(typ, tc);
+            } else {
+                return this.getClassDefinition(typ, tc);
+            }
+        }
 
-    public getClassDefinitionByName(clazzName: string): any {
-      return this.getClassDefinition(this.allSymbols[clazzName], this.tc);
-    }
+        private getEnumDefinition(clazzType: ts.Type, tc: ts.TypeChecker, asRef = this.useRef): any {
+            const node = clazzType.getSymbol().getDeclarations()[0];
+            const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+            const enm = <ts.EnumDeclaration>node;
+            const values = tc.getIndexTypeOfType(clazzType, ts.IndexKind.String);
 
-    public getClassDefinition(clazzType: ts.Type, tc: ts.TypeChecker): any {
-      const node = clazzType.getSymbol().getDeclarations()[0];
-      const clazz = <ts.ClassDeclaration>node;
-      const props = tc.getPropertiesOfType(clazzType);
-      const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+            var enumValues: string[] = [];
 
-      if (clazz.flags & ts.NodeFlags.Abstract) {
-        const oneOf = this.inheritingTypes[fullName].map((typename) => {
-          return this.getClassDefinition(this.allSymbols[typename], tc);
-        });
+            enm.members.forEach(member => {
+                const caseLabel = (<ts.Identifier>member.name).text;
 
-        const definition = {
-          "oneOf": oneOf
-        };
+                // try to extract the enums value; it will probably by a cast expression
+                let initial = <ts.Expression>member.initializer;
 
-        return definition;
-      } else {
-        const propertyDefinitions = props.reduce((all, prop) => {
-          const propertyName = prop.getName();
-          const definition = this.getDefinitionForProperty(prop, tc, node);
-          if (definition != null) {
-            all[propertyName] = definition;
-          }
-          return all;
-        }, {});
-
-        const definition = {
-          type: "object",
-          title: fullName,
-          defaultProperties: [], // TODO: set via comment or parameter instead of hardcode here, json-editor specific
-          properties: propertyDefinitions
-        };
-        return definition;
-      }
-    }
-  }
-
-  export function generateSchema(compileFiles: string[], fullTypeName: string) {
-    const options: ts.CompilerOptions = { noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS };
-    const program = ts.createProgram(compileFiles, options);
-    const tc = program.getTypeChecker();
-
-    var diagnostics = [
-      ...program.getGlobalDiagnostics(),
-      ...program.getDeclarationDiagnostics(),
-      ...program.getSemanticDiagnostics()
-    ];
-
-
-    if (diagnostics.length == 0) {
-
-      const allSymbols: { [name: string]: ts.Type } = {};
-      const inheritingTypes: { [baseName: string]: string[] } = {};
-
-      program.getSourceFiles().forEach(sourceFile => {
-        function inspect(node: ts.Node, tc: ts.TypeChecker) {
-          if (node.kind == ts.SyntaxKind.ClassDeclaration || node.kind == ts.SyntaxKind.InterfaceDeclaration) {
-            const nodeType = tc.getTypeAtLocation(node);
-            const fullName = tc.typeToString(nodeType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-            allSymbols[fullName] = nodeType;
-            nodeType.getBaseTypes().forEach(baseType => {
-              const baseName = tc.typeToString(baseType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-              if (!inheritingTypes[baseName]) {
-                inheritingTypes[baseName] = [];
-              }
-              inheritingTypes[baseName].push(fullName);
+                if (initial) {
+                    if ((<any>initial).expression) { // node
+                        const exp = (<any>initial).expression;
+                        const text = (<any>exp).text;
+                        // if it is an expression with a text literal, chances are it is the enum convension:
+                        // CASELABEL = 'literal' as any
+                        if (text) {
+                            enumValues.push(text);
+                        } else {
+                            console.warn("initializer is expression for enum: " + fullName + "." + caseLabel);
+                        }
+                    } else if ((<any>initial).kind && (<any>initial).kind == ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
+                        enumValues.push(initial.getText());
+                    }
+                }
             });
-          } else {
-            ts.forEachChild(node, (node) => inspect(node, tc));
-          }
+
+            var definition = {
+                type: "string",
+                title: fullName
+            };
+
+            if (enumValues.length > 0) {
+                definition["enum"] = enumValues;
+            }
+
+            if (asRef) {
+                this.reffedDefinitions[fullName] = definition;
+                return {
+                    "$ref": "#/definitions/" + fullName
+                };
+            } else {
+                return definition;
+            }
         }
-        inspect(sourceFile, tc);
-      });
 
-      const generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc);
-      const definition = generator.getClassDefinitionByName(fullTypeName);
-      return definition;
-    } else {
-      diagnostics.forEach((diagnostic) => console.warn(diagnostic.messageText + " " + diagnostic.file.fileName + " " + diagnostic.start));
+        private getClassDefinition(clazzType: ts.Type, tc: ts.TypeChecker, asRef = this.useRef): any {
+            const node = clazzType.getSymbol().getDeclarations()[0];
+            const clazz = <ts.ClassDeclaration>node;
+            const props = tc.getPropertiesOfType(clazzType);
+            const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+
+            if (clazz.flags & ts.NodeFlags.Abstract) {
+                const oneOf = this.inheritingTypes[fullName].map((typename) => {
+                    return this.getTypeDefinition(this.allSymbols[typename], tc);
+                });
+
+                const definition = {
+                    "oneOf": oneOf
+                };
+
+                return definition;
+            } else {
+                const propertyDefinitions = props.reduce((all, prop) => {
+                    const propertyName = prop.getName();
+                    const definition = this.getDefinitionForProperty(prop, tc, node);
+                    if (definition != null) {
+                        all[propertyName] = definition;
+                    }
+                    return all;
+                }, {});
+
+                // propertyOrder is non-standard, but useful:
+                // https://github.com/json-schema/json-schema/issues/87
+                const propertyOrder = props.reduce((order, prop) => {
+                    order.push(prop.getName());
+                    return order;
+                }, []);
+
+                const definition = {
+                    type: "object",
+                    title: fullName,
+                    defaultProperties: [], // TODO: set via comment or parameter instead of hardcode here, json-editor specific
+                    properties: propertyDefinitions,
+                    propertyOrder: propertyOrder
+                };
+
+                if (asRef) {
+                    this.reffedDefinitions[fullName] = definition;
+                    return {
+                        "$ref": "#/definitions/" + fullName
+                    };
+                } else {
+                    return definition;
+                }
+            }
+        }
+
+        public getClassDefinitionByName(clazzName: string, includeReffedDefinitions: boolean = true): any {
+            let def = this.getClassDefinition(this.allSymbols[clazzName], this.tc, this.useRootRef);
+
+            if (this.useRef && includeReffedDefinitions) {
+                def.definitions = this.reffedDefinitions;
+            }
+
+            return def;
+        }
     }
-  }
 
-  export function exec(filePattern: string, fullTypeName: string) {
-    const files: string[] = glob.sync(filePattern);
-    const definition = TJS.generateSchema(files, fullTypeName);
-    console.log(JSON.stringify(definition, null, 4));
-    //fs.writeFile(outFile, JSON.stringify(definition, null, 4));
-  }
-}
+    export function generateSchema(compileFiles: string[], fullTypeName: string, useRef: boolean, useRootRef: boolean) {
+        const options: ts.CompilerOptions = { noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS };
+        const program = ts.createProgram(compileFiles, options);
+        const tc = program.getTypeChecker();
 
-if (typeof window === "undefined" && require.main === module) {
+        var diagnostics = [
+            ...program.getGlobalDiagnostics(),
+            ...program.getDeclarationDiagnostics(),
+            ...program.getSemanticDiagnostics()
+        ];
 
-  if (process.argv[3]) {
-    TJS.exec(process.argv[2], process.argv[3]);
-  } else {
-    console.log("Usage: node typescript-json-schema.js <path-to-typescript-files> <type>\n");
-  }
+
+        if (diagnostics.length == 0) {
+
+            const allSymbols: { [name: string]: ts.Type } = {};
+            const inheritingTypes: { [baseName: string]: string[] } = {};
+
+            program.getSourceFiles().forEach(sourceFile => {
+                function inspect(node: ts.Node, tc: ts.TypeChecker) {
+                    if (node.kind == ts.SyntaxKind.ClassDeclaration
+                        || node.kind == ts.SyntaxKind.InterfaceDeclaration
+                        || node.kind == ts.SyntaxKind.EnumDeclaration) {
+                        const nodeType = tc.getTypeAtLocation(node);
+                        const fullName = tc.typeToString(nodeType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+
+                        if (node.kind == ts.SyntaxKind.EnumDeclaration) {
+                            allSymbols[fullName] = nodeType;
+                        } else {
+                            allSymbols[fullName] = nodeType;
+                            nodeType.getBaseTypes().forEach(baseType => {
+                                const baseName = tc.typeToString(baseType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+                                if (!inheritingTypes[baseName]) {
+                                    inheritingTypes[baseName] = [];
+                                }
+                                inheritingTypes[baseName].push(fullName);
+                            });
+                        }
+                    } else {
+                        ts.forEachChild(node, (node) => inspect(node, tc));
+                    }
+                }
+                inspect(sourceFile, tc);
+            });
+
+            const generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc, useRef, useRootRef);
+            const definition = generator.getClassDefinitionByName(fullTypeName);
+            return definition;
+        } else {
+            diagnostics.forEach((diagnostic) => console.warn(diagnostic.messageText + " " + diagnostic.file.fileName + " " + diagnostic.start));
+        }
+    }
+
+    export function exec(filePattern: string, fullTypeName: string, useRef: boolean, useRootRef: boolean) {
+        const files: string[] = glob.sync(filePattern);
+        const definition = TJS.generateSchema(files, fullTypeName, useRef, useRootRef);
+        console.log(JSON.stringify(definition, null, 4));
+        //fs.writeFile(outFile, JSON.stringify(definition, null, 4));
+    }
 }
 
 //TJS.exec("example/**/*.ts", "Invoice");

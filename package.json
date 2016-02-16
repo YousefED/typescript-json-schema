@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "typescript": "~1.7.5",
-    "glob": "~6.0.2"
+    "glob": "~6.0.2",
+    "yargs": "^3.30.0"
   },
   "repository": {
     "type": "git",

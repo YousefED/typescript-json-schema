@@ -2,7 +2,7 @@
   "name": "typescript-json-schema",
   "version": "0.0.4",
   "description": "typescript-json-schema generates JSON Schema files from your Typescript sources",
-  "main": "./dist/typescript-json-schema.js",
+  "main": "typescript-json-schema.js",
   "bin": {
     "typescript-json-schema": "./bin/typescript-json-schema"
   },
@@ -10,11 +10,6 @@
     "name": "Yousef El-Dardiry",
     "email": "yousef@tweetbeam.com",
     "url": "http://www.twitter.com/yousefed"
-  },
-  "dependencies": {
-    "typescript": "~1.7.5",
-    "glob": "~6.0.2",
-    "yargs": "^3.30.0"
   },
   "repository": {
     "type": "git",
@@ -24,9 +19,6 @@
     "type": "Apache",
     "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
   }],
-  "scripts": {
-    "build": "tsc -p ."
-  },
   "optionalDependencies": {},
   "keywords": [
     "typescript",
@@ -34,5 +26,19 @@
     "forms",
     "jsonschema",
     "schema"
-  ]
+  ],
+  "dependencies": {
+    "typescript": "~1.8.0",
+    "glob": "~7.0.0",
+    "yargs": "^4.1.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^2.4.5",
+    "source-map-support": "^0.4.0"
+  },
+  "scripts": {
+    "test": "npm run build && mocha --require source-map-support/register test",
+    "build": "tsc -p ."
+  }
 }

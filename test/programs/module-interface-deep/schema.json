@@ -1,0 +1,64 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "MyModule.Def": {
+            "id": "MyModule.Def",
+            "type": "object",
+            "properties": {
+                "nest": {
+                    "$ref": "#/definitions/MyModule.Def"
+                },
+                "prev": {
+                    "$ref": "#/definitions/MyModule.Def"
+                },
+                "propA": {
+                    "$ref": "#/definitions/MyModule.SubModule.HelperA"
+                },
+                "propB": {
+                    "$ref": "#/definitions/MyModule.SubModule.HelperB"
+                }
+            },
+            "required": [
+                "nest",
+                "prev",
+                "propA",
+                "propB"
+            ],
+            "additionalProperties": false
+        },
+        "MyModule.SubModule.HelperA": {
+            "id": "MyModule.SubModule.HelperA",
+            "type": "object",
+            "properties": {
+                "propA": {
+                    "type": "number"
+                },
+                "propB": {
+                    "$ref": "#/definitions/MyModule.SubModule.HelperB"
+                }
+            },
+            "required": [
+                "propA",
+                "propB"
+            ],
+            "additionalProperties": false
+        },
+        "MyModule.SubModule.HelperB": {
+            "id": "MyModule.SubModule.HelperB",
+            "type": "object",
+            "properties": {
+                "propA": {
+                    "$ref": "#/definitions/MyModule.SubModule.HelperA"
+                },
+                "propB": {
+                    "$ref": "#/definitions/MyModule.Def"
+                }
+            },
+            "required": [
+                "propA",
+                "propB"
+            ],
+            "additionalProperties": false
+        }
+    }
+}

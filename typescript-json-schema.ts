@@ -2,9 +2,17 @@ import * as ts from "typescript";
 import * as fs from "fs";
 import * as glob from "glob";
 
-var vm = require("vm");
+const vm = require("vm");
 
 export module TJS {
+    const defaultArgs = {
+        useRef: true,
+        useRootRef: false,
+        useTitle: false,
+        useDefaultProperties: false,
+        usePropertyOrder: false
+    };
+
     class JsonSchemaGenerator {
         private static validationKeywords = [
             "ignore", "description", "type", "minimum", "exclusiveMinimum", "maximum",
@@ -23,7 +31,7 @@ export module TJS {
 
         private reffedDefinitions: { [key: string]: any } = {};
 
-        constructor(allSymbols: { [name: string]: ts.Type }, inheritingTypes: { [baseName: string]: string[] }, tc: ts.TypeChecker, private useRef: boolean = false, private useRootRef: boolean = false) {
+        constructor(allSymbols: { [name: string]: ts.Type }, inheritingTypes: { [baseName: string]: string[] }, tc: ts.TypeChecker, private args = defaultArgs) {
             this.allSymbols = allSymbols;
             this.inheritingTypes = inheritingTypes;
             this.tc = tc;
@@ -157,7 +165,9 @@ export module TJS {
 
 
             let definition: any = this.getDefinitionForType(propertyType, tc);
-            definition.title = propertyName;
+            if (this.args.useTitle) {
+                definition.title = propertyName;
+            }
 
             const comments = prop.getDocumentationComment();
             this.parseCommentsIntoDefinition(comments, definition);
@@ -205,7 +215,7 @@ export module TJS {
             }
         }
 
-        private getEnumDefinition(clazzType: ts.Type, tc: ts.TypeChecker, asRef = this.useRef): any {
+        private getEnumDefinition(clazzType: ts.Type, tc: ts.TypeChecker, asRef = this.args.useRef): any {
             const node = clazzType.getSymbol().getDeclarations()[0];
             const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             const enm = <ts.EnumDeclaration>node;
@@ -255,7 +265,7 @@ export module TJS {
             }
         }
 
-        private getClassDefinition(clazzType: ts.Type, tc: ts.TypeChecker, asRef = this.useRef): any {
+        private getClassDefinition(clazzType: ts.Type, tc: ts.TypeChecker, asRef = this.args.useRef): any {
             const node = clazzType.getSymbol().getDeclarations()[0];
             const clazz = <ts.ClassDeclaration>node;
             const props = tc.getPropertiesOfType(clazzType);
@@ -288,13 +298,20 @@ export module TJS {
                     return order;
                 }, []);
 
-                const definition = {
+                let definition: any = {
                     type: "object",
-                    title: fullName,
-                    defaultProperties: [], // TODO: set via comment or parameter instead of hardcode here, json-editor specific
-                    properties: propertyDefinitions,
-                    propertyOrder: propertyOrder
+                    properties: propertyDefinitions
                 };
+
+                if (this.args.useTitle) {
+                    definition.title = fullName;
+                }
+                if (this.args.useDefaultProperties) {
+                    definition.defaultProperties = [];
+                }
+                if (this.args.usePropertyOrder) {
+                    definition.propertyOrder = propertyOrder;
+                }
 
                 if (asRef) {
                     this.reffedDefinitions[fullName] = definition;
@@ -308,9 +325,9 @@ export module TJS {
         }
 
         public getClassDefinitionByName(clazzName: string, includeReffedDefinitions: boolean = true): any {
-            let def = this.getClassDefinition(this.allSymbols[clazzName], this.tc, this.useRootRef);
+            let def = this.getClassDefinition(this.allSymbols[clazzName], this.tc, this.args.useRootRef);
 
-            if (this.useRef && includeReffedDefinitions) {
+            if (this.args.useRef && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
                 def.definitions = this.reffedDefinitions;
             }
 
@@ -318,7 +335,7 @@ export module TJS {
         }
     }
 
-    export function generateSchema(compileFiles: string[], fullTypeName: string, useRef: boolean, useRootRef: boolean) {
+    export function generateSchema(compileFiles: string[], fullTypeName: string, args = defaultArgs) {
         const options: ts.CompilerOptions = { noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS };
         const program = ts.createProgram(compileFiles, options);
         const tc = program.getTypeChecker();
@@ -328,7 +345,6 @@ export module TJS {
             ...program.getDeclarationDiagnostics(),
             ...program.getSemanticDiagnostics()
         ];
-
 
         if (diagnostics.length == 0) {
 
@@ -362,7 +378,7 @@ export module TJS {
                 inspect(sourceFile, tc);
             });
 
-            const generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc, useRef, useRootRef);
+            const generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc, args);
             let definition = generator.getClassDefinitionByName(fullTypeName);
             definition["$schema"] = "http://json-schema.org/draft-04/schema#";
             return definition;
@@ -371,31 +387,42 @@ export module TJS {
         }
     }
 
-    export function exec(filePattern: string, fullTypeName: string, useRef: boolean, useRootRef: boolean) {
+    export function exec(filePattern: string, fullTypeName: string, args) {
         const files: string[] = glob.sync(filePattern);
-        const definition = TJS.generateSchema(files, fullTypeName, useRef, useRootRef);
-        console.log(JSON.stringify(definition, null, 4));
-        //fs.writeFile(outFile, JSON.stringify(definition, null, 4));
+        const definition = TJS.generateSchema(files, fullTypeName, args);
+        process.stdout.write(JSON.stringify(definition, null, 4) + "\n");
     }
 
     export function run() {
         var helpText = "Usage: node typescript-json-schema.js <path-to-typescript-files> <type>";
 
-        var args = require('yargs')
+        var args = require("yargs")
             .usage(helpText)
             .demand(2)
-            .boolean('r').alias('r', 'refs').default('r', true)
-            .describe('r', 'Create shared ref definitions.')
-            .boolean('t').alias('t', 'topRef').default('t', false)
-            .describe('t', 'Create a top-level ref definition.')
+            .boolean("refs").default("refs", defaultArgs.useRef)
+                .describe("refs", "Create shared ref definitions.")
+            .boolean("topRef").default("topRef", defaultArgs.useRootRef)
+                .describe("topRef", "Create a top-level ref definition.")
+            .boolean("titles").default("titles", defaultArgs.useTitle)
+                .describe("titles", "Creates titles in the output schema.")
+            .boolean("defaultProps").default("defaultProps", defaultArgs.useDefaultProperties)
+            .describe("defaultProps", "Create default properties definitions.")
+            .boolean("propOrder").default("propOrder", defaultArgs.usePropertyOrder)
+                .describe("propOrder", "Create property order definitions.")
             .argv;
-        
-        exec(args._[0], args._[1], args.r, args.t);
+
+        exec(args._[0], args._[1], {
+            useRef: args.refs,
+            useRootRef: args.topRef,
+            useTitle: args.titles,
+            useDefaultProperties: args.defaultProps,
+            usePropertyOrder: args.propOrder
+        });
     }
 }
 
 if (typeof window === "undefined" && require.main === module) {
-    TJS.run();    
+    TJS.run();
 }
 
 //TJS.exec("example/**/*.ts", "Invoice");

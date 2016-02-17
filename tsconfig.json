@@ -12,7 +12,6 @@
         "noLib": false,
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
-        "outDir": "dist/",
         "sourceMap": true
     },
     "filesGlob": [
@@ -21,14 +20,19 @@
     ],
     "exclude": [
         "node_modules",
-        "example"
+        "example",
+        "test/programs"
     ],
     "compileOnSave": true,
     "buildOnSave": false,
     "files": [
+        "test/schema.test.ts",
         "typescript-json-schema.ts",
+        "typings/assertion-error/assertion-error.d.ts",
+        "typings/chai/chai.d.ts",
         "typings/glob/glob.d.ts",
         "typings/minimatch/minimatch.d.ts",
+        "typings/mocha/mocha.d.ts",
         "typings/node/node.d.ts",
         "typings/typescript/typescript.d.ts"
     ],

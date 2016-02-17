@@ -1,14 +1,20 @@
+"use strict";
 var ts = require("typescript");
 var glob = require("glob");
 var vm = require("vm");
 var TJS;
 (function (TJS) {
+    var defaultArgs = {
+        useRef: true,
+        useRootRef: false,
+        useTitle: false,
+        useDefaultProperties: false,
+        usePropertyOrder: false
+    };
     var JsonSchemaGenerator = (function () {
-        function JsonSchemaGenerator(allSymbols, inheritingTypes, tc, useRef, useRootRef) {
-            if (useRef === void 0) { useRef = false; }
-            if (useRootRef === void 0) { useRootRef = false; }
-            this.useRef = useRef;
-            this.useRootRef = useRootRef;
+        function JsonSchemaGenerator(allSymbols, inheritingTypes, tc, args) {
+            if (args === void 0) { args = defaultArgs; }
+            this.args = args;
             this.sandbox = { sandboxvar: null };
             this.reffedDefinitions = {};
             this.allSymbols = allSymbols;
@@ -29,9 +35,9 @@ var TJS;
                 var annotationTokens = annotation[0].split(" ");
                 var keyword = annotationTokens[0].slice(1);
                 var path = keyword.split(".");
-                var context = null;
+                var context_1 = null;
                 if (path.length > 1) {
-                    context = path[0];
+                    context_1 = path[0];
                     keyword = path[1];
                 }
                 keyword = keyword.replace("TJS-", "");
@@ -42,11 +48,11 @@ var TJS;
                         value = JSON.parse(value);
                     }
                     catch (e) { }
-                    if (context) {
-                        if (!to[context]) {
-                            to[context] = {};
+                    if (context_1) {
+                        if (!to[context_1]) {
+                            to[context_1] = {};
                         }
-                        to[context][keyword] = value;
+                        to[context_1][keyword] = value;
                     }
                     else {
                         to[keyword] = value;
@@ -73,7 +79,7 @@ var TJS;
         };
         JsonSchemaGenerator.prototype.getDefinitionForType = function (propertyType, tc) {
             var _this = this;
-            if (propertyType.flags & 16384) {
+            if (propertyType.flags & ts.TypeFlags.Union) {
                 var unionType = propertyType;
                 var oneOf = unionType.types.map(function (propType) {
                     return _this.getDefinitionForType(propType, tc);
@@ -82,7 +88,7 @@ var TJS;
                     "oneOf": oneOf
                 };
             }
-            var propertyTypeString = tc.typeToString(propertyType, undefined, 128);
+            var propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             var definition = {};
             switch (propertyTypeString.toLowerCase()) {
                 case "string":
@@ -113,9 +119,11 @@ var TJS;
         JsonSchemaGenerator.prototype.getDefinitionForProperty = function (prop, tc, node) {
             var propertyName = prop.getName();
             var propertyType = tc.getTypeOfSymbolAtLocation(prop, node);
-            var propertyTypeString = tc.typeToString(propertyType, undefined, 128);
+            var propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             var definition = this.getDefinitionForType(propertyType, tc);
-            definition.title = propertyName;
+            if (this.args.useTitle) {
+                definition.title = propertyName;
+            }
             var comments = prop.getDocumentationComment();
             this.parseCommentsIntoDefinition(comments, definition);
             if (definition.hasOwnProperty("ignore")) {
@@ -126,7 +134,7 @@ var TJS;
                 if (initial.expression) {
                     console.warn("initializer is expression for property " + propertyName);
                 }
-                else if (initial.kind && initial.kind == 11) {
+                else if (initial.kind && initial.kind == ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
                     definition.default = initial.getText();
                 }
                 else {
@@ -152,7 +160,7 @@ var TJS;
         };
         JsonSchemaGenerator.prototype.getTypeDefinition = function (typ, tc) {
             var node = typ.getSymbol().getDeclarations()[0];
-            if (node.kind == 217) {
+            if (node.kind == ts.SyntaxKind.EnumDeclaration) {
                 return this.getEnumDefinition(typ, tc);
             }
             else {
@@ -160,11 +168,11 @@ var TJS;
             }
         };
         JsonSchemaGenerator.prototype.getEnumDefinition = function (clazzType, tc, asRef) {
-            if (asRef === void 0) { asRef = this.useRef; }
+            if (asRef === void 0) { asRef = this.args.useRef; }
             var node = clazzType.getSymbol().getDeclarations()[0];
-            var fullName = tc.typeToString(clazzType, undefined, 128);
+            var fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             var enm = node;
-            var values = tc.getIndexTypeOfType(clazzType, 0);
+            var values = tc.getIndexTypeOfType(clazzType, ts.IndexKind.String);
             var enumValues = [];
             enm.members.forEach(function (member) {
                 var caseLabel = member.name.text;
@@ -180,7 +188,7 @@ var TJS;
                             console.warn("initializer is expression for enum: " + fullName + "." + caseLabel);
                         }
                     }
-                    else if (initial.kind && initial.kind == 11) {
+                    else if (initial.kind && initial.kind == ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
                         enumValues.push(initial.getText());
                     }
                 }
@@ -204,12 +212,12 @@ var TJS;
         };
         JsonSchemaGenerator.prototype.getClassDefinition = function (clazzType, tc, asRef) {
             var _this = this;
-            if (asRef === void 0) { asRef = this.useRef; }
+            if (asRef === void 0) { asRef = this.args.useRef; }
             var node = clazzType.getSymbol().getDeclarations()[0];
             var clazz = node;
             var props = tc.getPropertiesOfType(clazzType);
-            var fullName = tc.typeToString(clazzType, undefined, 128);
-            if (clazz.flags & 256) {
+            var fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+            if (clazz.flags & ts.NodeFlags.Abstract) {
                 var oneOf = this.inheritingTypes[fullName].map(function (typename) {
                     return _this.getTypeDefinition(_this.allSymbols[typename], tc);
                 });
@@ -233,11 +241,17 @@ var TJS;
                 }, []);
                 var definition = {
                     type: "object",
-                    title: fullName,
-                    defaultProperties: [],
-                    properties: propertyDefinitions,
-                    propertyOrder: propertyOrder
+                    properties: propertyDefinitions
                 };
+                if (this.args.useTitle) {
+                    definition.title = fullName;
+                }
+                if (this.args.useDefaultProperties) {
+                    definition.defaultProperties = [];
+                }
+                if (this.args.usePropertyOrder) {
+                    definition.propertyOrder = propertyOrder;
+                }
                 if (asRef) {
                     this.reffedDefinitions[fullName] = definition;
                     return {
@@ -251,8 +265,8 @@ var TJS;
         };
         JsonSchemaGenerator.prototype.getClassDefinitionByName = function (clazzName, includeReffedDefinitions) {
             if (includeReffedDefinitions === void 0) { includeReffedDefinitions = true; }
-            var def = this.getClassDefinition(this.allSymbols[clazzName], this.tc, this.useRootRef);
-            if (this.useRef && includeReffedDefinitions) {
+            var def = this.getClassDefinition(this.allSymbols[clazzName], this.tc, this.args.useRootRef);
+            if (this.args.useRef && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
                 def.definitions = this.reffedDefinitions;
             }
             return def;
@@ -264,33 +278,34 @@ var TJS;
             "additionalProperties", "enum"];
         JsonSchemaGenerator.annotedValidationKeywordPattern = /@[a-z.-]+\s*[^@]+/gi;
         return JsonSchemaGenerator;
-    })();
-    function generateSchema(compileFiles, fullTypeName, useRef, useRootRef) {
-        var options = { noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: 1, module: 1 };
+    }());
+    function generateSchema(compileFiles, fullTypeName, args) {
+        if (args === void 0) { args = defaultArgs; }
+        var options = { noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS };
         var program = ts.createProgram(compileFiles, options);
         var tc = program.getTypeChecker();
         var diagnostics = program.getGlobalDiagnostics().concat(program.getDeclarationDiagnostics(), program.getSemanticDiagnostics());
         if (diagnostics.length == 0) {
-            var allSymbols = {};
-            var inheritingTypes = {};
+            var allSymbols_1 = {};
+            var inheritingTypes_1 = {};
             program.getSourceFiles().forEach(function (sourceFile) {
                 function inspect(node, tc) {
-                    if (node.kind == 214
-                        || node.kind == 215
-                        || node.kind == 217) {
+                    if (node.kind == ts.SyntaxKind.ClassDeclaration
+                        || node.kind == ts.SyntaxKind.InterfaceDeclaration
+                        || node.kind == ts.SyntaxKind.EnumDeclaration) {
                         var nodeType = tc.getTypeAtLocation(node);
-                        var fullName = tc.typeToString(nodeType, undefined, 128);
-                        if (node.kind == 217) {
-                            allSymbols[fullName] = nodeType;
+                        var fullName_1 = tc.typeToString(nodeType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+                        if (node.kind == ts.SyntaxKind.EnumDeclaration) {
+                            allSymbols_1[fullName_1] = nodeType;
                         }
                         else {
-                            allSymbols[fullName] = nodeType;
+                            allSymbols_1[fullName_1] = nodeType;
                             nodeType.getBaseTypes().forEach(function (baseType) {
-                                var baseName = tc.typeToString(baseType, undefined, 128);
-                                if (!inheritingTypes[baseName]) {
-                                    inheritingTypes[baseName] = [];
+                                var baseName = tc.typeToString(baseType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+                                if (!inheritingTypes_1[baseName]) {
+                                    inheritingTypes_1[baseName] = [];
                                 }
-                                inheritingTypes[baseName].push(fullName);
+                                inheritingTypes_1[baseName].push(fullName_1);
                             });
                         }
                     }
@@ -300,7 +315,7 @@ var TJS;
                 }
                 inspect(sourceFile, tc);
             });
-            var generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc, useRef, useRootRef);
+            var generator = new JsonSchemaGenerator(allSymbols_1, inheritingTypes_1, tc, args);
             var definition = generator.getClassDefinitionByName(fullTypeName);
             definition["$schema"] = "http://json-schema.org/draft-04/schema#";
             return definition;
@@ -310,23 +325,35 @@ var TJS;
         }
     }
     TJS.generateSchema = generateSchema;
-    function exec(filePattern, fullTypeName, useRef, useRootRef) {
+    function exec(filePattern, fullTypeName, args) {
         var files = glob.sync(filePattern);
-        var definition = TJS.generateSchema(files, fullTypeName, useRef, useRootRef);
-        console.log(JSON.stringify(definition, null, 4));
+        var definition = TJS.generateSchema(files, fullTypeName, args);
+        process.stdout.write(JSON.stringify(definition, null, 4) + "\n");
     }
     TJS.exec = exec;
     function run() {
         var helpText = "Usage: node typescript-json-schema.js <path-to-typescript-files> <type>";
-        var args = require('yargs')
+        var args = require("yargs")
             .usage(helpText)
             .demand(2)
-            .boolean('r').alias('r', 'refs').default('r', true)
-            .describe('r', 'Create shared ref definitions.')
-            .boolean('t').alias('t', 'topRef').default('t', false)
-            .describe('t', 'Create a top-level ref definition.')
+            .boolean("refs").default("refs", defaultArgs.useRef)
+            .describe("refs", "Create shared ref definitions.")
+            .boolean("topRef").default("topRef", defaultArgs.useRootRef)
+            .describe("topRef", "Create a top-level ref definition.")
+            .boolean("titles").default("titles", defaultArgs.useTitle)
+            .describe("titles", "Creates titles in the output schema.")
+            .boolean("defaultProps").default("defaultProps", defaultArgs.useDefaultProperties)
+            .describe("defaultProps", "Create default properties definitions.")
+            .boolean("propOrder").default("propOrder", defaultArgs.usePropertyOrder)
+            .describe("propOrder", "Create property order definitions.")
             .argv;
-        exec(args._[0], args._[1], args.r, args.t);
+        exec(args._[0], args._[1], {
+            useRef: args.refs,
+            useRootRef: args.topRef,
+            useTitle: args.titles,
+            useDefaultProperties: args.defaultProps,
+            usePropertyOrder: args.propOrder
+        });
     }
     TJS.run = run;
 })(TJS = exports.TJS || (exports.TJS = {}));

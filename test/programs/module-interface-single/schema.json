@@ -1,0 +1,12 @@
+{
+    "type": "object",
+    "properties": {
+        "propA": {
+            "type": "number"
+        },
+        "propB": {
+            "type": "number"
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema#"
+}

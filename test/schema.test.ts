@@ -31,5 +31,5 @@ describe("schema", function () {
     assertSchema("enums-string", "main.ts", "MyObject");
 
     // not yet working
-    // assertSchema("string-literals", "main.ts", "result");
+    assertSchema("string-literals", "main.ts", "MyObject");
 });

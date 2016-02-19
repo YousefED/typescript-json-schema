@@ -1,19 +1,20 @@
 {
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
     "properties": {
         "foo": {
-            "$ref": "#/definitions/Enum"
+            "$ref": "#/definitions/result"
         }
     },
     "definitions": {
-        "Enum": {
+        "result": {
             "type": "string",
-            "title": "Enum",
+            "title": "result",
             "enum": [
-                "x",
-                "y"
+                "ok",
+                "fail",
+                "abort"
             ]
         }
-    },
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    }
 }

@@ -1,6 +1,8 @@
 import * as ts from "typescript";
 import * as fs from "fs";
 import * as glob from "glob";
+import * as path from "path";
+
 
 const vm = require("vm");
 
@@ -335,24 +337,27 @@ export module TJS {
         }
     }
 
-    export function generateSchema(compileFiles: string[], fullTypeName: string, args = defaultArgs) {
-        const options: ts.CompilerOptions = { noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS };
-        const program = ts.createProgram(compileFiles, options);
+    export function getProgramFromFiles(files: string[]): ts.Program {  
+        // use built-in default options
+        const options: ts.CompilerOptions = { 
+            noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS
+        };
+        return ts.createProgram(files, options); 
+    }
+    
+    export function generateSchema(program: ts.Program, fullTypeName: string, args = defaultArgs) {
         const tc = program.getTypeChecker();
 
-        var diagnostics = [
-            ...program.getGlobalDiagnostics(),
-            ...program.getDeclarationDiagnostics(),
-            ...program.getSemanticDiagnostics()
-        ];
+        var diagnostics = ts.getPreEmitDiagnostics(program);
 
         if (diagnostics.length == 0) {
 
             const allSymbols: { [name: string]: ts.Type } = {};
             const inheritingTypes: { [baseName: string]: string[] } = {};
 
-            program.getSourceFiles().forEach(sourceFile => {
+            program.getSourceFiles().forEach(sourceFile => {                   
                 function inspect(node: ts.Node, tc: ts.TypeChecker) {
+                    
                     if (node.kind == ts.SyntaxKind.ClassDeclaration
                         || node.kind == ts.SyntaxKind.InterfaceDeclaration
                         || node.kind == ts.SyntaxKind.EnumDeclaration) {
@@ -387,14 +392,34 @@ export module TJS {
         }
     }
 
+    export function programFromConfig(configFileName: string) {
+        // basically a copy of https://github.com/Microsoft/TypeScript/blob/3663d400270ccae8b69cbeeded8ffdc8fa12d7ad/src/compiler/tsc.ts -> parseConfigFile
+        const result = ts.parseConfigFileTextToJson(configFileName, ts.sys.readFile(configFileName));
+        const configObject = result.config;
+        
+        const configParseResult = ts.parseJsonConfigFileContent(configObject, ts.sys, path.dirname(configFileName), {}, configFileName);
+        const options = configParseResult.options;
+        options.noEmit = true;
+     
+        const program = ts.createProgram(configParseResult.fileNames, options);
+        return program;
+        
+        //const conf = ts.convertCompilerOptionsFromJson(null, path.dirname(filePattern), "tsconfig.json");
+    }
     export function exec(filePattern: string, fullTypeName: string, args) {
-        const files: string[] = glob.sync(filePattern);
-        const definition = TJS.generateSchema(files, fullTypeName, args);
+        let program: ts.Program;
+        if(path.basename(filePattern) == "tsconfig.json") {
+            program = programFromConfig(filePattern);
+        } else {
+            program = TJS.getProgramFromFiles(glob.sync(filePattern));
+        }
+        
+        const definition = TJS.generateSchema(program, fullTypeName, args);
         process.stdout.write(JSON.stringify(definition, null, 4) + "\n");
     }
 
     export function run() {
-        var helpText = "Usage: node typescript-json-schema.js <path-to-typescript-files> <type>";
+        var helpText = "Usage: node typescript-json-schema.js <path-to-typescript-files-or-tsconfig> <type>";
 
         var args = require("yargs")
             .usage(helpText)

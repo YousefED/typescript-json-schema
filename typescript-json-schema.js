@@ -1,6 +1,6 @@
-"use strict";
 var ts = require("typescript");
 var glob = require("glob");
+var path = require("path");
 var vm = require("vm");
 var TJS;
 (function (TJS) {
@@ -34,11 +34,11 @@ var TJS;
             while ((annotation = JsonSchemaGenerator.annotedValidationKeywordPattern.exec(comment))) {
                 var annotationTokens = annotation[0].split(" ");
                 var keyword = annotationTokens[0].slice(1);
-                var path = keyword.split(".");
+                var path_1 = keyword.split(".");
                 var context_1 = null;
-                if (path.length > 1) {
-                    context_1 = path[0];
-                    keyword = path[1];
+                if (path_1.length > 1) {
+                    context_1 = path_1[0];
+                    keyword = path_1[1];
                 }
                 keyword = keyword.replace("TJS-", "");
                 if (JsonSchemaGenerator.validationKeywords.indexOf(keyword) >= 0 || JsonSchemaGenerator.validationKeywords.indexOf("TJS-" + keyword) >= 0) {
@@ -278,34 +278,39 @@ var TJS;
             "additionalProperties", "enum"];
         JsonSchemaGenerator.annotedValidationKeywordPattern = /@[a-z.-]+\s*[^@]+/gi;
         return JsonSchemaGenerator;
-    }());
-    function generateSchema(compileFiles, fullTypeName, args) {
+    })();
+    function getProgramFromFiles(files) {
+        var options = {
+            noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS
+        };
+        return ts.createProgram(files, options);
+    }
+    TJS.getProgramFromFiles = getProgramFromFiles;
+    function generateSchema(program, fullTypeName, args) {
         if (args === void 0) { args = defaultArgs; }
-        var options = { noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS };
-        var program = ts.createProgram(compileFiles, options);
         var tc = program.getTypeChecker();
-        var diagnostics = program.getGlobalDiagnostics().concat(program.getDeclarationDiagnostics(), program.getSemanticDiagnostics());
+        var diagnostics = ts.getPreEmitDiagnostics(program);
         if (diagnostics.length == 0) {
-            var allSymbols_1 = {};
-            var inheritingTypes_1 = {};
+            var allSymbols = {};
+            var inheritingTypes = {};
             program.getSourceFiles().forEach(function (sourceFile) {
                 function inspect(node, tc) {
                     if (node.kind == ts.SyntaxKind.ClassDeclaration
                         || node.kind == ts.SyntaxKind.InterfaceDeclaration
                         || node.kind == ts.SyntaxKind.EnumDeclaration) {
                         var nodeType = tc.getTypeAtLocation(node);
-                        var fullName_1 = tc.typeToString(nodeType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+                        var fullName = tc.typeToString(nodeType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
                         if (node.kind == ts.SyntaxKind.EnumDeclaration) {
-                            allSymbols_1[fullName_1] = nodeType;
+                            allSymbols[fullName] = nodeType;
                         }
                         else {
-                            allSymbols_1[fullName_1] = nodeType;
+                            allSymbols[fullName] = nodeType;
                             nodeType.getBaseTypes().forEach(function (baseType) {
                                 var baseName = tc.typeToString(baseType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-                                if (!inheritingTypes_1[baseName]) {
-                                    inheritingTypes_1[baseName] = [];
+                                if (!inheritingTypes[baseName]) {
+                                    inheritingTypes[baseName] = [];
                                 }
-                                inheritingTypes_1[baseName].push(fullName_1);
+                                inheritingTypes[baseName].push(fullName);
                             });
                         }
                     }
@@ -315,7 +320,7 @@ var TJS;
                 }
                 inspect(sourceFile, tc);
             });
-            var generator = new JsonSchemaGenerator(allSymbols_1, inheritingTypes_1, tc, args);
+            var generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc, args);
             var definition = generator.getClassDefinitionByName(fullTypeName);
             definition["$schema"] = "http://json-schema.org/draft-04/schema#";
             return definition;
@@ -325,14 +330,30 @@ var TJS;
         }
     }
     TJS.generateSchema = generateSchema;
+    function programFromConfig(configFileName) {
+        var result = ts.parseConfigFileTextToJson(configFileName, ts.sys.readFile(configFileName));
+        var configObject = result.config;
+        var configParseResult = ts.parseJsonConfigFileContent(configObject, ts.sys, path.dirname(configFileName), {}, configFileName);
+        var options = configParseResult.options;
+        options.noEmit = true;
+        var program = ts.createProgram(configParseResult.fileNames, options);
+        return program;
+    }
+    TJS.programFromConfig = programFromConfig;
     function exec(filePattern, fullTypeName, args) {
-        var files = glob.sync(filePattern);
-        var definition = TJS.generateSchema(files, fullTypeName, args);
+        var program;
+        if (path.basename(filePattern) == "tsconfig.json") {
+            program = programFromConfig(filePattern);
+        }
+        else {
+            program = TJS.getProgramFromFiles(glob.sync(filePattern));
+        }
+        var definition = TJS.generateSchema(program, fullTypeName, args);
         process.stdout.write(JSON.stringify(definition, null, 4) + "\n");
     }
     TJS.exec = exec;
     function run() {
-        var helpText = "Usage: node typescript-json-schema.js <path-to-typescript-files> <type>";
+        var helpText = "Usage: node typescript-json-schema.js <path-to-typescript-files-or-tsconfig> <type>";
         var args = require("yargs")
             .usage(helpText)
             .demand(2)

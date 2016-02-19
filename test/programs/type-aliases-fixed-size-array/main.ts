@@ -1,0 +1,1 @@
+type MyFixedSizeArray = [string, number];

@@ -1,10 +1,11 @@
+"use strict";
 var ts = require("typescript");
 var glob = require("glob");
 var path = require("path");
 var vm = require("vm");
 var TJS;
 (function (TJS) {
-    var defaultArgs = {
+    TJS.defaultArgs = {
         useRef: true,
         useRootRef: false,
         useTitle: false,
@@ -13,7 +14,7 @@ var TJS;
     };
     var JsonSchemaGenerator = (function () {
         function JsonSchemaGenerator(allSymbols, inheritingTypes, tc, args) {
-            if (args === void 0) { args = defaultArgs; }
+            if (args === void 0) { args = TJS.defaultArgs; }
             this.args = args;
             this.sandbox = { sandboxvar: null };
             this.reffedDefinitions = {};
@@ -77,16 +78,17 @@ var TJS;
             joined = this.copyDescription(joined, definition);
             this.copyValidationKeywords(joined, definition);
         };
-        JsonSchemaGenerator.prototype.getDefinitionForType = function (propertyType, tc) {
+        JsonSchemaGenerator.prototype.getDefinitionForType = function (propertyType, tc, unionModifier) {
             var _this = this;
+            if (unionModifier === void 0) { unionModifier = "oneOf"; }
             if (propertyType.flags & ts.TypeFlags.Union) {
                 var unionType = propertyType;
-                var oneOf = unionType.types.map(function (propType) {
+                var types = unionType.types.map(function (propType) {
                     return _this.getDefinitionForType(propType, tc);
                 });
-                return {
-                    "oneOf": oneOf
-                };
+                var definition_1 = {};
+                definition_1[unionModifier] = types;
+                return definition_1;
             }
             var propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             var definition = {};
@@ -104,14 +106,23 @@ var TJS;
                     definition.type = "object";
                     break;
                 default:
-                    if (propertyType.getSymbol().getName() == "Array") {
+                    if (propertyType.flags & ts.TypeFlags.Tuple) {
+                        var tupleType = propertyType;
+                        var fixedTypes = tupleType.elementTypes.map(function (elType) { return _this.getDefinitionForType(elType, tc); });
+                        definition.type = "array";
+                        definition.items = fixedTypes;
+                        definition.minItems = fixedTypes.length;
+                        definition.additionalItems = {
+                            "anyOf": fixedTypes
+                        };
+                    }
+                    else if (propertyType.getSymbol().getName() == "Array") {
                         var arrayType = propertyType.typeArguments[0];
                         definition.type = "array";
                         definition.items = this.getDefinitionForType(arrayType, tc);
                     }
                     else {
-                        var definition_1 = this.getTypeDefinition(propertyType, tc);
-                        return definition_1;
+                        definition = this.getTypeDefinition(propertyType, tc);
                     }
             }
             return definition;
@@ -158,13 +169,17 @@ var TJS;
             }
             return definition;
         };
-        JsonSchemaGenerator.prototype.getTypeDefinition = function (typ, tc) {
+        JsonSchemaGenerator.prototype.getTypeDefinition = function (typ, tc, asRef) {
+            if (asRef === void 0) { asRef = this.args.useRef; }
+            if (!typ.getSymbol()) {
+                return this.getDefinitionForType(typ, tc);
+            }
             var node = typ.getSymbol().getDeclarations()[0];
             if (node.kind == ts.SyntaxKind.EnumDeclaration) {
-                return this.getEnumDefinition(typ, tc);
+                return this.getEnumDefinition(typ, tc, asRef);
             }
             else {
-                return this.getClassDefinition(typ, tc);
+                return this.getClassDefinition(typ, tc, asRef);
             }
         };
         JsonSchemaGenerator.prototype.getEnumDefinition = function (clazzType, tc, asRef) {
@@ -217,7 +232,25 @@ var TJS;
             var clazz = node;
             var props = tc.getPropertiesOfType(clazzType);
             var fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-            if (clazz.flags & ts.NodeFlags.Abstract) {
+            if (props.length == 0 && clazz.members.length == 1 && clazz.members[0].kind == ts.SyntaxKind.IndexSignature) {
+                var indexSignature = clazz.members[0];
+                if (indexSignature.parameters.length != 1) {
+                    throw "Not supported: IndexSignatureDeclaration parameters.length != 1";
+                }
+                var indexSymbol = indexSignature.parameters[0].symbol;
+                var indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
+                if (indexType.flags != ts.TypeFlags.Number) {
+                    throw "Not supported: IndexSignatureDeclaration with non-number index symbol";
+                }
+                var typ = tc.getTypeAtLocation(indexSignature.type);
+                var def = this.getDefinitionForType(typ, tc, "anyOf");
+                var definition = {
+                    type: "array",
+                    items: def
+                };
+                return definition;
+            }
+            else if (clazz.flags & ts.NodeFlags.Abstract) {
                 var oneOf = this.inheritingTypes[fullName].map(function (typename) {
                     return _this.getTypeDefinition(_this.allSymbols[typename], tc);
                 });
@@ -265,7 +298,10 @@ var TJS;
         };
         JsonSchemaGenerator.prototype.getClassDefinitionByName = function (clazzName, includeReffedDefinitions) {
             if (includeReffedDefinitions === void 0) { includeReffedDefinitions = true; }
-            var def = this.getClassDefinition(this.allSymbols[clazzName], this.tc, this.args.useRootRef);
+            if (!this.allSymbols[clazzName]) {
+                throw "type {clazzName} not found";
+            }
+            var def = this.getTypeDefinition(this.allSymbols[clazzName], this.tc, this.args.useRootRef);
             if (this.args.useRef && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
                 def.definitions = this.reffedDefinitions;
             }
@@ -278,7 +314,7 @@ var TJS;
             "additionalProperties", "enum"];
         JsonSchemaGenerator.annotedValidationKeywordPattern = /@[a-z.-]+\s*[^@]+/gi;
         return JsonSchemaGenerator;
-    })();
+    }());
     function getProgramFromFiles(files) {
         var options = {
             noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS
@@ -287,32 +323,29 @@ var TJS;
     }
     TJS.getProgramFromFiles = getProgramFromFiles;
     function generateSchema(program, fullTypeName, args) {
-        if (args === void 0) { args = defaultArgs; }
+        if (args === void 0) { args = TJS.defaultArgs; }
         var tc = program.getTypeChecker();
         var diagnostics = ts.getPreEmitDiagnostics(program);
         if (diagnostics.length == 0) {
-            var allSymbols = {};
-            var inheritingTypes = {};
+            var allSymbols_1 = {};
+            var inheritingTypes_1 = {};
             program.getSourceFiles().forEach(function (sourceFile) {
                 function inspect(node, tc) {
                     if (node.kind == ts.SyntaxKind.ClassDeclaration
                         || node.kind == ts.SyntaxKind.InterfaceDeclaration
-                        || node.kind == ts.SyntaxKind.EnumDeclaration) {
+                        || node.kind == ts.SyntaxKind.EnumDeclaration
+                        || node.kind == ts.SyntaxKind.TypeAliasDeclaration) {
                         var nodeType = tc.getTypeAtLocation(node);
-                        var fullName = tc.typeToString(nodeType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-                        if (node.kind == ts.SyntaxKind.EnumDeclaration) {
-                            allSymbols[fullName] = nodeType;
-                        }
-                        else {
-                            allSymbols[fullName] = nodeType;
-                            nodeType.getBaseTypes().forEach(function (baseType) {
-                                var baseName = tc.typeToString(baseType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-                                if (!inheritingTypes[baseName]) {
-                                    inheritingTypes[baseName] = [];
-                                }
-                                inheritingTypes[baseName].push(fullName);
-                            });
-                        }
+                        var fullName_1 = tc.getFullyQualifiedName(node.symbol);
+                        allSymbols_1[fullName_1] = nodeType;
+                        var baseTypes = nodeType.getBaseTypes() || [];
+                        baseTypes.forEach(function (baseType) {
+                            var baseName = tc.typeToString(baseType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+                            if (!inheritingTypes_1[baseName]) {
+                                inheritingTypes_1[baseName] = [];
+                            }
+                            inheritingTypes_1[baseName].push(fullName_1);
+                        });
                     }
                     else {
                         ts.forEachChild(node, function (node) { return inspect(node, tc); });
@@ -320,13 +353,22 @@ var TJS;
                 }
                 inspect(sourceFile, tc);
             });
-            var generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc, args);
+            var generator = new JsonSchemaGenerator(allSymbols_1, inheritingTypes_1, tc, args);
             var definition = generator.getClassDefinitionByName(fullTypeName);
             definition["$schema"] = "http://json-schema.org/draft-04/schema#";
             return definition;
         }
         else {
-            diagnostics.forEach(function (diagnostic) { return console.warn(diagnostic.messageText + " " + diagnostic.file.fileName + " " + diagnostic.start); });
+            diagnostics.forEach(function (diagnostic) {
+                var message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
+                if (diagnostic.file) {
+                    var _a = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start), line = _a.line, character = _a.character;
+                    console.warn(diagnostic.file.fileName + " (" + (line + 1) + "," + (character + 1) + "): " + message);
+                }
+                else {
+                    console.warn(message);
+                }
+            });
         }
     }
     TJS.generateSchema = generateSchema;
@@ -341,6 +383,7 @@ var TJS;
     }
     TJS.programFromConfig = programFromConfig;
     function exec(filePattern, fullTypeName, args) {
+        if (args === void 0) { args = TJS.defaultArgs; }
         var program;
         if (path.basename(filePattern) == "tsconfig.json") {
             program = programFromConfig(filePattern);
@@ -357,15 +400,15 @@ var TJS;
         var args = require("yargs")
             .usage(helpText)
             .demand(2)
-            .boolean("refs").default("refs", defaultArgs.useRef)
+            .boolean("refs").default("refs", TJS.defaultArgs.useRef)
             .describe("refs", "Create shared ref definitions.")
-            .boolean("topRef").default("topRef", defaultArgs.useRootRef)
+            .boolean("topRef").default("topRef", TJS.defaultArgs.useRootRef)
             .describe("topRef", "Create a top-level ref definition.")
-            .boolean("titles").default("titles", defaultArgs.useTitle)
+            .boolean("titles").default("titles", TJS.defaultArgs.useTitle)
             .describe("titles", "Creates titles in the output schema.")
-            .boolean("defaultProps").default("defaultProps", defaultArgs.useDefaultProperties)
+            .boolean("defaultProps").default("defaultProps", TJS.defaultArgs.useDefaultProperties)
             .describe("defaultProps", "Create default properties definitions.")
-            .boolean("propOrder").default("propOrder", defaultArgs.usePropertyOrder)
+            .boolean("propOrder").default("propOrder", TJS.defaultArgs.usePropertyOrder)
             .describe("propOrder", "Create property order definitions.")
             .argv;
         exec(args._[0], args._[1], {
@@ -379,6 +422,7 @@ var TJS;
     TJS.run = run;
 })(TJS = exports.TJS || (exports.TJS = {}));
 if (typeof window === "undefined" && require.main === module) {
-    TJS.run();
 }
+var result = TJS.generateSchema(TJS.getProgramFromFiles(["test/programs/array-types/main.ts"]), "MyArray");
+console.log(JSON.stringify(result));
 //# sourceMappingURL=typescript-json-schema.js.map

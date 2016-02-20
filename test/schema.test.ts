@@ -5,7 +5,7 @@ import {resolve} from 'path';
 
 const base = "test/programs/";
 
-function assertSchema(group: string, name: string, type: string) {
+export function assertSchema(group: string, name: string, type: string) {
     it(group + " should create correct schema", function() {
         const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(base + group + "/" + name)]), type);
 
@@ -32,4 +32,9 @@ describe("schema", function () {
 
     // not yet working
     // assertSchema("string-literals", "main.ts", "result");
+    
+    assertSchema("array-types", "main.ts", "MyArray");
+    assertSchema("type-aliases", "main.ts", "MyString");
+    assertSchema("type-aliases-fixed-size-array", "main.ts", "MyFixedSizeArray");
+    
 });

@@ -36,5 +36,7 @@ describe("schema", function () {
     assertSchema("array-types", "main.ts", "MyArray");
     assertSchema("type-aliases", "main.ts", "MyString");
     assertSchema("type-aliases-fixed-size-array", "main.ts", "MyFixedSizeArray");
+
+    assertSchema("optionals", "main.ts", "MyObject");
     
 });

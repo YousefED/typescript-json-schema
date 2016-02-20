@@ -12,7 +12,8 @@ export module TJS {
         useRootRef: false,
         useTitle: false,
         useDefaultProperties: false,
-        usePropertyOrder: false
+        usePropertyOrder: false,
+        generateRequired: true
     };
 
     class JsonSchemaGenerator {
@@ -324,13 +325,6 @@ export module TJS {
                     return all;
                 }, {});
 
-                // propertyOrder is non-standard, but useful:
-                // https://github.com/json-schema/json-schema/issues/87
-                const propertyOrder = props.reduce((order, prop) => {
-                    order.push(prop.getName());
-                    return order;
-                }, []);
-
                 let definition: any = {
                     type: "object",
                     properties: propertyDefinitions
@@ -343,7 +337,26 @@ export module TJS {
                     definition.defaultProperties = [];
                 }
                 if (this.args.usePropertyOrder) {
+                    // propertyOrder is non-standard, but useful:
+                    // https://github.com/json-schema/json-schema/issues/87
+                    const propertyOrder = props.reduce((order, prop) => {
+                        order.push(prop.getName());
+                        return order;
+                    }, []);
+
                     definition.propertyOrder = propertyOrder;
+                }
+                if (this.args.generateRequired) {
+                    const requiredProps = props.reduce((required, prop) => {
+                        if (!(prop.flags & ts.SymbolFlags.Optional)) {
+                            required.push(prop.getName());
+                        }
+                        return required;
+                    }, []);
+
+                    if (requiredProps.length > 0) {
+                        definition.required = requiredProps;
+                    }
                 }
 
                 if (asRef) {
@@ -480,6 +493,8 @@ export module TJS {
             .describe("defaultProps", "Create default properties definitions.")
             .boolean("propOrder").default("propOrder", defaultArgs.usePropertyOrder)
                 .describe("propOrder", "Create property order definitions.")
+            .boolean("required").default("required", defaultArgs.generateRequired)
+                .describe("required", "Create required array for non-optional properties.")
             .argv;
 
         exec(args._[0], args._[1], {
@@ -487,7 +502,8 @@ export module TJS {
             useRootRef: args.topRef,
             useTitle: args.titles,
             useDefaultProperties: args.defaultProps,
-            usePropertyOrder: args.propOrder
+            usePropertyOrder: args.propOrder,
+            generateRequired: args.generateRequired
         });
     }
 }

@@ -8,5 +8,6 @@
         "propB": {
             "type": "number"
         }
-    }
+    },
+    "required": [ "propA", "propB" ]
 }

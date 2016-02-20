@@ -5,6 +5,11 @@
         {"type": "string"},
         {"type": "number"}
     ],
-    "minItems": 2,
-    "maxItems": 2
+    "additionalItems": {
+        "anyOf": [
+            {"type": "string"},
+            {"type": "number"}
+        ]
+    },
+    "minItems": 2
 }

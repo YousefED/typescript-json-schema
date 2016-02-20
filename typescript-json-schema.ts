@@ -7,7 +7,7 @@ import * as path from "path";
 const vm = require("vm");
 
 export module TJS {
-    const defaultArgs = {
+    export const defaultArgs = {
         useRef: true,
         useRootRef: false,
         useTitle: false,
@@ -116,16 +116,15 @@ export module TJS {
             this.copyValidationKeywords(joined, definition);
         }
 
-        private getDefinitionForType(propertyType: ts.Type, tc: ts.TypeChecker) {
+        private getDefinitionForType(propertyType: ts.Type, tc: ts.TypeChecker, unionModifier: string = "oneOf") {
             if (propertyType.flags & ts.TypeFlags.Union) {
                 const unionType = <ts.UnionType>propertyType;
-                const oneOf = unionType.types.map((propType) => {
+                const types = unionType.types.map((propType) => {
                     return this.getDefinitionForType(propType, tc);
                 });
-
-                return {
-                    "oneOf": oneOf
-                };
+                let definition = {};
+                definition[unionModifier] = types;
+                return definition;
             }
 
             const propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
@@ -147,13 +146,21 @@ export module TJS {
                     definition.type = "object";
                     break;
                 default:
-                    if (propertyType.getSymbol().getName() == "Array") {
+                    if(propertyType.flags & ts.TypeFlags.Tuple) { // tuple
+                        const tupleType: ts.TupleType = <ts.TupleType>propertyType;
+                        const fixedTypes = tupleType.elementTypes.map(elType => this.getDefinitionForType(elType, tc));
+                        definition.type = "array";
+                        definition.items = fixedTypes;
+                        definition.minItems = fixedTypes.length;
+                        definition.additionalItems = {
+                            "anyOf": fixedTypes
+                        };
+                    } else if (propertyType.getSymbol().getName() == "Array") {
                         const arrayType = (<ts.TypeReference>propertyType).typeArguments[0];
                         definition.type = "array";
                         definition.items = this.getDefinitionForType(arrayType, tc);
                     } else {
-                        const definition = this.getTypeDefinition(propertyType, tc);
-                        return definition;
+                        definition = this.getTypeDefinition(propertyType, tc);
                     }
             }
             return definition;
@@ -208,12 +215,15 @@ export module TJS {
             return definition;
         }
 
-        private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker): any {
+        private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker, asRef = this.args.useRef): any {
+            if(!typ.getSymbol()) {
+                return this.getDefinitionForType(typ, tc);
+            }
             const node = typ.getSymbol().getDeclarations()[0];
             if (node.kind == ts.SyntaxKind.EnumDeclaration) {
-                return this.getEnumDefinition(typ, tc);
+                return this.getEnumDefinition(typ, tc, asRef);
             } else {
-                return this.getClassDefinition(typ, tc);
+                return this.getClassDefinition(typ, tc, asRef);
             }
         }
 
@@ -273,7 +283,28 @@ export module TJS {
             const props = tc.getPropertiesOfType(clazzType);
             const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
-            if (clazz.flags & ts.NodeFlags.Abstract) {
+            if(props.length == 0 && clazz.members.length == 1 && clazz.members[0].kind == ts.SyntaxKind.IndexSignature) {
+                // for case "array-types"
+                const indexSignature = <ts.IndexSignatureDeclaration>clazz.members[0];
+                if(indexSignature.parameters.length != 1) {
+                    throw "Not supported: IndexSignatureDeclaration parameters.length != 1"
+                }
+                const indexSymbol: ts.Symbol = (<any>indexSignature.parameters[0]).symbol;
+                const indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
+                if(indexType.flags != ts.TypeFlags.Number) {
+                    throw "Not supported: IndexSignatureDeclaration with non-number index symbol";
+                }
+                
+                const typ = tc.getTypeAtLocation(indexSignature.type);
+                const def = this.getDefinitionForType(typ, tc, "anyOf");
+
+                const definition: any = {
+                    type: "array",
+                    items: def
+                };
+                   
+                return definition;
+            } else if (clazz.flags & ts.NodeFlags.Abstract) {
                 const oneOf = this.inheritingTypes[fullName].map((typename) => {
                     return this.getTypeDefinition(this.allSymbols[typename], tc);
                 });
@@ -327,7 +358,10 @@ export module TJS {
         }
 
         public getClassDefinitionByName(clazzName: string, includeReffedDefinitions: boolean = true): any {
-            let def = this.getClassDefinition(this.allSymbols[clazzName], this.tc, this.args.useRootRef);
+            if(!this.allSymbols[clazzName]) {
+                throw `type {clazzName} not found`;
+            }
+            let def = this.getTypeDefinition(this.allSymbols[clazzName], this.tc, this.args.useRootRef);
 
             if (this.args.useRef && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
                 def.definitions = this.reffedDefinitions;
@@ -355,27 +389,31 @@ export module TJS {
             const allSymbols: { [name: string]: ts.Type } = {};
             const inheritingTypes: { [baseName: string]: string[] } = {};
 
-            program.getSourceFiles().forEach(sourceFile => {                   
+            program.getSourceFiles().forEach(sourceFile => {    
+                /*console.log(sourceFile.fileName);    
+                if(sourceFile.fileName.indexOf("main.ts") > -1) {
+                    debugger;
+                } */          
                 function inspect(node: ts.Node, tc: ts.TypeChecker) {
                     
                     if (node.kind == ts.SyntaxKind.ClassDeclaration
                         || node.kind == ts.SyntaxKind.InterfaceDeclaration
-                        || node.kind == ts.SyntaxKind.EnumDeclaration) {
+                        || node.kind == ts.SyntaxKind.EnumDeclaration
+                        || node.kind == ts.SyntaxKind.TypeAliasDeclaration
+                        ) {
                         const nodeType = tc.getTypeAtLocation(node);
-                        const fullName = tc.typeToString(nodeType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-
-                        if (node.kind == ts.SyntaxKind.EnumDeclaration) {
-                            allSymbols[fullName] = nodeType;
-                        } else {
-                            allSymbols[fullName] = nodeType;
-                            nodeType.getBaseTypes().forEach(baseType => {
-                                const baseName = tc.typeToString(baseType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-                                if (!inheritingTypes[baseName]) {
-                                    inheritingTypes[baseName] = [];
-                                }
-                                inheritingTypes[baseName].push(fullName);
-                            });
-                        }
+                        const fullName = tc.getFullyQualifiedName((<any>node).symbol)
+                        allSymbols[fullName] = nodeType;
+                        
+                        const baseTypes = nodeType.getBaseTypes() || [];
+                        
+                        baseTypes.forEach(baseType => {
+                            var baseName = tc.typeToString(baseType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+                            if (!inheritingTypes[baseName]) {
+                                inheritingTypes[baseName] = [];
+                            }
+                            inheritingTypes[baseName].push(fullName);
+                        });
                     } else {
                         ts.forEachChild(node, (node) => inspect(node, tc));
                     }
@@ -388,7 +426,15 @@ export module TJS {
             definition["$schema"] = "http://json-schema.org/draft-04/schema#";
             return definition;
         } else {
-          diagnostics.forEach((diagnostic) => console.warn(diagnostic.messageText + " " + diagnostic.file.fileName + " " + diagnostic.start));
+          diagnostics.forEach((diagnostic) => {
+              let message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
+              if(diagnostic.file) {
+                let { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+                console.warn(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
+              } else {
+                  console.warn(message);
+              }
+          });
         }
     }
 
@@ -406,7 +452,7 @@ export module TJS {
         
         //const conf = ts.convertCompilerOptionsFromJson(null, path.dirname(filePattern), "tsconfig.json");
     }
-    export function exec(filePattern: string, fullTypeName: string, args) {
+    export function exec(filePattern: string, fullTypeName: string, args = defaultArgs) {
         let program: ts.Program;
         if(path.basename(filePattern) == "tsconfig.json") {
             program = programFromConfig(filePattern);
@@ -451,5 +497,5 @@ if (typeof window === "undefined" && require.main === module) {
 }
 
 //TJS.exec("example/**/*.ts", "Invoice");
-//node typescript-json-schema.js example/**/*.ts Invoice
-//debugger;
+//const result = TJS.generateSchema(TJS.getProgramFromFiles(["test/programs/array-types/main.ts"]), "MyArray");
+//console.log(JSON.stringify(result));

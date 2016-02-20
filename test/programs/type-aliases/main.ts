@@ -1,1 +1,1 @@
-type MyString = string;
+type MyString = string;   

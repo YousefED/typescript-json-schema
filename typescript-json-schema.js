@@ -349,6 +349,7 @@ var TJS;
                         || node.kind == ts.SyntaxKind.TypeAliasDeclaration) {
                         var nodeType = tc.getTypeAtLocation(node);
                         var fullName_1 = tc.getFullyQualifiedName(node.symbol);
+                        fullName_1 = fullName_1.replace(/".*"\./, "");
                         allSymbols_1[fullName_1] = nodeType;
                         var baseTypes = nodeType.getBaseTypes() || [];
                         baseTypes.forEach(function (baseType) {
@@ -431,7 +432,7 @@ var TJS;
             useTitle: args.titles,
             useDefaultProperties: args.defaultProps,
             usePropertyOrder: args.propOrder,
-            generateRequired: args.generateRequired
+            generateRequired: args.required
         });
     }
     TJS.run = run;

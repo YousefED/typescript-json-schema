@@ -9,6 +9,7 @@ export function assertSchema(group: string, name: string, type: string) {
     it(group + " should create correct schema", function() {
         let settings = TJS.defaultArgs;
         settings.generateRequired = true;
+        
         const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(base + group + "/" + name)]), type, settings);
 
         const file = readFileSync(base + group + "/schema.json", "utf8")

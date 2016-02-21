@@ -415,7 +415,15 @@ export module TJS {
                         || node.kind == ts.SyntaxKind.TypeAliasDeclaration
                         ) {
                         const nodeType = tc.getTypeAtLocation(node);
-                        const fullName = tc.getFullyQualifiedName((<any>node).symbol)
+                        let fullName = tc.getFullyQualifiedName((<any>node).symbol)
+                        
+                        // remove file name
+                        // TODO: we probably don't want this eventually, 
+                        // as same types can occur in different files and will override eachother in allSymbols
+                        // This means atm we can't generate all types in large programs.
+                        fullName = fullName.replace(/".*"\./, "");
+                        
+                        
                         allSymbols[fullName] = nodeType;
                         
                         const baseTypes = nodeType.getBaseTypes() || [];
@@ -513,5 +521,5 @@ if (typeof window === "undefined" && require.main === module) {
 }
 
 //TJS.exec("example/**/*.ts", "Invoice");
-//const result = TJS.generateSchema(TJS.getProgramFromFiles(["test/programs/array-types/main.ts"]), "MyArray");
+//const result = TJS.generateSchema(TJS.getProgramFromFiles(["test/programs/interface-single/main.ts"]), "MyObject");
 //console.log(JSON.stringify(result));

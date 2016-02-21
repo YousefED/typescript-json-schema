@@ -7,7 +7,9 @@ const base = "test/programs/";
 
 export function assertSchema(group: string, name: string, type: string) {
     it(group + " should create correct schema", function() {
-        const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(base + group + "/" + name)]), type);
+        let settings = TJS.defaultArgs;
+        settings.generateRequired = true;
+        const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(base + group + "/" + name)]), type, settings);
 
         const file = readFileSync(base + group + "/schema.json", "utf8")
         const expected = JSON.parse(file);

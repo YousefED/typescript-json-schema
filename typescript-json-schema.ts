@@ -13,7 +13,7 @@ export module TJS {
         useTitle: false,
         useDefaultProperties: false,
         usePropertyOrder: false,
-        generateRequired: true
+        generateRequired: false
     };
 
     class JsonSchemaGenerator {

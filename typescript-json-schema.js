@@ -11,7 +11,7 @@ var TJS;
         useTitle: false,
         useDefaultProperties: false,
         usePropertyOrder: false,
-        generateRequired: true
+        generateRequired: false
     };
     var JsonSchemaGenerator = (function () {
         function JsonSchemaGenerator(allSymbols, inheritingTypes, tc, args) {

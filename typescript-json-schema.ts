@@ -503,7 +503,7 @@ export module TJS {
             useTitle: args.titles,
             useDefaultProperties: args.defaultProps,
             usePropertyOrder: args.propOrder,
-            generateRequired: args.generateRequired
+            generateRequired: args.required
         });
     }
 }

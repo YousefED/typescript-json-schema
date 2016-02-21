@@ -10,7 +10,8 @@ var TJS;
         useRootRef: false,
         useTitle: false,
         useDefaultProperties: false,
-        usePropertyOrder: false
+        usePropertyOrder: false,
+        generateRequired: false
     };
     var JsonSchemaGenerator = (function () {
         function JsonSchemaGenerator(allSymbols, inheritingTypes, tc, args) {
@@ -268,10 +269,6 @@ var TJS;
                     }
                     return all;
                 }, {});
-                var propertyOrder = props.reduce(function (order, prop) {
-                    order.push(prop.getName());
-                    return order;
-                }, []);
                 var definition = {
                     type: "object",
                     properties: propertyDefinitions
@@ -283,7 +280,22 @@ var TJS;
                     definition.defaultProperties = [];
                 }
                 if (this.args.usePropertyOrder) {
+                    var propertyOrder = props.reduce(function (order, prop) {
+                        order.push(prop.getName());
+                        return order;
+                    }, []);
                     definition.propertyOrder = propertyOrder;
+                }
+                if (this.args.generateRequired) {
+                    var requiredProps = props.reduce(function (required, prop) {
+                        if (!(prop.flags & ts.SymbolFlags.Optional)) {
+                            required.push(prop.getName());
+                        }
+                        return required;
+                    }, []);
+                    if (requiredProps.length > 0) {
+                        definition.required = requiredProps;
+                    }
                 }
                 if (asRef) {
                     this.reffedDefinitions[fullName] = definition;
@@ -410,19 +422,21 @@ var TJS;
             .describe("defaultProps", "Create default properties definitions.")
             .boolean("propOrder").default("propOrder", TJS.defaultArgs.usePropertyOrder)
             .describe("propOrder", "Create property order definitions.")
+            .boolean("required").default("required", TJS.defaultArgs.generateRequired)
+            .describe("required", "Create required array for non-optional properties.")
             .argv;
         exec(args._[0], args._[1], {
             useRef: args.refs,
             useRootRef: args.topRef,
             useTitle: args.titles,
             useDefaultProperties: args.defaultProps,
-            usePropertyOrder: args.propOrder
+            usePropertyOrder: args.propOrder,
+            generateRequired: args.generateRequired
         });
     }
     TJS.run = run;
 })(TJS = exports.TJS || (exports.TJS = {}));
 if (typeof window === "undefined" && require.main === module) {
+    TJS.run();
 }
-var result = TJS.generateSchema(TJS.getProgramFromFiles(["test/programs/array-types/main.ts"]), "MyArray");
-console.log(JSON.stringify(result));
 //# sourceMappingURL=typescript-json-schema.js.map

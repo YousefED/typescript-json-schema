@@ -5,6 +5,7 @@
             "$ref": "#/definitions/Enum"
         }
     },
+    "required": [ "foo" ],
     "definitions": {
         "Enum": {
             "type": "string",

@@ -1,6 +1,6 @@
 {
   "name": "typescript-json-schema",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "typescript-json-schema generates JSON Schema files from your Typescript sources",
   "main": "typescript-json-schema.js",
   "bin": {
@@ -38,7 +38,7 @@
     "source-map-support": "^0.4.0"
   },
   "scripts": {
-    "test": "npm run build && mocha --require source-map-support/register test",
+    "test": "npm run build && mocha -t 5000 --require source-map-support/register test",
     "build": "tsc -p ."
   }
 }

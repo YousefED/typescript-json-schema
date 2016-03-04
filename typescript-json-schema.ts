@@ -7,13 +7,15 @@ import * as path from "path";
 const vm = require("vm");
 
 export module TJS {
-    export const defaultArgs = {
-        useRef: true,
-        useRootRef: false,
-        useTitle: false,
-        useDefaultProperties: false,
-        usePropertyOrder: false,
-        generateRequired: false
+    export function getDefaultArgs() {
+        return {
+            useRef: true,
+            useRootRef: false,
+            useTitle: false,
+            useDefaultProperties: false,
+            usePropertyOrder: false,
+            generateRequired: false
+        };
     };
 
     class JsonSchemaGenerator {
@@ -34,7 +36,7 @@ export module TJS {
 
         private reffedDefinitions: { [key: string]: any } = {};
 
-        constructor(allSymbols: { [name: string]: ts.Type }, inheritingTypes: { [baseName: string]: string[] }, tc: ts.TypeChecker, private args = defaultArgs) {
+        constructor(allSymbols: { [name: string]: ts.Type }, inheritingTypes: { [baseName: string]: string[] }, tc: ts.TypeChecker, private args = getDefaultArgs()) {
             this.allSymbols = allSymbols;
             this.inheritingTypes = inheritingTypes;
             this.tc = tc;
@@ -117,21 +119,17 @@ export module TJS {
             this.copyValidationKeywords(joined, definition);
         }
 
-        private getDefinitionForType(propertyType: ts.Type, tc: ts.TypeChecker, unionModifier: string = "oneOf") {
+        private getDefinitionForRootType(propertyType: ts.Type, tc: ts.TypeChecker, definition: any, unionModifier: string = "oneOf") {
             if (propertyType.flags & ts.TypeFlags.Union) {
                 const unionType = <ts.UnionType>propertyType;
                 const types = unionType.types.map((propType) => {
-                    return this.getDefinitionForType(propType, tc);
+                    return this.getTypeDefinition(propType, tc);
                 });
-                let definition = {};
                 definition[unionModifier] = types;
                 return definition;
             }
 
             const propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-
-            let definition: any = {
-            };
 
             switch (propertyTypeString.toLowerCase()) {
                 case "string":
@@ -149,7 +147,7 @@ export module TJS {
                 default:
                     if(propertyType.flags & ts.TypeFlags.Tuple) { // tuple
                         const tupleType: ts.TupleType = <ts.TupleType>propertyType;
-                        const fixedTypes = tupleType.elementTypes.map(elType => this.getDefinitionForType(elType, tc));
+                        const fixedTypes = tupleType.elementTypes.map(elType => this.getTypeDefinition(elType, tc));
                         definition.type = "array";
                         definition.items = fixedTypes;
                         definition.minItems = fixedTypes.length;
@@ -159,8 +157,10 @@ export module TJS {
                     } else if (propertyType.getSymbol().getName() == "Array") {
                         const arrayType = (<ts.TypeReference>propertyType).typeArguments[0];
                         definition.type = "array";
-                        definition.items = this.getDefinitionForType(arrayType, tc);
+                        definition.items = this.getTypeDefinition(arrayType, tc);
                     } else {
+                        
+                        // TODO
                         definition = this.getTypeDefinition(propertyType, tc);
                     }
             }
@@ -172,9 +172,7 @@ export module TJS {
             const propertyType = tc.getTypeOfSymbolAtLocation(prop, node);
             const propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
-
-
-            let definition: any = this.getDefinitionForType(propertyType, tc);
+            let definition: any = this.getTypeDefinition(propertyType, tc);
             if (this.args.useTitle) {
                 definition.title = propertyName;
             }
@@ -216,19 +214,7 @@ export module TJS {
             return definition;
         }
 
-        private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker, asRef = this.args.useRef): any {
-            if(!typ.getSymbol()) {
-                return this.getDefinitionForType(typ, tc);
-            }
-            const node = typ.getSymbol().getDeclarations()[0];
-            if (node.kind == ts.SyntaxKind.EnumDeclaration) {
-                return this.getEnumDefinition(typ, tc, asRef);
-            } else {
-                return this.getClassDefinition(typ, tc, asRef);
-            }
-        }
-
-        private getEnumDefinition(clazzType: ts.Type, tc: ts.TypeChecker, asRef = this.args.useRef): any {
+        private getEnumDefinition(clazzType: ts.Type, tc: ts.TypeChecker, definition: any): any {
             const node = clazzType.getSymbol().getDeclarations()[0];
             const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             const enm = <ts.EnumDeclaration>node;
@@ -259,26 +245,17 @@ export module TJS {
                 }
             });
 
-            var definition = {
-                type: "string",
-                title: fullName
-            };
+            definition.type = "string";
+            definition.title = fullName;
 
             if (enumValues.length > 0) {
                 definition["enum"] = enumValues;
             }
 
-            if (asRef) {
-                this.reffedDefinitions[fullName] = definition;
-                return {
-                    "$ref": "#/definitions/" + fullName
-                };
-            } else {
-                return definition;
-            }
+            return definition;
         }
 
-        private getClassDefinition(clazzType: ts.Type, tc: ts.TypeChecker, asRef = this.args.useRef): any {
+        private getClassDefinition(clazzType: ts.Type, tc: ts.TypeChecker, definition: any): any {
             const node = clazzType.getSymbol().getDeclarations()[0];
             const clazz = <ts.ClassDeclaration>node;
             const props = tc.getPropertiesOfType(clazzType);
@@ -297,38 +274,31 @@ export module TJS {
                 }
                 
                 const typ = tc.getTypeAtLocation(indexSignature.type);
-                const def = this.getDefinitionForType(typ, tc, "anyOf");
-
-                const definition: any = {
-                    type: "array",
-                    items: def
-                };
-                   
+                const def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
+                
+                definition.type = "array";
+                definition.items = def;
                 return definition;
             } else if (clazz.flags & ts.NodeFlags.Abstract) {
                 const oneOf = this.inheritingTypes[fullName].map((typename) => {
                     return this.getTypeDefinition(this.allSymbols[typename], tc);
                 });
 
-                const definition = {
-                    "oneOf": oneOf
-                };
+                definition.oneOf = oneOf;
 
                 return definition;
             } else {
                 const propertyDefinitions = props.reduce((all, prop) => {
                     const propertyName = prop.getName();
-                    const definition = this.getDefinitionForProperty(prop, tc, node);
-                    if (definition != null) {
-                        all[propertyName] = definition;
+                    const propDef = this.getDefinitionForProperty(prop, tc, node);
+                    if (propDef != null) {
+                        all[propertyName] = propDef;
                     }
                     return all;
                 }, {});
 
-                let definition: any = {
-                    type: "object",
-                    properties: propertyDefinitions
-                };
+                definition.type = "object";
+                definition.properties = propertyDefinitions;
 
                 if (this.args.useTitle) {
                     definition.title = fullName;
@@ -358,28 +328,48 @@ export module TJS {
                         definition.required = requiredProps;
                     }
                 }
-
-                if (asRef) {
-                    this.reffedDefinitions[fullName] = definition;
-                    return {
-                        "$ref": "#/definitions/" + fullName
-                    };
-                } else {
-                    return definition;
+            }
+        }
+        
+        private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker, asRef = this.args.useRef, unionModifier: string = "oneOf"): any {
+            const fullName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+            let definition = {};
+            
+            if(!typ.getSymbol()) { // this is a type alias or raw type, don't do refs for these types
+                return this.getDefinitionForRootType(typ, tc, definition, unionModifier);
+            }
+            if (!asRef || !this.reffedDefinitions[fullName]) {
+                if(asRef) {
+                    this.reffedDefinitions[fullName] = definition;   
                 }
+                
+                const node = typ.getSymbol().getDeclarations()[0];
+                if (node.kind == ts.SyntaxKind.EnumDeclaration) {
+                    this.getEnumDefinition(typ, tc, definition);
+                } else {
+                    this.getClassDefinition(typ, tc, definition);
+                } 
+            }
+            
+            if (asRef) {
+                return {
+                    "$ref": "#/definitions/" + fullName
+                };
+            } else {
+                return definition;
             }
         }
 
-        public getClassDefinitionByName(clazzName: string, includeReffedDefinitions: boolean = true): any {
-            if(!this.allSymbols[clazzName]) {
+        public getSchemaForSymbol(symbolName: string, includeReffedDefinitions: boolean = true): any {
+            if(!this.allSymbols[symbolName]) {
                 throw `type {clazzName} not found`;
             }
-            let def = this.getTypeDefinition(this.allSymbols[clazzName], this.tc, this.args.useRootRef);
+            let def = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.useRootRef);
 
             if (this.args.useRef && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
                 def.definitions = this.reffedDefinitions;
             }
-
+            def["$schema"] = "http://json-schema.org/draft-04/schema#";
             return def;
         }
     }
@@ -392,7 +382,7 @@ export module TJS {
         return ts.createProgram(files, options); 
     }
     
-    export function generateSchema(program: ts.Program, fullTypeName: string, args = defaultArgs) {
+    export function generateSchema(program: ts.Program, fullTypeName: string, args = getDefaultArgs()) {
         const tc = program.getTypeChecker();
 
         var diagnostics = ts.getPreEmitDiagnostics(program);
@@ -443,8 +433,8 @@ export module TJS {
             });
 
             const generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc, args);
-            let definition = generator.getClassDefinitionByName(fullTypeName);
-            definition["$schema"] = "http://json-schema.org/draft-04/schema#";
+            let definition = generator.getSchemaForSymbol(fullTypeName);
+            
             return definition;
         } else {
           diagnostics.forEach((diagnostic) => {
@@ -473,7 +463,7 @@ export module TJS {
         
         //const conf = ts.convertCompilerOptionsFromJson(null, path.dirname(filePattern), "tsconfig.json");
     }
-    export function exec(filePattern: string, fullTypeName: string, args = defaultArgs) {
+    export function exec(filePattern: string, fullTypeName: string, args = getDefaultArgs()) {
         let program: ts.Program;
         if(path.basename(filePattern) == "tsconfig.json") {
             program = programFromConfig(filePattern);
@@ -487,7 +477,7 @@ export module TJS {
 
     export function run() {
         var helpText = "Usage: node typescript-json-schema.js <path-to-typescript-files-or-tsconfig> <type>";
-
+        const defaultArgs = getDefaultArgs();
         var args = require("yargs")
             .usage(helpText)
             .demand(2)
@@ -521,5 +511,9 @@ if (typeof window === "undefined" && require.main === module) {
 }
 
 //TJS.exec("example/**/*.ts", "Invoice");
-//const result = TJS.generateSchema(TJS.getProgramFromFiles(["test/programs/interface-single/main.ts"]), "MyObject");
-//console.log(JSON.stringify(result));
+/*
+let args = TJS.defaultArgs;
+args.useRootRef = true;
+const result = TJS.generateSchema(TJS.getProgramFromFiles(["test/programs/interface-recursion/main.ts"]), "MyObject", args);
+console.log(JSON.stringify(result));
+*/

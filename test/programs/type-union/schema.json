@@ -1,0 +1,10 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "oneOf": [
+        {
+            "type": "string"
+        }, {
+            "type": "number"
+        }
+    ]
+}

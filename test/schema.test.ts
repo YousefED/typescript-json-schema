@@ -23,6 +23,7 @@ export function assertSchema(group: string, name: string, type: string, settings
 }
 
 describe("schema", function () {
+    assertSchema("array-and-description", "main.ts", "MyObject");
     assertSchema("class-single", "main.ts", "MyObject");
 
     assertSchema("interface-single", "main.ts", "MyObject");

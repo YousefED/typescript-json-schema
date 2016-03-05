@@ -15,7 +15,6 @@ var TJS;
         };
     }
     TJS.getDefaultArgs = getDefaultArgs;
-    ;
     var JsonSchemaGenerator = (function () {
         function JsonSchemaGenerator(allSymbols, inheritingTypes, tc, args) {
             if (args === void 0) { args = getDefaultArgs(); }
@@ -209,7 +208,7 @@ var TJS;
             var clazz = node;
             var props = tc.getPropertiesOfType(clazzType);
             var fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-            if (props.length == 0 && clazz.members.length == 1 && clazz.members[0].kind == ts.SyntaxKind.IndexSignature) {
+            if (props.length == 0 && clazz.members && clazz.members.length == 1 && clazz.members[0].kind == ts.SyntaxKind.IndexSignature) {
                 var indexSignature = clazz.members[0];
                 if (indexSignature.parameters.length != 1) {
                     throw "Not supported: IndexSignatureDeclaration parameters.length != 1";
@@ -274,7 +273,7 @@ var TJS;
             if (unionModifier === void 0) { unionModifier = "oneOf"; }
             var fullName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             var definition = {};
-            if (!typ.getSymbol()) {
+            if (!typ.getSymbol() || typ.getSymbol().name == "Array") {
                 return this.getDefinitionForRootType(typ, tc, definition, unionModifier);
             }
             if (!asRef || !this.reffedDefinitions[fullName]) {
@@ -301,7 +300,7 @@ var TJS;
         JsonSchemaGenerator.prototype.getSchemaForSymbol = function (symbolName, includeReffedDefinitions) {
             if (includeReffedDefinitions === void 0) { includeReffedDefinitions = true; }
             if (!this.allSymbols[symbolName]) {
-                throw "type {clazzName} not found";
+                throw "type " + symbolName + " not found";
             }
             var def = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.useRootRef);
             if (this.args.useRef && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {

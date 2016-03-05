@@ -16,7 +16,7 @@ export module TJS {
             usePropertyOrder: false,
             generateRequired: false
         };
-    };
+    }
 
     class JsonSchemaGenerator {
         private static validationKeywords = [
@@ -261,7 +261,7 @@ export module TJS {
             const props = tc.getPropertiesOfType(clazzType);
             const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
-            if(props.length == 0 && clazz.members.length == 1 && clazz.members[0].kind == ts.SyntaxKind.IndexSignature) {
+            if(props.length == 0 && clazz.members && clazz.members.length == 1 && clazz.members[0].kind == ts.SyntaxKind.IndexSignature) {
                 // for case "array-types"
                 const indexSignature = <ts.IndexSignatureDeclaration>clazz.members[0];
                 if(indexSignature.parameters.length != 1) {
@@ -335,7 +335,7 @@ export module TJS {
             const fullName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             let definition = {};
             
-            if(!typ.getSymbol()) { // this is a type alias or raw type, don't do refs for these types
+            if(!typ.getSymbol() || typ.getSymbol().name == "Array") { // this is a type alias or raw type, don't do refs for these types
                 return this.getDefinitionForRootType(typ, tc, definition, unionModifier);
             }
             if (!asRef || !this.reffedDefinitions[fullName]) {
@@ -362,7 +362,7 @@ export module TJS {
 
         public getSchemaForSymbol(symbolName: string, includeReffedDefinitions: boolean = true): any {
             if(!this.allSymbols[symbolName]) {
-                throw `type {clazzName} not found`;
+                throw `type ${symbolName} not found`;
             }
             let def = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.useRootRef);
 
@@ -370,6 +370,7 @@ export module TJS {
                 def.definitions = this.reffedDefinitions;
             }
             def["$schema"] = "http://json-schema.org/draft-04/schema#";
+            //console.log(JSON.stringify(def, null, 4) + "\n");
             return def;
         }
     }

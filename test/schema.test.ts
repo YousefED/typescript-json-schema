@@ -5,10 +5,12 @@ import {resolve} from 'path';
 
 const base = "test/programs/";
 
-export function assertSchema(group: string, name: string, type: string) {
+export function assertSchema(group: string, name: string, type: string, settings?: any) {
     it(group + " should create correct schema", function() {
-        let settings = TJS.defaultArgs;
-        settings.generateRequired = true;
+        if(!settings) {
+            settings = TJS.getDefaultArgs();
+            settings.generateRequired = true;
+        }
         
         const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(base + group + "/" + name)]), type, settings);
 
@@ -21,15 +23,20 @@ export function assertSchema(group: string, name: string, type: string) {
 }
 
 describe("schema", function () {
+    assertSchema("array-and-description", "main.ts", "MyObject");
     assertSchema("class-single", "main.ts", "MyObject");
 
     assertSchema("interface-single", "main.ts", "MyObject");
     assertSchema("interface-multi", "main.ts", "MyObject");
-
+    
+    let settings = TJS.getDefaultArgs();
+    settings.useRootRef = true;
+    assertSchema("interface-recursion", "main.ts", "MyObject", settings); // this sample needs rootRef
+    
     assertSchema("module-interface-single", "main.ts", "MyObject");
 
     // not supported right now
-    // assertSchema("module-interface-deep", "main.ts", "Def");
+    //assertSchema("module-interface-deep", "main.ts", "Def");
 
     assertSchema("enums-string", "main.ts", "MyObject");
 

@@ -144,6 +144,10 @@ export module TJS {
                 case "any":
                     definition.type = "object";
                     break;
+                case "date":
+                    definition.type = "string";
+                    definition.format = "date-time";
+                    break;
                 default:
                     if(propertyType.flags & ts.TypeFlags.Tuple) { // tuple
                         const tupleType: ts.TupleType = <ts.TupleType>propertyType;
@@ -335,7 +339,7 @@ export module TJS {
             const fullName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             let definition = {};
             
-            if(!typ.getSymbol() || typ.getSymbol().name == "Array") { // this is a type alias or raw type, don't do refs for these types
+            if(!typ.getSymbol() || typ.getSymbol().name == "Array" || typ.getSymbol().name == "Date") { // this is a type alias or raw type, don't do refs for these types
                 return this.getDefinitionForRootType(typ, tc, definition, unionModifier);
             }
             if (!asRef || !this.reffedDefinitions[fullName]) {

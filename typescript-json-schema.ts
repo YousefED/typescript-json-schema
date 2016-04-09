@@ -13,8 +13,10 @@ export module TJS {
             useRootRef: false,
             useTitle: false,
             useDefaultProperties: false,
+            disableExtraProperties: false,
             usePropertyOrder: false,
-            generateRequired: false
+            generateRequired: false,
+            out: undefined
         };
     }
 
@@ -122,10 +124,20 @@ export module TJS {
         private getDefinitionForRootType(propertyType: ts.Type, tc: ts.TypeChecker, definition: any, unionModifier: string = "oneOf") {
             if (propertyType.flags & ts.TypeFlags.Union) {
                 const unionType = <ts.UnionType>propertyType;
-                const types = unionType.types.map((propType) => {
-                    return this.getTypeDefinition(propType, tc);
-                });
-                definition[unionModifier] = types;
+                const areAllStringLiterals = (unionType.types.every((propType, i, r) => {
+                    return (propType.getFlags() & ts.TypeFlags.StringLiteral) != 0;
+                }));
+                if(areAllStringLiterals) { // special case: all child are string literals -> make an enum instead
+                    definition.type = "string";
+                    definition.enum = unionType.types.map((propType) => {
+                        return (<ts.StringLiteralType> propType).text;
+                    });
+                } else {
+                    const types = unionType.types.map((propType) => {
+                        return this.getTypeDefinition(propType, tc);
+                    });
+                    definition[unionModifier] = types;
+                }
                 return definition;
             }
 
@@ -158,7 +170,9 @@ export module TJS {
                         definition.additionalItems = {
                             "anyOf": fixedTypes
                         };
-                    } else if (propertyType.getSymbol().getName() == "Array") {
+                    } else if (propertyType.flags & ts.TypeFlags.StringLiteral) {
+                        definition.enum = [ (<ts.StringLiteralType> propertyType).text ];
+                    } else if (propertyType.getSymbol() && propertyType.getSymbol().getName() == "Array") {
                         const arrayType = (<ts.TypeReference>propertyType).typeArguments[0];
                         definition.type = "array";
                         definition.items = this.getTypeDefinition(arrayType, tc);
@@ -168,6 +182,7 @@ export module TJS {
                         definition = this.getTypeDefinition(propertyType, tc);
                     }
             }
+            
             return definition;
         }
 
@@ -273,15 +288,21 @@ export module TJS {
                 }
                 const indexSymbol: ts.Symbol = (<any>indexSignature.parameters[0]).symbol;
                 const indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
-                if(indexType.flags != ts.TypeFlags.Number) {
-                    throw "Not supported: IndexSignatureDeclaration with non-number index symbol";
+                const isStringIndexed = (indexType.flags == ts.TypeFlags.String);
+                if(indexType.flags != ts.TypeFlags.Number && !isStringIndexed) {
+                    throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
                 }
                 
                 const typ = tc.getTypeAtLocation(indexSignature.type);
                 const def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
                 
-                definition.type = "array";
-                definition.items = def;
+                if(isStringIndexed) {
+                    definition.type = "object";
+                    definition.additionalProperties = def;
+                } else {
+                    definition.type = "array";
+                    definition.items = def;
+                }
                 return definition;
             } else if (clazz.flags & ts.NodeFlags.Abstract) {
                 const oneOf = this.inheritingTypes[fullName].map((typename) => {
@@ -310,6 +331,9 @@ export module TJS {
                 if (this.args.useDefaultProperties) {
                     definition.defaultProperties = [];
                 }
+                if (this.args.disableExtraProperties && definition.additionalProperties === undefined) {
+                    definition.additionalProperties = false;
+                }
                 if (this.args.usePropertyOrder) {
                     // propertyOrder is non-standard, but useful:
                     // https://github.com/json-schema/json-schema/issues/87
@@ -336,18 +360,33 @@ export module TJS {
         }
         
         private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker, asRef = this.args.useRef, unionModifier: string = "oneOf"): any {
-            const fullName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             let definition = {};
             
-            if(!typ.getSymbol() || typ.getSymbol().name == "Array" || typ.getSymbol().name == "Date") { // this is a type alias or raw type, don't do refs for these types
+            const symbol = typ.getSymbol();
+            if(symbol) {
+                const comments = symbol.getDocumentationComment();
+                this.parseCommentsIntoDefinition(comments, definition);
+            }
+            
+            if(!symbol || symbol.name == "Array" || symbol.name == "Date") { // this is a type alias or raw type, don't do refs for these types
                 return this.getDefinitionForRootType(typ, tc, definition, unionModifier);
             }
+            
+            if(typ.getFlags() & ts.TypeFlags.Anonymous) {
+                asRef = false; // inline type, cannot be reffed
+            }
+            
+            let fullName = "";
+            if(asRef) {
+                fullName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+            }
+            
             if (!asRef || !this.reffedDefinitions[fullName]) {
                 if(asRef) {
                     this.reffedDefinitions[fullName] = definition;   
                 }
                 
-                const node = typ.getSymbol().getDeclarations()[0];
+                const node = symbol.getDeclarations()[0];
                 if (node.kind == ts.SyntaxKind.EnumDeclaration) {
                     this.getEnumDefinition(typ, tc, definition);
                 } else {
@@ -462,6 +501,7 @@ export module TJS {
         const configParseResult = ts.parseJsonConfigFileContent(configObject, ts.sys, path.dirname(configFileName), {}, configFileName);
         const options = configParseResult.options;
         options.noEmit = true;
+        delete options.out;
      
         const program = ts.createProgram(configParseResult.fileNames, options);
         return program;
@@ -477,7 +517,17 @@ export module TJS {
         }
         
         const definition = TJS.generateSchema(program, fullTypeName, args);
-        process.stdout.write(JSON.stringify(definition, null, 4) + "\n");
+        
+        const json = JSON.stringify(definition, null, 4) + "\n";
+        if(args.out) {
+            require("fs").writeFile(args.out, json, function(err) {
+                if(err) {
+                    console.error("Unable to write output file: " + err.message);
+                }
+            }); 
+        } else {
+            process.stdout.write(json);
+        }
     }
 
     export function run() {
@@ -493,11 +543,15 @@ export module TJS {
             .boolean("titles").default("titles", defaultArgs.useTitle)
                 .describe("titles", "Creates titles in the output schema.")
             .boolean("defaultProps").default("defaultProps", defaultArgs.useDefaultProperties)
-            .describe("defaultProps", "Create default properties definitions.")
+                .describe("defaultProps", "Create default properties definitions.")
+            .boolean("noExtraProps").default("noExtraProps", defaultArgs.disableExtraProperties)
+                .describe("noExtraProps", "Disable additional properties in objects by default.")
             .boolean("propOrder").default("propOrder", defaultArgs.usePropertyOrder)
                 .describe("propOrder", "Create property order definitions.")
             .boolean("required").default("required", defaultArgs.generateRequired)
                 .describe("required", "Create required array for non-optional properties.")
+            .alias("out", "o")
+                .describe("out", "The output file, defaults to using stdout")
             .argv;
 
         exec(args._[0], args._[1], {
@@ -505,8 +559,10 @@ export module TJS {
             useRootRef: args.topRef,
             useTitle: args.titles,
             useDefaultProperties: args.defaultProps,
+            disableExtraProperties: args.noExtraProps,
             usePropertyOrder: args.propOrder,
-            generateRequired: args.required
+            generateRequired: args.required,
+            out: args.out
         });
     }
 }

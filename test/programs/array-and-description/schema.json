@@ -11,9 +11,7 @@
         },
         "test": {
             "type": "array",
-            "items": {
-                "type": "object"
-            }
+            "items": {}
         }
     },
     "required": [

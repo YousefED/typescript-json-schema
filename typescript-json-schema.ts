@@ -10,6 +10,7 @@ export module TJS {
     export function getDefaultArgs() {
         return {
             useRef: true,
+            useTypeAliasRef: false,
             useRootRef: false,
             useTitle: false,
             useDefaultProperties: false,
@@ -112,7 +113,11 @@ export module TJS {
             return delimiterIndex < 0 ? "" : comment.slice(delimiterIndex);
         }
 
-        private parseCommentsIntoDefinition(comments: ts.SymbolDisplayPart[], definition: any): void {
+        private parseCommentsIntoDefinition(symbol: ts.Symbol, definition: any): void {
+            if (!symbol) {
+                return;
+            }
+            const comments : ts.SymbolDisplayPart[] = symbol.getDocumentationComment();
             if (!comments || !comments.length) {
                 return;
             }
@@ -120,41 +125,24 @@ export module TJS {
             joined = this.copyDescription(joined, definition);
             this.copyValidationKeywords(joined, definition);
         }
-
-        private getDefinitionForRootType(propertyType: ts.Type, tc: ts.TypeChecker, definition: any, unionModifier: string = "oneOf") {
-            if (propertyType.flags & ts.TypeFlags.Union) {
-                const unionType = <ts.UnionType>propertyType;
-                const areAllStringLiterals = (unionType.types.every((propType, i, r) => {
-                    return (propType.getFlags() & ts.TypeFlags.StringLiteral) != 0;
-                }));
-                if(areAllStringLiterals) { // special case: all child are string literals -> make an enum instead
-                    definition.type = "string";
-                    definition.enum = unionType.types.map((propType) => {
-                        return (<ts.StringLiteralType> propType).text;
-                    });
-                } else {
-                    const types = unionType.types.map((propType) => {
-                        return this.getTypeDefinition(propType, tc);
-                    });
-                    definition[unionModifier] = types;
-                }
-                return definition;
-            }
-
+        
+        private getDefinitionForRootType(propertyType: ts.Type, tc: ts.TypeChecker, reffedType: ts.Symbol, definition: any) {
+            const symbol = propertyType.getSymbol();
             const propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-
+            
             switch (propertyTypeString.toLowerCase()) {
                 case "string":
                     definition.type = "string";
                     break;
                 case "number":
-                    definition.type = "number";
+                    const isInteger = (definition.type == "integer" || (reffedType && reffedType.getName() == "integer")); 
+                    definition.type = isInteger ? "integer" : "number";
                     break;
                 case "boolean":
                     definition.type = "boolean";
                     break;
                 case "any":
-                    definition.type = "object";
+                    // no type restriction, so that anything will match
                     break;
                 case "date":
                     definition.type = "string";
@@ -171,19 +159,32 @@ export module TJS {
                             "anyOf": fixedTypes
                         };
                     } else if (propertyType.flags & ts.TypeFlags.StringLiteral) {
+                        definition.type = "string";
                         definition.enum = [ (<ts.StringLiteralType> propertyType).text ];
-                    } else if (propertyType.getSymbol() && propertyType.getSymbol().getName() == "Array") {
+                    } else if (symbol && symbol.getName() == "Array") {
                         const arrayType = (<ts.TypeReference>propertyType).typeArguments[0];
                         definition.type = "array";
                         definition.items = this.getTypeDefinition(arrayType, tc);
                     } else {
                         
                         // TODO
-                        definition = this.getTypeDefinition(propertyType, tc);
+                        console.error("Unsupported type: ", propertyType);
+                        //definition = this.getTypeDefinition(propertyType, tc);
                     }
             }
             
             return definition;
+        }
+        
+        private getReferencedTypeSymbol(prop: ts.Symbol, tc: ts.TypeChecker) : ts.Symbol {
+            const decl = prop.getDeclarations();
+            if (decl && decl.length) {
+                const type = (<ts.TypeReferenceNode> (<any> decl[0]).type);
+                if (type && (type.kind & ts.SyntaxKind.TypeReference) && type.typeName) {
+                    return tc.getSymbolAtLocation(type.typeName);
+                }
+            }
+            return null;
         }
 
         private getDefinitionForProperty(prop: ts.Symbol, tc: ts.TypeChecker, node: ts.Node) {
@@ -191,13 +192,12 @@ export module TJS {
             const propertyType = tc.getTypeOfSymbolAtLocation(prop, node);
             const propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
-            let definition: any = this.getTypeDefinition(propertyType, tc);
+            const reffedType = this.getReferencedTypeSymbol(prop, tc);
+            
+            let definition: any = this.getTypeDefinition(propertyType, tc, undefined, undefined, prop, reffedType);
             if (this.args.useTitle) {
                 definition.title = propertyName;
             }
-
-            const comments = prop.getDocumentationComment();
-            this.parseCommentsIntoDefinition(comments, definition);
 
             if (definition.hasOwnProperty("ignore")) {
                 return null;
@@ -217,11 +217,9 @@ export module TJS {
                         vm.runInNewContext("sandboxvar=" + initial.getText(), sandbox);
 
                         initial = sandbox.sandboxvar;
-                        if (initial == null) {
-
-                        } else if (typeof (initial) === "string" || typeof (initial) === "number" || typeof (initial) === "boolean" || Object.prototype.toString.call(initial) === '[object Array]') {
+                        if (initial === null || typeof (initial) === "string" || typeof (initial) === "number" || typeof (initial) === "boolean" || Object.prototype.toString.call(initial) === '[object Array]') {
                             definition.default = initial;
-                        } else {
+                        } else if (initial) {
                             console.warn("unknown initializer for property " + propertyName + ": " + initial);
                         }
                     } catch (e) {
@@ -235,7 +233,7 @@ export module TJS {
 
         private getEnumDefinition(clazzType: ts.Type, tc: ts.TypeChecker, definition: any): any {
             const node = clazzType.getSymbol().getDeclarations()[0];
-            const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             const enm = <ts.EnumDeclaration>node;
             const values = tc.getIndexTypeOfType(clazzType, ts.IndexKind.String);
 
@@ -265,7 +263,6 @@ export module TJS {
             });
 
             definition.type = "string";
-            definition.title = fullName;
 
             if (enumValues.length > 0) {
                 definition["enum"] = enumValues;
@@ -325,9 +322,6 @@ export module TJS {
                 definition.type = "object";
                 definition.properties = propertyDefinitions;
 
-                if (this.args.useTitle) {
-                    definition.title = fullName;
-                }
                 if (this.args.useDefaultProperties) {
                     definition.defaultProperties = [];
                 }
@@ -359,48 +353,80 @@ export module TJS {
             }
         }
         
-        private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker, asRef = this.args.useRef, unionModifier: string = "oneOf"): any {
-            let definition = {};
+        private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker, asRef = this.args.useRef, unionModifier: string = "oneOf", prop? : ts.Symbol, reffedType?: ts.Symbol): any {
+            const definition : any = {}; // real definition
+            let returnedDefinition = definition; // returned definition, may be a $ref
             
             const symbol = typ.getSymbol();
-            if(symbol) {
-                const comments = symbol.getDocumentationComment();
-                this.parseCommentsIntoDefinition(comments, definition);
+            
+            const isRawType = (!symbol || symbol.name == "integer" || symbol.name == "Array" || symbol.name == "Date");
+            
+            // special case: an union where all child are string literals -> make an enum instead
+            let isStringEnum = false;
+            if (typ.flags & ts.TypeFlags.Union) {
+                const unionType = <ts.UnionType>typ;
+                isStringEnum = (unionType.types.every((propType, i, r) => {
+                    return (propType.getFlags() & ts.TypeFlags.StringLiteral) != 0;
+                }));
             }
             
-            if(!symbol || symbol.name == "Array" || symbol.name == "Date") { // this is a type alias or raw type, don't do refs for these types
-                return this.getDefinitionForRootType(typ, tc, definition, unionModifier);
-            }
-            
-            if(typ.getFlags() & ts.TypeFlags.Anonymous) {
-                asRef = false; // inline type, cannot be reffed
-            }
-            
-            let fullName = "";
-            if(asRef) {
-                fullName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-            }
-            
-            if (!asRef || !this.reffedDefinitions[fullName]) {
-                if(asRef) {
-                    this.reffedDefinitions[fullName] = definition;   
+            // aliased types must be handled slightly different
+            const asTypeAliasRef = asRef && ((reffedType && this.args.useTypeAliasRef) || isStringEnum);
+            if (!asTypeAliasRef) {
+                if (isRawType || (typ.getFlags() & ts.TypeFlags.Anonymous)) {
+                    asRef = false; // raw types and inline types cannot be reffed,
+                                   // unless we are handling a type alias
                 }
-                
-                const node = symbol.getDeclarations()[0];
-                if (node.kind == ts.SyntaxKind.EnumDeclaration) {
-                    this.getEnumDefinition(typ, tc, definition);
-                } else {
-                    this.getClassDefinition(typ, tc, definition);
-                } 
+            }
+          
+            let fullTypeName = "";
+            if (asTypeAliasRef) {
+                fullTypeName = tc.getFullyQualifiedName(reffedType);
+            } else if (asRef) {
+                fullTypeName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             }
             
             if (asRef) {
-                return {
-                    "$ref": "#/definitions/" + fullName
+                returnedDefinition = {
+                    "$ref":  "#/definitions/" + fullTypeName
                 };
-            } else {
-                return definition;
             }
+            
+            // Parse comments
+            this.parseCommentsIntoDefinition(reffedType, definition); // handle comments in the type alias declaration
+            this.parseCommentsIntoDefinition(prop || symbol, returnedDefinition);
+            
+            if (!asRef || !this.reffedDefinitions[fullTypeName]) {
+                if (asRef) { // must be here to prevent recursivity problems
+                    this.reffedDefinitions[fullTypeName] = definition;
+                    if (this.args.useTitle && fullTypeName) {
+                        definition.title = fullTypeName;
+                    }
+                }
+                
+                const node = symbol ? symbol.getDeclarations()[0] : null;
+                if (typ.flags & ts.TypeFlags.Union) {
+                    const unionType = <ts.UnionType>typ;
+                    if (isStringEnum) {
+                        definition.type = "string";
+                        definition.enum = unionType.types.map((propType) => {
+                            return (<ts.StringLiteralType> propType).text;
+                        });
+                    } else {
+                        definition[unionModifier] = unionType.types.map((propType) => {
+                            return this.getTypeDefinition(propType, tc);
+                        });
+                    }
+                } else if (isRawType) {
+                    this.getDefinitionForRootType(typ, tc, reffedType, definition);
+                } else if (node.kind == ts.SyntaxKind.EnumDeclaration) {
+                    this.getEnumDefinition(typ, tc, definition);
+                } else {
+                    this.getClassDefinition(typ, tc, definition);
+                }
+            }
+            
+            return returnedDefinition;
         }
 
         public getSchemaForSymbol(symbolName: string, includeReffedDefinitions: boolean = true): any {
@@ -502,6 +528,9 @@ export module TJS {
         const options = configParseResult.options;
         options.noEmit = true;
         delete options.out;
+        delete options.outDir;
+        delete options.outFile;
+        delete options.declaration;
      
         const program = ts.createProgram(configParseResult.fileNames, options);
         return program;
@@ -538,6 +567,8 @@ export module TJS {
             .demand(2)
             .boolean("refs").default("refs", defaultArgs.useRef)
                 .describe("refs", "Create shared ref definitions.")
+            .boolean("aliasRefs").default("aliasRefs", defaultArgs.useTypeAliasRef)
+                .describe("aliasRefs", "Create shared ref definitions for the type aliases.")
             .boolean("topRef").default("topRef", defaultArgs.useRootRef)
                 .describe("topRef", "Create a top-level ref definition.")
             .boolean("titles").default("titles", defaultArgs.useTitle)
@@ -556,6 +587,7 @@ export module TJS {
 
         exec(args._[0], args._[1], {
             useRef: args.refs,
+            useTypeAliasRef: args.aliasRefs,
             useRootRef: args.topRef,
             useTitle: args.titles,
             useDefaultProperties: args.defaultProps,

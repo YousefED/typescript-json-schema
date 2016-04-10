@@ -39,15 +39,18 @@ describe("schema", function () {
     //assertSchema("module-interface-deep", "main.ts", "Def");
 
     assertSchema("enums-string", "main.ts", "MyObject");
-
-    // not yet working
-    // assertSchema("string-literals", "main.ts", "result");
+    assertSchema("string-literals", "main.ts", "MyObject");
     
     assertSchema("array-types", "main.ts", "MyArray");
+    assertSchema("map-types", "main.ts", "MyObject");
+    
     assertSchema("type-union", "main.ts", "MyType");
     assertSchema("type-aliases", "main.ts", "MyString");
     assertSchema("type-aliases-fixed-size-array", "main.ts", "MyFixedSizeArray");
+    assertSchema("type-anonymous", "main.ts", "MyObject");
+    assertSchema("type-primitives", "main.ts", "MyObject");
 
     assertSchema("optionals", "main.ts", "MyObject");
-    
+
+    assertSchema("comments", "main.ts", "MyObject");
 });

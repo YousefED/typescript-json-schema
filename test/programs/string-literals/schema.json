@@ -2,16 +2,19 @@
     "type": "object",
     "properties": {
         "foo": {
-            "$ref": "#/definitions/Enum"
+            "$ref": "#/definitions/result"
         }
     },
+    "required": [
+        "foo"
+    ],
     "definitions": {
-        "Enum": {
+        "result": {
             "type": "string",
-            "title": "Enum",
             "enum": [
-                "x",
-                "y"
+                "ok",
+                "fail",
+                "abort"
             ]
         }
     },

@@ -9,7 +9,6 @@
     "definitions": {
         "Enum": {
             "type": "string",
-            "title": "Enum",
             "enum": [
                 "x",
                 "y"

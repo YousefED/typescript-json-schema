@@ -1,0 +1,38 @@
+{
+    "type": "object",
+    "required": [ "FieldWithAnonType" ],
+    "properties": {
+        "FieldWithAnonType": {
+            "type": "object",
+            "required": [ "SubfieldA", "SubfieldB", "SubfieldC"],
+            "properties": {
+                "SubfieldA": {
+                    "type": "number"
+                },
+                "SubfieldB": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ]
+                },
+                "SubfieldC": {
+                    "type": "object",
+                    "required": [ "SubsubfieldA"],
+                    "properties": {
+                        "SubsubfieldA": {
+                            "type": "array",
+                            "items": {
+                                "type": "number"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema#"
+}

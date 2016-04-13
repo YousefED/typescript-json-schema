@@ -1,0 +1,39 @@
+{
+    "type": "object",
+    "properties": {
+        "map1": {
+            "$ref": "#/definitions/MyMap1"
+        },
+        "map2": {
+            "$ref": "#/definitions/MyMap2"
+        }
+    },
+    "required": [ "map1", "map2" ],
+    "definitions": {
+        "MyMap1": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/definitions/MyType"
+            }
+        },
+        "MyType": {
+            "type": "object",
+            "properties": {}
+        },
+        "MyMap2": {
+            "description": "The additionalProperties annotation should be ignored",
+            "additionalProperties": {
+                "anyOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "number"
+                    }
+                ]
+            },
+            "type": "object"
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema#"
+}

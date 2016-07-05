@@ -371,7 +371,7 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
             }
             
             // aliased types must be handled slightly different
-            const asTypeAliasRef = asRef && ((reffedType && this.args.useTypeAliasRef) || isStringEnum);
+            const asTypeAliasRef = asRef && reffedType && (this.args.useTypeAliasRef || isStringEnum);
             if (!asTypeAliasRef) {
                 if (isRawType || (typ.getFlags() & ts.TypeFlags.Anonymous)) {
                     asRef = false; // raw types and inline types cannot be reffed,

@@ -304,7 +304,7 @@ var TJS;
                     return (propType.getFlags() & ts.TypeFlags.StringLiteral) != 0;
                 }));
             }
-            var asTypeAliasRef = asRef && ((reffedType && this.args.useTypeAliasRef) || isStringEnum);
+            var asTypeAliasRef = asRef && reffedType && (this.args.useTypeAliasRef || isStringEnum);
             if (!asTypeAliasRef) {
                 if (isRawType || (typ.getFlags() & ts.TypeFlags.Anonymous)) {
                     asRef = false;

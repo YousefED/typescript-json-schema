@@ -40,6 +40,7 @@ describe("schema", function () {
 
     assertSchema("enums-string", "main.ts", "MyObject");
     assertSchema("string-literals", "main.ts", "MyObject");
+    assertSchema("string-literals-inline", "main.ts", "MyObject");
     
     assertSchema("array-types", "main.ts", "MyArray");
     assertSchema("map-types", "main.ts", "MyObject");

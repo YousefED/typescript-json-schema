@@ -17,7 +17,7 @@ Generate json-schemas from your Typescript sources.
 
 In case no tsconfig.json is available for your project, you can directly specify the .ts files (this in this case we use some built-in compiler presets):
 
-* Generate schema from a typescript type: `typescript-json-schema project/directory/**/*.ts fully.qualified.type.to.generate`
+* Generate schema from a typescript type: `typescript-json-schema "project/directory/**/*.ts" fully.qualified.type.to.generate`
 
 ## Background
 Inspired and builds upon [Typson](https://github.com/lbovet/typson/), but typescript-json-schema is compatible with more recent Typescript versions. Also, since it uses the Typescript compiler internally, more advanced scenarios are possible.

@@ -1,0 +1,40 @@
+import * as ts from "typescript";
+export declare function getDefaultArgs(): {
+    useRef: boolean;
+    useTypeAliasRef: boolean;
+    useRootRef: boolean;
+    useTitle: boolean;
+    useDefaultProperties: boolean;
+    disableExtraProperties: boolean;
+    usePropertyOrder: boolean;
+    generateRequired: boolean;
+    strictNullChecks: boolean;
+    out: any;
+};
+export declare function getProgramFromFiles(files: string[], compilerOptions?: ts.CompilerOptions): ts.Program;
+export declare function generateSchema(program: ts.Program, fullTypeName: string, args?: {
+    useRef: boolean;
+    useTypeAliasRef: boolean;
+    useRootRef: boolean;
+    useTitle: boolean;
+    useDefaultProperties: boolean;
+    disableExtraProperties: boolean;
+    usePropertyOrder: boolean;
+    generateRequired: boolean;
+    strictNullChecks: boolean;
+    out: any;
+}): any;
+export declare function programFromConfig(configFileName: string): ts.Program;
+export declare function exec(filePattern: string, fullTypeName: string, args?: {
+    useRef: boolean;
+    useTypeAliasRef: boolean;
+    useRootRef: boolean;
+    useTitle: boolean;
+    useDefaultProperties: boolean;
+    disableExtraProperties: boolean;
+    usePropertyOrder: boolean;
+    generateRequired: boolean;
+    strictNullChecks: boolean;
+    out: any;
+}): void;
+export declare function run(): void;

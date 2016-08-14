@@ -3,6 +3,7 @@
   "version": "0.2.0",
   "description": "typescript-json-schema generates JSON Schema files from your Typescript sources",
   "main": "typescript-json-schema.js",
+  "typings": "typescript-json-schema.d.ts",
   "bin": {
     "typescript-json-schema": "./bin/typescript-json-schema"
   },

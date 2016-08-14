@@ -1,6 +1,6 @@
 import {assert} from "chai";
 import {version as TypescriptVersion, CompilerOptions} from "typescript";
-import {TJS} from "../typescript-json-schema";
+import * as TJS from "../typescript-json-schema";
 import {readFileSync} from 'fs';
 import {resolve} from 'path';
 

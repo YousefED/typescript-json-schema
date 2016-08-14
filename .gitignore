@@ -1,4 +1,5 @@
 node_modules
 test/*.js
+test/*.d.ts
 test/*.map
 .vscode/*.*

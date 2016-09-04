@@ -10,7 +10,7 @@
                     "type": "number"
                 },
                 "SubfieldB": {
-                    "oneOf": [
+                    "anyOf": [
                         {
                             "type": "string"
                         },

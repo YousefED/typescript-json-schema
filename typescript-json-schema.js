@@ -191,11 +191,17 @@ var TJS;
             var enm = node;
             var values = tc.getIndexTypeOfType(clazzType, ts.IndexKind.String);
             var enumValues = [];
+            var enumType = 'string';
             enm.members.forEach(function (member) {
                 var caseLabel = member.name.text;
-                var initial = member.initializer;
-                if (initial) {
-                    if (initial.expression) {
+                var constantValue = tc.getConstantValue(member);
+                if (constantValue) {
+                    enumValues.push(constantValue);
+                    enumType = typeof constantValue;
+                }
+                else {
+                    var initial = member.initializer;
+                    if (initial && initial.expression) {
                         var exp = initial.expression;
                         var text = exp.text;
                         if (text) {
@@ -210,7 +216,7 @@ var TJS;
                     }
                 }
             });
-            definition.type = "string";
+            definition.type = enumType;
             if (enumValues.length > 0) {
                 definition["enum"] = enumValues;
             }
@@ -324,6 +330,7 @@ var TJS;
             }
             this.parseCommentsIntoDefinition(reffedType, definition);
             this.parseCommentsIntoDefinition(prop || symbol, returnedDefinition);
+            var node = symbol ? symbol.getDeclarations()[0] : null;
             if (!asRef || !this.reffedDefinitions[fullTypeName]) {
                 if (asRef) {
                     this.reffedDefinitions[fullTypeName] = definition;
@@ -331,7 +338,6 @@ var TJS;
                         definition.title = fullTypeName;
                     }
                 }
-                var node = symbol ? symbol.getDeclarations()[0] : null;
                 if (typ.flags & ts.TypeFlags.Union) {
                     var unionType = typ;
                     if (isStringEnum) {
@@ -355,6 +361,9 @@ var TJS;
                 else {
                     this.getClassDefinition(typ, tc, definition);
                 }
+            }
+            if (node && node.kind == ts.SyntaxKind.EnumDeclaration) {
+                this.getEnumDefinition(typ, tc, definition);
             }
             return returnedDefinition;
         };

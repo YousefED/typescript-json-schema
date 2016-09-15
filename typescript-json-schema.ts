@@ -125,17 +125,17 @@ export module TJS {
             joined = this.copyDescription(joined, definition);
             this.copyValidationKeywords(joined, definition);
         }
-        
+
         private getDefinitionForRootType(propertyType: ts.Type, tc: ts.TypeChecker, reffedType: ts.Symbol, definition: any) {
             const symbol = propertyType.getSymbol();
             const propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-            
+
             switch (propertyTypeString.toLowerCase()) {
                 case "string":
                     definition.type = "string";
                     break;
                 case "number":
-                    const isInteger = (definition.type == "integer" || (reffedType && reffedType.getName() == "integer")); 
+                    const isInteger = (definition.type == "integer" || (reffedType && reffedType.getName() == "integer"));
                     definition.type = isInteger ? "integer" : "number";
                     break;
                 case "boolean":
@@ -166,16 +166,16 @@ export module TJS {
                         definition.type = "array";
                         definition.items = this.getTypeDefinition(arrayType, tc);
                     } else {
-                        
+
                         // TODO
                         console.error("Unsupported type: ", propertyType);
                         //definition = this.getTypeDefinition(propertyType, tc);
                     }
             }
-            
+
             return definition;
         }
-        
+
         private getReferencedTypeSymbol(prop: ts.Symbol, tc: ts.TypeChecker) : ts.Symbol {
             const decl = prop.getDeclarations();
             if (decl && decl.length) {
@@ -193,7 +193,7 @@ export module TJS {
             const propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
             const reffedType = this.getReferencedTypeSymbol(prop, tc);
-            
+
             let definition: any = this.getTypeDefinition(propertyType, tc, undefined, undefined, prop, reffedType);
             if (this.args.useTitle) {
                 definition.title = propertyName;
@@ -233,20 +233,24 @@ export module TJS {
 
         private getEnumDefinition(clazzType: ts.Type, tc: ts.TypeChecker, definition: any): any {
             const node = clazzType.getSymbol().getDeclarations()[0];
-const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+            const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             const enm = <ts.EnumDeclaration>node;
             const values = tc.getIndexTypeOfType(clazzType, ts.IndexKind.String);
 
-            var enumValues: string[] = [];
+            var enumValues: any[] = [];
+            let enumType: string = 'string';
 
             enm.members.forEach(member => {
                 const caseLabel = (<ts.Identifier>member.name).text;
+                const constantValue = tc.getConstantValue(member);
+                if (constantValue) {
+                    enumValues.push(constantValue);
+                    enumType = typeof constantValue;
+                } else {
+                    // try to extract the enums value; it will probably by a cast expression
+                    let initial = <ts.Expression>member.initializer;
 
-                // try to extract the enums value; it will probably by a cast expression
-                let initial = <ts.Expression>member.initializer;
-
-                if (initial) {
-                    if ((<any>initial).expression) { // node
+                    if (initial && (<any>initial).expression) { // node
                         const exp = (<any>initial).expression;
                         const text = (<any>exp).text;
                         // if it is an expression with a text literal, chances are it is the enum convension:
@@ -256,13 +260,14 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
                         } else {
                             console.warn("initializer is expression for enum: " + fullName + "." + caseLabel);
                         }
-                    } else if ((<any>initial).kind && (<any>initial).kind == ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
+                    } else if (initial.kind && initial.kind == ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
                         enumValues.push(initial.getText());
                     }
                 }
             });
 
-            definition.type = "string";
+
+            definition.type = enumType;
 
             if (enumValues.length > 0) {
                 definition["enum"] = enumValues;
@@ -289,10 +294,10 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
                 if(indexType.flags != ts.TypeFlags.Number && !isStringIndexed) {
                     throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
                 }
-                
+
                 const typ = tc.getTypeAtLocation(indexSignature.type);
                 const def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
-                
+
                 if(isStringIndexed) {
                     definition.type = "object";
                     definition.additionalProperties = def;
@@ -352,15 +357,14 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
                 }
             }
         }
-        
+
         private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker, asRef = this.args.useRef, unionModifier: string = "oneOf", prop? : ts.Symbol, reffedType?: ts.Symbol): any {
             const definition : any = {}; // real definition
             let returnedDefinition = definition; // returned definition, may be a $ref
-            
+
             const symbol = typ.getSymbol();
-            
             const isRawType = (!symbol || symbol.name == "integer" || symbol.name == "Array" || symbol.name == "Date");
-            
+
             // special case: an union where all child are string literals -> make an enum instead
             let isStringEnum = false;
             if (typ.flags & ts.TypeFlags.Union) {
@@ -369,7 +373,7 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
                     return (propType.getFlags() & ts.TypeFlags.StringLiteral) != 0;
                 }));
             }
-            
+
             // aliased types must be handled slightly different
             const asTypeAliasRef = asRef && reffedType && (this.args.useTypeAliasRef || isStringEnum);
             if (!asTypeAliasRef) {
@@ -378,24 +382,26 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
                                    // unless we are handling a type alias
                 }
             }
-          
+
             let fullTypeName = "";
             if (asTypeAliasRef) {
                 fullTypeName = tc.getFullyQualifiedName(reffedType);
             } else if (asRef) {
                 fullTypeName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             }
-            
+
             if (asRef) {
                 returnedDefinition = {
                     "$ref":  "#/definitions/" + fullTypeName
                 };
             }
-            
+
             // Parse comments
             this.parseCommentsIntoDefinition(reffedType, definition); // handle comments in the type alias declaration
             this.parseCommentsIntoDefinition(prop || symbol, returnedDefinition);
-            
+
+            const node = symbol ? symbol.getDeclarations()[0] : null;
+
             if (!asRef || !this.reffedDefinitions[fullTypeName]) {
                 if (asRef) { // must be here to prevent recursivity problems
                     this.reffedDefinitions[fullTypeName] = definition;
@@ -403,8 +409,7 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
                         definition.title = fullTypeName;
                     }
                 }
-                
-                const node = symbol ? symbol.getDeclarations()[0] : null;
+
                 if (typ.flags & ts.TypeFlags.Union) {
                     const unionType = <ts.UnionType>typ;
                     if (isStringEnum) {
@@ -425,7 +430,11 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
                     this.getClassDefinition(typ, tc, definition);
                 }
             }
-            
+
+            if (node && node.kind == ts.SyntaxKind.EnumDeclaration) {
+                this.getEnumDefinition(typ, tc, definition);
+            }
+
             return returnedDefinition;
         }
 
@@ -444,14 +453,14 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
         }
     }
 
-    export function getProgramFromFiles(files: string[]): ts.Program {  
+    export function getProgramFromFiles(files: string[]): ts.Program {
         // use built-in default options
-        const options: ts.CompilerOptions = { 
+        const options: ts.CompilerOptions = {
             noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS
         };
-        return ts.createProgram(files, options); 
+        return ts.createProgram(files, options);
     }
-    
+
     export function generateSchema(program: ts.Program, fullTypeName: string, args = getDefaultArgs()) {
         const tc = program.getTypeChecker();
 
@@ -462,13 +471,13 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
             const allSymbols: { [name: string]: ts.Type } = {};
             const inheritingTypes: { [baseName: string]: string[] } = {};
 
-            program.getSourceFiles().forEach(sourceFile => {    
-                /*console.log(sourceFile.fileName);    
+            program.getSourceFiles().forEach(sourceFile => {
+                /*console.log(sourceFile.fileName);
                 if(sourceFile.fileName.indexOf("main.ts") > -1) {
                     debugger;
-                } */          
+                } */
                 function inspect(node: ts.Node, tc: ts.TypeChecker) {
-                    
+
                     if (node.kind == ts.SyntaxKind.ClassDeclaration
                         || node.kind == ts.SyntaxKind.InterfaceDeclaration
                         || node.kind == ts.SyntaxKind.EnumDeclaration
@@ -476,18 +485,18 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
                         ) {
                         const nodeType = tc.getTypeAtLocation(node);
                         let fullName = tc.getFullyQualifiedName((<any>node).symbol)
-                        
+
                         // remove file name
-                        // TODO: we probably don't want this eventually, 
+                        // TODO: we probably don't want this eventually,
                         // as same types can occur in different files and will override eachother in allSymbols
                         // This means atm we can't generate all types in large programs.
                         fullName = fullName.replace(/".*"\./, "");
-                        
-                        
+
+
                         allSymbols[fullName] = nodeType;
-                        
+
                         const baseTypes = nodeType.getBaseTypes() || [];
-                        
+
                         baseTypes.forEach(baseType => {
                             var baseName = tc.typeToString(baseType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
                             if (!inheritingTypes[baseName]) {
@@ -504,7 +513,7 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
 
             const generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc, args);
             let definition = generator.getSchemaForSymbol(fullTypeName);
-            
+
             return definition;
         } else {
           diagnostics.forEach((diagnostic) => {
@@ -523,7 +532,7 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
         // basically a copy of https://github.com/Microsoft/TypeScript/blob/3663d400270ccae8b69cbeeded8ffdc8fa12d7ad/src/compiler/tsc.ts -> parseConfigFile
         const result = ts.parseConfigFileTextToJson(configFileName, ts.sys.readFile(configFileName));
         const configObject = result.config;
-        
+
         const configParseResult = ts.parseJsonConfigFileContent(configObject, ts.sys, path.dirname(configFileName), {}, configFileName);
         const options = configParseResult.options;
         options.noEmit = true;
@@ -531,10 +540,10 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
         delete options.outDir;
         delete options.outFile;
         delete options.declaration;
-     
+
         const program = ts.createProgram(configParseResult.fileNames, options);
         return program;
-        
+
         //const conf = ts.convertCompilerOptionsFromJson(null, path.dirname(filePattern), "tsconfig.json");
     }
     export function exec(filePattern: string, fullTypeName: string, args = getDefaultArgs()) {
@@ -544,16 +553,16 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
         } else {
             program = TJS.getProgramFromFiles(glob.sync(filePattern));
         }
-        
+
         const definition = TJS.generateSchema(program, fullTypeName, args);
-        
+
         const json = JSON.stringify(definition, null, 4) + "\n";
         if(args.out) {
             require("fs").writeFile(args.out, json, function(err) {
                 if(err) {
                     console.error("Unable to write output file: " + err.message);
                 }
-            }); 
+            });
         } else {
             process.stdout.write(json);
         }

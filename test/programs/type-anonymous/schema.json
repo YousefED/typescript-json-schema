@@ -10,13 +10,9 @@
                     "type": "number"
                 },
                 "SubfieldB": {
-                    "oneOf": [
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "number"
-                        }
+                    "type": [
+                         "string",
+                         "number"
                     ]
                 },
                 "SubfieldC": {

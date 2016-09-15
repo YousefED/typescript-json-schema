@@ -1,0 +1,43 @@
+{
+    "type": "object",
+    "properties": {
+        "value": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/Type1"
+                },
+                {
+                    "$ref": "#/definitions/Type2"
+                }
+            ]
+        }
+    },
+    "required": [
+        "value"
+    ],
+    "definitions": {
+        "Type1": {
+            "type": "object",
+            "properties": {
+                "value1": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "value1"
+            ]
+        },
+        "Type2": {
+            "type": "object",
+            "properties": {
+                "value2": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "value2"
+            ]
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema#"
+}

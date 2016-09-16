@@ -15,6 +15,7 @@ var TJS;
             disableExtraProperties: false,
             usePropertyOrder: false,
             generateRequired: false,
+            strictNullChecks: false,
             out: undefined
         };
     }
@@ -25,6 +26,10 @@ var TJS;
             this.args = args;
             this.sandbox = { sandboxvar: null };
             this.reffedDefinitions = {};
+            this.simpleTypesAllowedProperties = [
+                "type",
+                "description"
+            ];
             this.allSymbols = allSymbols;
             this.inheritingTypes = inheritingTypes;
             this.tc = tc;
@@ -36,7 +41,7 @@ var TJS;
             enumerable: true,
             configurable: true
         });
-        JsonSchemaGenerator.prototype.copyValidationKeywords = function (comment, to) {
+        JsonSchemaGenerator.prototype.copyValidationKeywords = function (comment, to, otherAnnotations) {
             JsonSchemaGenerator.annotedValidationKeywordPattern.lastIndex = 0;
             var annotation;
             while ((annotation = JsonSchemaGenerator.annotedValidationKeywordPattern.exec(comment))) {
@@ -66,6 +71,9 @@ var TJS;
                         to[keyword] = value;
                     }
                 }
+                else {
+                    otherAnnotations[keyword] = true;
+                }
             }
         };
         JsonSchemaGenerator.prototype.copyDescription = function (comment, to) {
@@ -77,7 +85,7 @@ var TJS;
             }
             return delimiterIndex < 0 ? "" : comment.slice(delimiterIndex);
         };
-        JsonSchemaGenerator.prototype.parseCommentsIntoDefinition = function (symbol, definition) {
+        JsonSchemaGenerator.prototype.parseCommentsIntoDefinition = function (symbol, definition, otherAnnotations) {
             if (!symbol) {
                 return;
             }
@@ -87,7 +95,7 @@ var TJS;
             }
             var joined = comments.map(function (comment) { return comment.text.trim(); }).join("\n");
             joined = this.copyDescription(joined, definition);
-            this.copyValidationKeywords(joined, definition);
+            this.copyValidationKeywords(joined, definition, otherAnnotations);
         };
         JsonSchemaGenerator.prototype.getDefinitionForRootType = function (propertyType, tc, reffedType, definition) {
             var _this = this;
@@ -103,6 +111,12 @@ var TJS;
                     break;
                 case "boolean":
                     definition.type = "boolean";
+                    break;
+                case "null":
+                    definition.type = "null";
+                    break;
+                case "undefined":
+                    definition.type = "undefined";
                     break;
                 case "any":
                     break;
@@ -191,32 +205,49 @@ var TJS;
             var enm = node;
             var values = tc.getIndexTypeOfType(clazzType, ts.IndexKind.String);
             var enumValues = [];
-            var enumType = 'string';
+            var enumTypes = [];
+            var addType = function (type) {
+                if (enumTypes.indexOf(type) == -1)
+                    enumTypes.push(type);
+            };
             enm.members.forEach(function (member) {
                 var caseLabel = member.name.text;
                 var constantValue = tc.getConstantValue(member);
-                if (constantValue) {
+                if (constantValue !== undefined) {
                     enumValues.push(constantValue);
-                    enumType = typeof constantValue;
+                    addType(typeof constantValue);
                 }
                 else {
                     var initial = member.initializer;
-                    if (initial && initial.expression) {
-                        var exp = initial.expression;
-                        var text = exp.text;
-                        if (text) {
-                            enumValues.push(text);
+                    if (initial) {
+                        if (initial.expression) {
+                            var exp = initial.expression;
+                            var text = exp.text;
+                            if (text) {
+                                enumValues.push(text);
+                                addType("string");
+                            }
+                            else if (exp.kind == ts.SyntaxKind.TrueKeyword || exp.kind == ts.SyntaxKind.FalseKeyword) {
+                                enumValues.push((exp.kind == ts.SyntaxKind.TrueKeyword));
+                                addType("boolean");
+                            }
+                            else {
+                                console.warn("initializer is expression for enum: " + fullName + "." + caseLabel);
+                            }
                         }
-                        else {
-                            console.warn("initializer is expression for enum: " + fullName + "." + caseLabel);
+                        else if (initial.kind == ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
+                            enumValues.push(initial.getText());
+                            addType("string");
                         }
-                    }
-                    else if (initial.kind && initial.kind == ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
-                        enumValues.push(initial.getText());
+                        else if (initial.kind == ts.SyntaxKind.NullKeyword) {
+                            enumValues.push(null);
+                            addType("null");
+                        }
                     }
                 }
             });
-            definition.type = enumType;
+            if (enumTypes.length)
+                definition.type = (enumTypes.length == 1) ? enumTypes[0] : enumTypes;
             if (enumValues.length > 0) {
                 definition["enum"] = enumValues;
             }
@@ -284,7 +315,7 @@ var TJS;
                 }
                 if (this.args.generateRequired) {
                     var requiredProps = props.reduce(function (required, prop) {
-                        if (!(prop.flags & ts.SymbolFlags.Optional)) {
+                        if (!(prop.flags & ts.SymbolFlags.Optional) && !prop.mayBeUndefined) {
                             required.push(prop.getName());
                         }
                         return required;
@@ -295,8 +326,45 @@ var TJS;
                 }
             }
         };
+        JsonSchemaGenerator.prototype.addSimpleType = function (def, type) {
+            for (var k in def) {
+                if (this.simpleTypesAllowedProperties.indexOf(k) == -1)
+                    return false;
+            }
+            if (!def.type) {
+                def.type = type;
+            }
+            else if (def.type.push) {
+                if (!def.type.every(function (val) { return typeof val == "string"; }))
+                    return false;
+                if (def.type.indexOf('null') == -1)
+                    def.type.push('null');
+            }
+            else {
+                if (typeof def.type != "string")
+                    return false;
+                if (def.type != 'null')
+                    def.type = [def.type, 'null'];
+            }
+            return true;
+        };
+        JsonSchemaGenerator.prototype.makeNullable = function (def) {
+            if (!this.addSimpleType(def, 'null')) {
+                var union = def.oneOf || def.anyOf;
+                if (union)
+                    union.push({ type: 'null' });
+                else {
+                    var subdef = {};
+                    for (var k in def) {
+                        subdef[k] = def[k];
+                        delete def[k];
+                    }
+                    def.anyOf = [subdef, { type: 'null' }];
+                }
+            }
+            return def;
+        };
         JsonSchemaGenerator.prototype.getTypeDefinition = function (typ, tc, asRef, unionModifier, prop, reffedType) {
-            var _this = this;
             if (asRef === void 0) { asRef = this.args.useRef; }
             if (unionModifier === void 0) { unionModifier = "anyOf"; }
             var definition = {};
@@ -328,9 +396,12 @@ var TJS;
                     "$ref": "#/definitions/" + fullTypeName
                 };
             }
-            this.parseCommentsIntoDefinition(reffedType, definition);
-            this.parseCommentsIntoDefinition(prop || symbol, returnedDefinition);
-            var node = symbol ? symbol.getDeclarations()[0] : null;
+            var otherAnnotations = {};
+            this.parseCommentsIntoDefinition(reffedType, definition, otherAnnotations);
+            if (prop)
+                this.parseCommentsIntoDefinition(prop, returnedDefinition, otherAnnotations);
+            else
+                this.parseCommentsIntoDefinition(symbol, definition, otherAnnotations);
             if (!asRef || !this.reffedDefinitions[fullTypeName]) {
                 if (asRef) {
                     this.reffedDefinitions[fullTypeName] = definition;
@@ -338,6 +409,7 @@ var TJS;
                         definition.title = fullTypeName;
                     }
                 }
+                var node = symbol ? symbol.getDeclarations()[0] : null;
                 if (typ.flags & ts.TypeFlags.Union) {
                     var unionType = typ;
                     if (isStringEnum) {
@@ -347,23 +419,51 @@ var TJS;
                         });
                     }
                     else {
-                        definition[unionModifier] = unionType.types.map(function (propType) {
-                            return _this.getTypeDefinition(propType, tc);
-                        });
+                        var schemas = [];
+                        var onlySimpleTypes = true;
+                        for (var i = 0; i < unionType.types.length; ++i) {
+                            var def = this.getTypeDefinition(unionType.types[i], tc);
+                            if (def.type === "undefined") {
+                                if (prop)
+                                    prop.mayBeUndefined = true;
+                            }
+                            else {
+                                schemas.push(def);
+                                var keys = Object.keys(def);
+                                if (keys.length != 1 || keys[0] != "type")
+                                    onlySimpleTypes = false;
+                            }
+                        }
+                        if (schemas.length > 1) {
+                            if (onlySimpleTypes)
+                                definition.type = schemas.map(function (def) { return def.type; });
+                            else
+                                definition[unionModifier] = schemas;
+                        }
+                        else if (schemas.length == 1) {
+                            for (var k in schemas[0])
+                                definition[k] = schemas[0][k];
+                        }
+                    }
+                }
+                else if (typ.flags & ts.TypeFlags.Intersection) {
+                    definition.allOf = [];
+                    var types = typ.types;
+                    for (var i = 0; i < types.length; ++i) {
+                        definition.allOf.push(this.getTypeDefinition(types[i], tc));
                     }
                 }
                 else if (isRawType) {
                     this.getDefinitionForRootType(typ, tc, reffedType, definition);
                 }
-                else if (node.kind == ts.SyntaxKind.EnumDeclaration) {
+                else if (node && node.kind == ts.SyntaxKind.EnumDeclaration) {
                     this.getEnumDefinition(typ, tc, definition);
                 }
                 else {
                     this.getClassDefinition(typ, tc, definition);
                 }
-            }
-            if (node && node.kind == ts.SyntaxKind.EnumDeclaration) {
-                this.getEnumDefinition(typ, tc, definition);
+                if (otherAnnotations['nullable'])
+                    this.makeNullable(definition);
             }
             return returnedDefinition;
         };
@@ -379,6 +479,22 @@ var TJS;
             def["$schema"] = "http://json-schema.org/draft-04/schema#";
             return def;
         };
+        JsonSchemaGenerator.prototype.getSchemaForAllSymbols = function () {
+            var root = {
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                definitions: {}
+            };
+            for (var id in this.allSymbols) {
+                var type = this.allSymbols[id];
+                if (type.getSymbol() && type.getSymbol().getDeclarations().length == 1) {
+                    var file = type.getSymbol().getDeclarations()[0].getSourceFile();
+                    if (file && !file.hasNoDefaultLib) {
+                        root.definitions[id] = this.getTypeDefinition(this.allSymbols[id], this.tc, this.args.useRootRef);
+                    }
+                }
+            }
+            return root;
+        };
         JsonSchemaGenerator.validationKeywords = [
             "ignore", "description", "type", "minimum", "exclusiveMinimum", "maximum",
             "exclusiveMaximum", "multipleOf", "minLength", "maxLength", "format",
@@ -387,10 +503,13 @@ var TJS;
         JsonSchemaGenerator.annotedValidationKeywordPattern = /@[a-z.-]+\s*[^@]+/gi;
         return JsonSchemaGenerator;
     }());
-    function getProgramFromFiles(files) {
+    function getProgramFromFiles(files, compilerOptions) {
+        if (compilerOptions === void 0) { compilerOptions = {}; }
         var options = {
             noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS
         };
+        for (var k in compilerOptions)
+            options[k] = compilerOptions[k];
         return ts.createProgram(files, options);
     }
     TJS.getProgramFromFiles = getProgramFromFiles;
@@ -427,7 +546,13 @@ var TJS;
                 inspect(sourceFile, tc);
             });
             var generator = new JsonSchemaGenerator(allSymbols_1, inheritingTypes_1, tc, args);
-            var definition = generator.getSchemaForSymbol(fullTypeName);
+            var definition = void 0;
+            if (fullTypeName == '*') {
+                definition = generator.getSchemaForAllSymbols();
+            }
+            else {
+                definition = generator.getSchemaForSymbol(fullTypeName);
+            }
             return definition;
         }
         else {
@@ -465,7 +590,9 @@ var TJS;
             program = programFromConfig(filePattern);
         }
         else {
-            program = TJS.getProgramFromFiles(glob.sync(filePattern));
+            program = TJS.getProgramFromFiles(glob.sync(filePattern), {
+                strictNullChecks: args.strictNullChecks
+            });
         }
         var definition = TJS.generateSchema(program, fullTypeName, args);
         var json = JSON.stringify(definition, null, 4) + "\n";
@@ -503,6 +630,8 @@ var TJS;
             .describe("propOrder", "Create property order definitions.")
             .boolean("required").default("required", defaultArgs.generateRequired)
             .describe("required", "Create required array for non-optional properties.")
+            .boolean("strictNullChecks").default("strictNullChecks", defaultArgs.strictNullChecks)
+            .describe("strictNullChecks", "(TypeScript 2) Make values non-nullable by default.")
             .alias("out", "o")
             .describe("out", "The output file, defaults to using stdout")
             .argv;
@@ -515,6 +644,7 @@ var TJS;
             disableExtraProperties: args.noExtraProps,
             usePropertyOrder: args.propOrder,
             generateRequired: args.required,
+            strictNullChecks: args.strictNullChecks,
             out: args.out
         });
     }

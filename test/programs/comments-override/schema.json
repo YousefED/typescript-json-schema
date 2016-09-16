@@ -1,0 +1,40 @@
+{
+    "type": "object",
+    "properties": {
+        "list": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/MySubObject"
+            }
+        },
+        "sub1": {
+            "$ref": "#/definitions/MySubObject"
+        },
+        "sub2": {
+            "$ref": "#/definitions/MySubObject",
+            "description": "Property-level description",
+            "additionalProperties": false
+        }
+    },
+    "required": [
+        "list",
+        "sub1",
+        "sub2"
+    ],
+    "definitions": {
+        "MySubObject": {
+            "description": "Type-level description",
+            "additionalProperties": true,
+            "type": "object",
+            "properties": {
+                "value": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "value"
+            ]
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema#"
+}

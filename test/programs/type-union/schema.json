@@ -1,10 +1,29 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "anyOf": [
-        {
-            "type": "string"
-        }, {
-            "type": "number"
+    "type": "object",
+    "properties": {
+        "var1": {
+            "type": [
+                "string",
+                "number"
+            ]
+        },
+        "var2": {
+            "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                }
+            ]
         }
-    ]
+    },
+    "required": [
+        "var1",
+        "var2"
+    ],
+    "$schema": "http://json-schema.org/draft-04/schema#"
 }

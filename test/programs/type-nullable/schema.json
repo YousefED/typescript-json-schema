@@ -1,0 +1,54 @@
+{
+    "type": "object",
+    "properties": {
+        "var1": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "var2": {
+            "type": [
+                "string",
+                "number",
+                "null"
+            ]
+        },
+        "var3": {
+            "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "var4": {
+            "anyOf": [
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        }
+    },
+    "required": [
+        "var1",
+        "var2",
+        "var3",
+        "var4"
+    ],
+    "$schema": "http://json-schema.org/draft-04/schema#"
+}

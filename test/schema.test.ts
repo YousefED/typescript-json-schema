@@ -1,18 +1,19 @@
 import {assert} from "chai";
+import {version as TypescriptVersion, CompilerOptions} from "typescript";
 import {TJS} from "../typescript-json-schema";
 import {readFileSync} from 'fs';
 import {resolve} from 'path';
 
 const base = "test/programs/";
 
-export function assertSchema(group: string, name: string, type: string, settings?: any) {
+export function assertSchema(group: string, name: string, type: string, settings?: any, compilerOptions?: CompilerOptions) {
     it(group + " should create correct schema", function() {
         if(!settings) {
             settings = TJS.getDefaultArgs();
             settings.generateRequired = true;
         }
-
-        const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(base + group + "/" + name)]), type, settings);
+        
+        const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(base + group + "/" + name)], compilerOptions), type, settings);
 
         const file = readFileSync(base + group + "/schema.json", "utf8")
         const expected = JSON.parse(file);
@@ -42,19 +43,30 @@ describe("schema", function () {
     assertSchema("enums-number", "main.ts", "MyObject");
     assertSchema("enums-number-initialized", "main.ts", "Enum");
     assertSchema("enums-compiled-compute", "main.ts", "Enum");
+    assertSchema("enums-mixed", "main.ts", "MyObject");
     assertSchema("string-literals", "main.ts", "MyObject");
     assertSchema("string-literals-inline", "main.ts", "MyObject");
 
     assertSchema("array-types", "main.ts", "MyArray");
     assertSchema("map-types", "main.ts", "MyObject");
+    
+    assertSchema("type-union", "main.ts", "MyObject");
+    assertSchema("type-intersection", "main.ts", "MyObject");
 
-    assertSchema("type-union", "main.ts", "MyType");
     assertSchema("type-aliases", "main.ts", "MyString");
     assertSchema("type-aliases-fixed-size-array", "main.ts", "MyFixedSizeArray");
     assertSchema("type-anonymous", "main.ts", "MyObject");
     assertSchema("type-primitives", "main.ts", "MyObject");
+    assertSchema("type-nullable", "main.ts", "MyObject");
 
     assertSchema("optionals", "main.ts", "MyObject");
 
     assertSchema("comments", "main.ts", "MyObject");
+    assertSchema("comments-override", "main.ts", "MyObject");
+    
+    if (TypescriptVersion.charAt(0) == "2") {
+        assertSchema("typescript-2", "main.ts", "MyObject", undefined, {
+            strictNullChecks: true
+        });
+    }
 });

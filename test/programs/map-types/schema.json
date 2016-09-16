@@ -23,13 +23,9 @@
         "MyMap2": {
             "description": "The additionalProperties annotation should be ignored",
             "additionalProperties": {
-                "anyOf": [
-                    {
-                        "type": "string"
-                    },
-                    {
-                        "type": "number"
-                    }
+                "type": [
+                    "string",
+                    "number"
                 ]
             },
             "type": "object"

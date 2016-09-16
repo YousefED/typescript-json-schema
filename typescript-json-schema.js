@@ -292,7 +292,7 @@ var TJS;
         JsonSchemaGenerator.prototype.getTypeDefinition = function (typ, tc, asRef, unionModifier, prop, reffedType) {
             var _this = this;
             if (asRef === void 0) { asRef = this.args.useRef; }
-            if (unionModifier === void 0) { unionModifier = "oneOf"; }
+            if (unionModifier === void 0) { unionModifier = "anyOf"; }
             var definition = {};
             var returnedDefinition = definition;
             var symbol = typ.getSymbol();

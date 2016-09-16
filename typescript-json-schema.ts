@@ -233,20 +233,24 @@ export module TJS {
 
         private getEnumDefinition(clazzType: ts.Type, tc: ts.TypeChecker, definition: any): any {
             const node = clazzType.getSymbol().getDeclarations()[0];
-const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+            const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             const enm = <ts.EnumDeclaration>node;
             const values = tc.getIndexTypeOfType(clazzType, ts.IndexKind.String);
 
-            var enumValues: string[] = [];
+            var enumValues: any[] = [];
+            let enumType: string = 'string';
 
             enm.members.forEach(member => {
                 const caseLabel = (<ts.Identifier>member.name).text;
+                const constantValue = tc.getConstantValue(member);
+                if (constantValue) {
+                    enumValues.push(constantValue);
+                    enumType = typeof constantValue;
+                } else {
+                    // try to extract the enums value; it will probably by a cast expression
+                    let initial = <ts.Expression>member.initializer;
 
-                // try to extract the enums value; it will probably by a cast expression
-                let initial = <ts.Expression>member.initializer;
-
-                if (initial) {
-                    if ((<any>initial).expression) { // node
+                    if (initial && (<any>initial).expression) { // node
                         const exp = (<any>initial).expression;
                         const text = (<any>exp).text;
                         // if it is an expression with a text literal, chances are it is the enum convension:
@@ -256,13 +260,14 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
                         } else {
                             console.warn("initializer is expression for enum: " + fullName + "." + caseLabel);
                         }
-                    } else if ((<any>initial).kind && (<any>initial).kind == ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
+                    } else if (initial.kind && initial.kind == ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
                         enumValues.push(initial.getText());
                     }
                 }
             });
 
-            definition.type = "string";
+
+            definition.type = enumType;
 
             if (enumValues.length > 0) {
                 definition["enum"] = enumValues;
@@ -358,7 +363,6 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
             let returnedDefinition = definition; // returned definition, may be a $ref
 
             const symbol = typ.getSymbol();
-
             const isRawType = (!symbol || symbol.name == "integer" || symbol.name == "Array" || symbol.name == "Date");
 
             // special case: an union where all child are string literals -> make an enum instead
@@ -396,6 +400,8 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
             this.parseCommentsIntoDefinition(reffedType, definition); // handle comments in the type alias declaration
             this.parseCommentsIntoDefinition(prop || symbol, returnedDefinition);
 
+            const node = symbol ? symbol.getDeclarations()[0] : null;
+
             if (!asRef || !this.reffedDefinitions[fullTypeName]) {
                 if (asRef) { // must be here to prevent recursivity problems
                     this.reffedDefinitions[fullTypeName] = definition;
@@ -403,8 +409,7 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
                         definition.title = fullTypeName;
                     }
                 }
-
-                const node = symbol ? symbol.getDeclarations()[0] : null;
+                
                 if (typ.flags & ts.TypeFlags.Union) {
                     const unionType = <ts.UnionType>typ;
                     if (isStringEnum) {
@@ -424,6 +429,10 @@ const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFul
                 } else {
                     this.getClassDefinition(typ, tc, definition);
                 }
+            }
+
+            if (node && node.kind == ts.SyntaxKind.EnumDeclaration) {
+                this.getEnumDefinition(typ, tc, definition);
             }
 
             return returnedDefinition;

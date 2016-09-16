@@ -1,0 +1,29 @@
+{
+    "type": "object",
+    "properties": {
+        "foo": {
+            "$ref": "#/definitions/Enum"
+        }
+    },
+    "required": [
+        "foo"
+    ],
+    "definitions": {
+        "Enum": {
+            "type": [
+                "number",
+                "boolean",
+                "string",
+                "null"
+            ],
+            "enum": [
+                0,
+                1,
+                true,
+                "str",
+                null
+            ]
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema#"
+}

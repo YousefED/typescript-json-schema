@@ -205,26 +205,49 @@ var TJS;
             var enm = node;
             var values = tc.getIndexTypeOfType(clazzType, ts.IndexKind.String);
             var enumValues = [];
+            var enumTypes = [];
+            var addType = function (type) {
+                if (enumTypes.indexOf(type) == -1)
+                    enumTypes.push(type);
+            };
             enm.members.forEach(function (member) {
                 var caseLabel = member.name.text;
-                var initial = member.initializer;
-                if (initial) {
-                    if (initial.expression) {
-                        var exp = initial.expression;
-                        var text = exp.text;
-                        if (text) {
-                            enumValues.push(text);
+                var constantValue = tc.getConstantValue(member);
+                if (constantValue !== undefined) {
+                    enumValues.push(constantValue);
+                    addType(typeof constantValue);
+                }
+                else {
+                    var initial = member.initializer;
+                    if (initial) {
+                        if (initial.expression) {
+                            var exp = initial.expression;
+                            var text = exp.text;
+                            if (text) {
+                                enumValues.push(text);
+                                addType("string");
+                            }
+                            else if (exp.kind == ts.SyntaxKind.TrueKeyword || exp.kind == ts.SyntaxKind.FalseKeyword) {
+                                enumValues.push((exp.kind == ts.SyntaxKind.TrueKeyword));
+                                addType("boolean");
+                            }
+                            else {
+                                console.warn("initializer is expression for enum: " + fullName + "." + caseLabel);
+                            }
                         }
-                        else {
-                            console.warn("initializer is expression for enum: " + fullName + "." + caseLabel);
+                        else if (initial.kind == ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
+                            enumValues.push(initial.getText());
+                            addType("string");
                         }
-                    }
-                    else if (initial.kind && initial.kind == ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
-                        enumValues.push(initial.getText());
+                        else if (initial.kind == ts.SyntaxKind.NullKeyword) {
+                            enumValues.push(null);
+                            addType("null");
+                        }
                     }
                 }
             });
-            definition.type = "string";
+            if (enumTypes.length)
+                definition.type = (enumTypes.length == 1) ? enumTypes[0] : enumTypes;
             if (enumValues.length > 0) {
                 definition["enum"] = enumValues;
             }
@@ -343,7 +366,7 @@ var TJS;
         };
         JsonSchemaGenerator.prototype.getTypeDefinition = function (typ, tc, asRef, unionModifier, prop, reffedType) {
             if (asRef === void 0) { asRef = this.args.useRef; }
-            if (unionModifier === void 0) { unionModifier = "oneOf"; }
+            if (unionModifier === void 0) { unionModifier = "anyOf"; }
             var definition = {};
             var returnedDefinition = definition;
             var symbol = typ.getSymbol();
@@ -433,7 +456,7 @@ var TJS;
                 else if (isRawType) {
                     this.getDefinitionForRootType(typ, tc, reffedType, definition);
                 }
-                else if (node.kind == ts.SyntaxKind.EnumDeclaration) {
+                else if (node && node.kind == ts.SyntaxKind.EnumDeclaration) {
                     this.getEnumDefinition(typ, tc, definition);
                 }
                 else {

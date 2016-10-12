@@ -6,8 +6,8 @@
         },
         "val_nullable": {
             "type": [
-                "number",
-                "null"
+                "null",
+                "number"
             ]
         },
         "val_undef": {

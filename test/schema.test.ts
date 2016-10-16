@@ -55,6 +55,7 @@ describe("schema", function () {
 
     assertSchema("type-aliases", "main.ts", "MyString");
     assertSchema("type-aliases-fixed-size-array", "main.ts", "MyFixedSizeArray");
+    assertSchema("type-aliases-multitype-array", "main.ts", "MyArray");
     assertSchema("type-anonymous", "main.ts", "MyObject");
     assertSchema("type-primitives", "main.ts", "MyObject");
     assertSchema("type-nullable", "main.ts", "MyObject");
@@ -64,8 +65,11 @@ describe("schema", function () {
     assertSchema("comments", "main.ts", "MyObject");
     assertSchema("comments-override", "main.ts", "MyObject");
     
+    // Tests to run for typescript 2 only
     if (TypescriptVersion.charAt(0) == "2") {
-        assertSchema("typescript-2", "main.ts", "MyObject", undefined, {
+        assertSchema("type-union-tagged", "main.ts", "Shape");
+
+        assertSchema("strict-null-checks", "main.ts", "MyObject", undefined, {
             strictNullChecks: true
         });
     }

@@ -1,0 +1,41 @@
+{
+    "type": "object",
+    "properties": {
+        "val": {
+            "type": "number"
+        },
+        "val_nullable": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "val_undef": {
+            "type": "number"
+        },
+        "val_opt": {
+            "type": "number"
+        },
+        "val_true": {
+            "enum": [ true ],
+            "type": "boolean"
+        },
+        "val_true_opt": {
+            "enum": [ true ],
+            "type": "boolean"
+        },
+        "val_true_or_null": {
+            "anyOf": [
+                { "enum": [ true ], "type": "boolean" },
+                { "type": "null"  }
+            ]
+        }
+    },
+    "required": [
+        "val",
+        "val_nullable",
+        "val_true_or_null",
+        "val_true"
+    ],
+    "$schema": "http://json-schema.org/draft-04/schema#"
+}

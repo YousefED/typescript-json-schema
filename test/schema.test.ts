@@ -49,6 +49,8 @@ describe("schema", function () {
 
     assertSchema("array-types", "main.ts", "MyArray");
     assertSchema("map-types", "main.ts", "MyObject");
+
+    assertSchema("namespace", "main.ts", "Type");
     
     assertSchema("type-union", "main.ts", "MyObject");
     assertSchema("type-intersection", "main.ts", "MyObject");

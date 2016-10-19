@@ -1,0 +1,74 @@
+{
+    "anyOf": [
+        {
+            "$ref": "#/definitions/Square"
+        },
+        {
+            "$ref": "#/definitions/Rectangle"
+        },
+        {
+            "$ref": "#/definitions/Circle"
+        }
+    ],
+    "definitions": {
+        "Square": {
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "type": "string",
+                    "enum": [
+                        "square"
+                    ]
+                },
+                "size": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "kind",
+                "size"
+            ]
+        },
+        "Rectangle": {
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "type": "string",
+                    "enum": [
+                        "rectangle"
+                    ]
+                },
+                "width": {
+                    "type": "number"
+                },
+                "height": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "kind",
+                "width",
+                "height"
+            ]
+        },
+        "Circle": {
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "type": "string",
+                    "enum": [
+                        "circle"
+                    ]
+                },
+                "radius": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "kind",
+                "radius"
+            ]
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema#"
+}

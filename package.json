@@ -28,7 +28,7 @@
     "schema"
   ],
   "dependencies": {
-    "typescript": "~1.8.0",
+    "typescript": "~2.0.3",
     "glob": "~7.0.0",
     "yargs": "^4.1.0"
   },

@@ -114,14 +114,17 @@ var TJS;
             }
             return undefined;
         };
+        JsonSchemaGenerator.prototype.resolveTupleType = function (propertyType) {
+            if (!propertyType.getSymbol() && (propertyType.getFlags() & ts.TypeFlags.Reference))
+                return propertyType.target;
+            if (!(propertyType.flags & ts.TypeFlags.Tuple))
+                return null;
+            return propertyType;
+        };
         JsonSchemaGenerator.prototype.getDefinitionForRootType = function (propertyType, tc, reffedType, definition) {
             var _this = this;
             var symbol = propertyType.getSymbol();
-            var tupleType = propertyType;
-            if (!tupleType.getSymbol() && (tupleType.getFlags() & ts.TypeFlags.Reference))
-                tupleType = tupleType.target;
-            if (!(tupleType.flags & ts.TypeFlags.Tuple))
-                tupleType = null;
+            var tupleType = this.resolveTupleType(propertyType);
             if (tupleType) {
                 var elemTypes = tupleType.elementTypes || propertyType.typeArguments;
                 var fixedTypes = elemTypes.map(function (elType) { return _this.getTypeDefinition(elType, tc); });

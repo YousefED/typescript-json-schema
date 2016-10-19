@@ -148,11 +148,10 @@ export module TJS {
         /**
          * Checks whether a type is a tuple type.
          */
-        private resolveTupleType(propertyType: ts.Type): ts.TupleType {
-            let tupleType = propertyType;
-            if (!(tupleType.flags & ts.TypeFlags.Tuple))
+        private resolveTupleType(propertyType: ts.Type): ts.TupleTypeNode {
+            if (!(propertyType.flags & ts.TypeFlags.Tuple))
                 return null;
-            return tupleType as ts.TupleType;
+            return propertyType as any;
         }
 
         private getDefinitionForRootType(propertyType: ts.Type, tc: ts.TypeChecker, reffedType: ts.Symbol, definition: any) {
@@ -160,7 +159,7 @@ export module TJS {
                
             const tupleType = this.resolveTupleType(propertyType);
             
-            if(tupleType) { // tuple
+            if (tupleType) { // tuple
                 const elemTypes : ts.Type[] = tupleType.elementTypes || (propertyType as any).typeArguments;
                 const fixedTypes = elemTypes.map(elType => this.getTypeDefinition(elType, tc));
                 definition.type = "array";

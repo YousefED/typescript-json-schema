@@ -67,12 +67,9 @@ describe("schema", function () {
     assertSchema("comments", "main.ts", "MyObject");
     assertSchema("comments-override", "main.ts", "MyObject");
     
-    // Tests to run for typescript 2 only
-    if (TypescriptVersion.charAt(0) == "2") {
-        assertSchema("type-union-tagged", "main.ts", "Shape");
-
-        assertSchema("strict-null-checks", "main.ts", "MyObject", undefined, {
-            strictNullChecks: true
-        });
-    }
+    assertSchema("type-union-tagged", "main.ts", "Shape");
+    
+    assertSchema("strict-null-checks", "main.ts", "MyObject", undefined, {
+        strictNullChecks: true
+    });
 });

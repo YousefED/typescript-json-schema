@@ -51,7 +51,10 @@
                         "foo": {
                             "type": "number"
                         }
-                    }
+                    },
+                    "required": [
+                        "foo"
+                    ]
                 },
                 {
                     "type": "null"
@@ -63,7 +66,8 @@
         "var1",
         "var2",
         "var3",
-        "var4"
+        "var4",
+        "var5"
     ],
     "$schema": "http://json-schema.org/draft-04/schema#"
 }

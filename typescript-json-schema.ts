@@ -149,6 +149,8 @@ export module TJS {
          * Checks whether a type is a tuple type.
          */
         private resolveTupleType(propertyType: ts.Type): ts.TupleTypeNode {
+            if (!propertyType.getSymbol() && (propertyType.getFlags() & ts.TypeFlags.Reference))
+                return (propertyType as ts.TypeReference).target as any;
             if (!(propertyType.flags & ts.TypeFlags.Tuple))
                 return null;
             return propertyType as any;
@@ -156,7 +158,7 @@ export module TJS {
 
         private getDefinitionForRootType(propertyType: ts.Type, tc: ts.TypeChecker, reffedType: ts.Symbol, definition: any) {
             const symbol = propertyType.getSymbol();
-               
+
             const tupleType = this.resolveTupleType(propertyType);
             
             if (tupleType) { // tuple

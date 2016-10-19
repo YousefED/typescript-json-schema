@@ -42,6 +42,21 @@
                     "type": "null"
                 }
             ]
+        },
+        "var5": {
+            "anyOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "foo": {
+                            "type": "number"
+                        }
+                    }
+                },
+                {
+                    "type": "null"
+                }
+            ]
         }
     },
     "required": [

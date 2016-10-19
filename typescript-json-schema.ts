@@ -60,7 +60,7 @@ export module TJS {
         private copyValidationKeywords(comment: string, to: {}, otherAnnotations: {}) {
             JsonSchemaGenerator.annotedValidationKeywordPattern.lastIndex = 0;
             // TODO: to improve the use of the exec method: it could make the tokenization
-            let annotation;
+            let annotation: string[];
             while ((annotation = JsonSchemaGenerator.annotedValidationKeywordPattern.exec(comment))) {
                 const annotationTokens = annotation[0].split(" ");
                 let keyword: string = annotationTokens[0].slice(1);

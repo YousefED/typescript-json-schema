@@ -127,7 +127,7 @@ var TJS;
             var tupleType = this.resolveTupleType(propertyType);
             if (tupleType) {
                 var elemTypes = tupleType.elementTypes || propertyType.typeArguments;
-                var fixedTypes = elemTypes.map(function (elType) { return _this.getTypeDefinition(elType, tc, undefined, undefined, undefined, reffedType); });
+                var fixedTypes = elemTypes.map(function (elType) { return _this.getTypeDefinition(elType, tc); });
                 definition.type = "array";
                 definition.items = fixedTypes;
                 definition.minItems = fixedTypes.length;
@@ -169,7 +169,7 @@ var TJS;
                         else if (symbol && symbol.getName() == "Array") {
                             var arrayType = propertyType.typeArguments[0];
                             definition.type = "array";
-                            definition.items = this.getTypeDefinition(arrayType, tc, undefined, undefined, undefined, reffedType);
+                            definition.items = this.getTypeDefinition(arrayType, tc);
                         }
                         else {
                             var info = propertyType;
@@ -474,23 +474,18 @@ var TJS;
                     return (propType.getFlags() & ts.TypeFlags.StringLiteral) != 0;
                 }));
             }
-            var fullTypeName = "";
             var asTypeAliasRef = asRef && reffedType && (this.args.useTypeAliasRef || isStringEnum);
             if (!asTypeAliasRef) {
-                var reffedDeclaration = reffedType && reffedType.getDeclarations()[0];
-                var isTypeAliasRef = reffedDeclaration && reffedDeclaration.kind === ts.SyntaxKind.TypeAliasDeclaration;
                 if (isRawType || (typ.getFlags() & ts.TypeFlags.Anonymous)) {
-                    if (isTypeAliasRef) {
-                        fullTypeName = reffedDeclaration.name.getText();
-                    }
-                    else {
-                        asRef = false;
-                    }
+                    asRef = false;
                 }
-                fullTypeName = fullTypeName !== "" ? fullTypeName : tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             }
-            else {
+            var fullTypeName = "";
+            if (asTypeAliasRef) {
                 fullTypeName = tc.getFullyQualifiedName(reffedType);
+            }
+            else if (asRef) {
+                fullTypeName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             }
             if (asRef) {
                 returnedDefinition = {
@@ -522,11 +517,7 @@ var TJS;
                     }
                 }
                 else if (isRawType) {
-                    var propDeclaration = prop && prop.getDeclarations && prop.getDeclarations()[0];
-                    var newReffedType = (propDeclaration && propDeclaration.type && propDeclaration.type.elementType && propDeclaration.type.elementType.typeName)
-                        ? tc.getSymbolAtLocation(propDeclaration.type.elementType.typeName)
-                        : reffedType;
-                    this.getDefinitionForRootType(typ, tc, newReffedType, definition);
+                    this.getDefinitionForRootType(typ, tc, reffedType, definition);
                 }
                 else if (node && (node.kind == ts.SyntaxKind.EnumDeclaration || node.kind == ts.SyntaxKind.EnumMember)) {
                     this.getEnumDefinition(typ, tc, definition);

@@ -12,7 +12,7 @@ export function assertSchema(group: string, name: string, type: string, settings
             settings = TJS.getDefaultArgs();
             settings.generateRequired = true;
         }
-        
+
         const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(base + group + "/" + name)], compilerOptions), type, settings);
 
         const file = readFileSync(base + group + "/schema.json", "utf8")
@@ -51,7 +51,7 @@ describe("schema", function () {
     assertSchema("map-types", "main.ts", "MyObject");
 
     assertSchema("namespace", "main.ts", "Type");
-    
+
     assertSchema("type-union", "main.ts", "MyObject");
     assertSchema("type-intersection", "main.ts", "MyObject");
 
@@ -65,7 +65,10 @@ describe("schema", function () {
 
     assertSchema("comments", "main.ts", "MyObject");
     assertSchema("comments-override", "main.ts", "MyObject");
-    
+    assertSchema("comments-override-types", "main.ts", "MyObject");
+    // not supported right now
+    //assertSchema("comments-override-types-tuple", "main.ts", "MyTuple");
+
     if (TypescriptVersion.charAt(0) == "2") {
         assertSchema("typescript-2", "main.ts", "MyObject", undefined, {
             strictNullChecks: true

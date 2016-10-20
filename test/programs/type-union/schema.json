@@ -2,12 +2,24 @@
     "type": "object",
     "properties": {
         "var1": {
+            "$ref": "#/definitions/MyType1"
+        },
+        "var2": {
+            "$ref": "#/definitions/MyType2"
+        }
+    },
+    "required": [
+        "var1",
+        "var2"
+    ],
+    "definitions": {
+        "MyType1": {
             "type": [
                 "string",
                 "number"
             ]
         },
-        "var2": {
+        "MyType2": {
             "anyOf": [
                 {
                     "type": "string"
@@ -21,9 +33,5 @@
             ]
         }
     },
-    "required": [
-        "var1",
-        "var2"
-    ],
     "$schema": "http://json-schema.org/draft-04/schema#"
 }

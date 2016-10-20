@@ -161,7 +161,7 @@ export module TJS {
                 default:
                     if(propertyType.flags & ts.TypeFlags.Tuple) { // tuple
                         const tupleType = /*<ts.TupleType>*/<any>propertyType;
-                        const fixedTypes = tupleType.elementTypes.map(elType => this.getTypeDefinition(elType, tc));
+                        const fixedTypes = tupleType.elementTypes.map(elType => this.getTypeDefinition(elType, tc, true, undefined, undefined, reffedType));
                         definition.type = "array";
                         definition.items = fixedTypes;
                         definition.minItems = fixedTypes.length;
@@ -174,7 +174,7 @@ export module TJS {
                     } else if (symbol && symbol.getName() == "Array") {
                         const arrayType = (<ts.TypeReference>propertyType).typeArguments[0];
                         definition.type = "array";
-                        definition.items = this.getTypeDefinition(arrayType, tc);
+                        definition.items = this.getTypeDefinition(arrayType, tc, true, undefined, undefined, reffedType);
                     } else {
                         // TODO
                         console.error("Unsupported type: ", propertyType);
@@ -443,20 +443,23 @@ export module TJS {
                 }));
             }
 
+            let fullTypeName = "";
             // aliased types must be handled slightly different
             const asTypeAliasRef = asRef && reffedType && (this.args.useTypeAliasRef || isStringEnum);
             if (!asTypeAliasRef) {
+                const reffedDeclaration = reffedType && reffedType.getDeclarations()[0];
+                const isTypeAliasRef = reffedDeclaration && reffedDeclaration.kind === ts.SyntaxKind.TypeAliasDeclaration;
                 if (isRawType || (typ.getFlags() & ts.TypeFlags.Anonymous)) {
-                    asRef = false; // raw types and inline types cannot be reffed,
-                                   // unless we are handling a type alias
+                    if (isTypeAliasRef) {
+                        fullTypeName = reffedDeclaration.name.getText();
+                    } else {
+                        asRef = false; // raw types and inline types cannot be reffed,
+                                       // unless we are handling a type alias
+                    }
                 }
-            }
-
-            let fullTypeName = "";
-            if (asTypeAliasRef) {
+                fullTypeName = fullTypeName !== "" ? fullTypeName : tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+            } else {
                 fullTypeName = tc.getFullyQualifiedName(reffedType);
-            } else if (asRef) {
-                fullTypeName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             }
 
             if (asRef) {
@@ -525,7 +528,12 @@ export module TJS {
                         definition.allOf.push(this.getTypeDefinition(types[i], tc));
                     }
                 } else if (isRawType) {
-                    this.getDefinitionForRootType(typ, tc, reffedType, definition);
+                    // If the prop's declaration is a type alias, we should pass in the alias as the reffed type
+                    const propDeclaration: any = prop && prop.getDeclarations && prop.getDeclarations()[0];
+                    const newReffedType = (propDeclaration && propDeclaration.type && propDeclaration.type.elementType && propDeclaration.type.elementType.typeName)
+                      ? tc.getSymbolAtLocation(propDeclaration.type.elementType.typeName)
+                      : reffedType;
+                    this.getDefinitionForRootType(typ, tc, newReffedType, definition);
                 } else if (node && node.kind == ts.SyntaxKind.EnumDeclaration) {
                     this.getEnumDefinition(typ, tc, definition);
                 } else {
@@ -549,7 +557,6 @@ export module TJS {
                 def.definitions = this.reffedDefinitions;
             }
             def["$schema"] = "http://json-schema.org/draft-04/schema#";
-            //console.log(JSON.stringify(def, null, 4) + "\n");
             return def;
         }
 

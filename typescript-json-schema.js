@@ -127,7 +127,7 @@ var TJS;
                 default:
                     if (propertyType.flags & ts.TypeFlags.Tuple) {
                         var tupleType = propertyType;
-                        var fixedTypes = tupleType.elementTypes.map(function (elType) { return _this.getTypeDefinition(elType, tc); });
+                        var fixedTypes = tupleType.elementTypes.map(function (elType) { return _this.getTypeDefinition(elType, tc, true, undefined, undefined, reffedType); });
                         definition.type = "array";
                         definition.items = fixedTypes;
                         definition.minItems = fixedTypes.length;
@@ -142,7 +142,7 @@ var TJS;
                     else if (symbol && symbol.getName() == "Array") {
                         var arrayType = propertyType.typeArguments[0];
                         definition.type = "array";
-                        definition.items = this.getTypeDefinition(arrayType, tc);
+                        definition.items = this.getTypeDefinition(arrayType, tc, true, undefined, undefined, reffedType);
                     }
                     else {
                         console.error("Unsupported type: ", propertyType);
@@ -378,18 +378,23 @@ var TJS;
                     return (propType.getFlags() & ts.TypeFlags.StringLiteral) != 0;
                 }));
             }
+            var fullTypeName = "";
             var asTypeAliasRef = asRef && reffedType && (this.args.useTypeAliasRef || isStringEnum);
             if (!asTypeAliasRef) {
+                var reffedDeclaration = reffedType && reffedType.getDeclarations()[0];
+                var isTypeAliasRef = reffedDeclaration && reffedDeclaration.kind === ts.SyntaxKind.TypeAliasDeclaration;
                 if (isRawType || (typ.getFlags() & ts.TypeFlags.Anonymous)) {
-                    asRef = false;
+                    if (isTypeAliasRef) {
+                        fullTypeName = reffedDeclaration.name.getText();
+                    }
+                    else {
+                        asRef = false;
+                    }
                 }
+                fullTypeName = fullTypeName !== "" ? fullTypeName : tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             }
-            var fullTypeName = "";
-            if (asTypeAliasRef) {
+            else {
                 fullTypeName = tc.getFullyQualifiedName(reffedType);
-            }
-            else if (asRef) {
-                fullTypeName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             }
             if (asRef) {
                 returnedDefinition = {
@@ -454,7 +459,11 @@ var TJS;
                     }
                 }
                 else if (isRawType) {
-                    this.getDefinitionForRootType(typ, tc, reffedType, definition);
+                    var propDeclaration = prop && prop.getDeclarations && prop.getDeclarations()[0];
+                    var newReffedType = (propDeclaration && propDeclaration.type && propDeclaration.type.elementType && propDeclaration.type.elementType.typeName)
+                        ? tc.getSymbolAtLocation(propDeclaration.type.elementType.typeName)
+                        : reffedType;
+                    this.getDefinitionForRootType(typ, tc, newReffedType, definition);
                 }
                 else if (node && node.kind == ts.SyntaxKind.EnumDeclaration) {
                     this.getEnumDefinition(typ, tc, definition);

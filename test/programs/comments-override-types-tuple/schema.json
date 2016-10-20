@@ -1,0 +1,51 @@
+{
+    "type": "object",
+    "properties": {
+        "tup": {
+            "type": "array",
+            "items": [
+                {
+                    "$ref": "#/definitions/PositiveInteger"
+                },
+                {
+                    "$ref": "#/definitions/Container"
+                }
+            ],
+            "minItems": 2,
+            "additionalItems": {
+                "anyOf": [
+                    {
+                        "type": "number"
+                    },
+                    {
+                        "$ref": "#/definitions/Container"
+                    }
+                ]
+            }
+        }
+    },
+    "required": [
+        "tup"
+    ],
+    "definitions": {
+        "PositiveInteger": {
+            "description": "An integer greater than one",
+            "minimum": 1,
+            "type": "integer"
+        },
+        "Container": {
+            "type": "object",
+            "properties": {
+                "value": {
+                    "maxLength": 10,
+                    "type": "string"
+                }
+            },
+            "required": [
+                "value"
+            ]
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema#"
+}
+

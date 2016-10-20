@@ -22,13 +22,13 @@
         "MyType2": {
             "anyOf": [
                 {
-                    "type": "string"
-                },
-                {
                     "type": "array",
                     "items": {
                         "type": "number"
                     }
+                },
+                {
+                    "type": "string"
                 }
             ]
         }

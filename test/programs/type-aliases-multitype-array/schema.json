@@ -1,0 +1,34 @@
+{
+    "type": "array",
+    "items": {
+        "anyOf": [
+            {
+                "$ref": "#/definitions/MyObject"
+            },
+            {
+                "type": "string"
+            }
+        ]
+    },
+    "definitions": {
+        "MyObject": {
+            "type": "object",
+            "properties": {
+                "array": {
+                    "$ref": "#/definitions/BasicArray"
+                }
+            },
+            "required": [
+                "array"
+            ]
+        },
+        "BasicArray": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/BasicArray"
+            }
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema#"
+}
+

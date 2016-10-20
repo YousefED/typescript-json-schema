@@ -12,13 +12,17 @@
         },
         "var4": {
             "$ref": "#/definitions/MyType4"
+        },
+        "var5": {
+            "$ref": "#/definitions/MyType5"
         }
     },
     "required": [
         "var1",
         "var2",
         "var3",
-        "var4"
+        "var4",
+        "var5"
     ],
     "definitions": {
         "MyType1": {
@@ -37,13 +41,13 @@
         "MyType3": {
             "anyOf": [
                 {
-                    "type": "string"
-                },
-                {
                     "type": "array",
                     "items": {
                         "type": "number"
                     }
+                },
+                {
+                    "type": "string"
                 },
                 {
                     "type": "null"
@@ -57,6 +61,24 @@
                     "items": {
                         "$ref": "#/definitions/MyType4"
                     }
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "MyType5": {
+            "anyOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "foo": {
+                            "type": "number"
+                        }
+                    },
+                    "required": [
+                        "foo"
+                    ]
                 },
                 {
                     "type": "null"

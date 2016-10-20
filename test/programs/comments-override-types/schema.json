@@ -6,8 +6,8 @@
           "properties": {
             "value": {
               "type": [
-                "number",
-                "string"
+                "string",
+                "number"
               ]
             }
           },
@@ -24,8 +24,8 @@
         "OrString": {
             "description": "Generic type or string",
             "type": [
-              "number",
-              "string"
+              "string",
+              "number"
             ]
         }
     },

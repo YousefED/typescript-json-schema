@@ -1,6 +1,6 @@
 {
   "name": "typescript-json-schema",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "typescript-json-schema generates JSON Schema files from your Typescript sources",
   "main": "typescript-json-schema.js",
   "bin": {
@@ -28,7 +28,7 @@
     "schema"
   ],
   "dependencies": {
-    "typescript": "~1.8.0",
+    "typescript": "~2.0.3",
     "glob": "~7.0.0",
     "yargs": "^4.1.0"
   },

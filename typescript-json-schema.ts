@@ -160,10 +160,10 @@ export module TJS {
             const symbol = propertyType.getSymbol();
 
             const tupleType = this.resolveTupleType(propertyType);
-            
+
             if (tupleType) { // tuple
                 const elemTypes : ts.Type[] = tupleType.elementTypes || (propertyType as any).typeArguments;
-                const fixedTypes = elemTypes.map(elType => this.getTypeDefinition(elType, tc));
+                const fixedTypes = elemTypes.map(elType => this.getTypeDefinition(elType, tc, undefined, undefined, undefined, reffedType));
                 definition.type = "array";
                 definition.items = fixedTypes;
                 definition.minItems = fixedTypes.length;
@@ -172,7 +172,7 @@ export module TJS {
                 };
             } else {
                 const propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-                
+
                 switch (propertyTypeString.toLowerCase()) {
                     case "string":
                         definition.type = "string";
@@ -205,7 +205,7 @@ export module TJS {
                         } else if (symbol && symbol.getName() == "Array") {
                             const arrayType = (<ts.TypeReference>propertyType).typeArguments[0];
                             definition.type = "array";
-                            definition.items = this.getTypeDefinition(arrayType, tc);
+                            definition.items = this.getTypeDefinition(arrayType, tc, undefined, undefined, undefined, reffedType);
                         } else {
                             // Report that type could not be processed
                             let info : any = propertyType;
@@ -365,7 +365,7 @@ export module TJS {
                         const keys = Object.keys(def);
                         if (keys.length == 1 && keys[0] == "type")
                             addSimpleType(def.type);
-                        else 
+                        else
                             schemas.push(def);
                     }
                 }
@@ -377,7 +377,7 @@ export module TJS {
                     typeof enumValues[0] === "boolean" &&
                     typeof enumValues[1] === "boolean" &&
                     enumValues[0] !== enumValues[1];
-                
+
                 if (isOnlyBooleans) {
                     addSimpleType("boolean");
                 } else {
@@ -397,7 +397,7 @@ export module TJS {
 
             if (simpleTypes.length > 0)
                 schemas.push({ type: simpleTypes.length == 1 ? simpleTypes[0] : simpleTypes });
-            
+
             if (schemas.length == 1) {
                 for (let k in schemas[0])
                     definition[k] = schemas[0][k];
@@ -542,7 +542,7 @@ export module TJS {
 
             const symbol = typ.getSymbol();
             const isRawType = (!symbol || symbol.name == "integer" || symbol.name == "Array" || symbol.name == "Date");
-            
+
             // special case: an union where all child are string literals -> make an enum instead
             let isStringEnum = false;
             if (typ.flags & ts.TypeFlags.Union) {
@@ -552,20 +552,23 @@ export module TJS {
                 }));
             }
 
+            let fullTypeName = "";
             // aliased types must be handled slightly different
             const asTypeAliasRef = asRef && reffedType && (this.args.useTypeAliasRef || isStringEnum);
             if (!asTypeAliasRef) {
+                const reffedDeclaration = reffedType && reffedType.getDeclarations()[0];
+                const isTypeAliasRef = reffedDeclaration && reffedDeclaration.kind === ts.SyntaxKind.TypeAliasDeclaration;
                 if (isRawType || (typ.getFlags() & ts.TypeFlags.Anonymous)) {
-                    asRef = false; // raw types and inline types cannot be reffed,
-                                   // unless we are handling a type alias
+                    if (isTypeAliasRef) {
+                        fullTypeName = reffedDeclaration.name.getText();
+                    } else {
+                        asRef = false; // raw types and inline types cannot be reffed,
+                                       // unless we are handling a type alias
+                    }
                 }
-            }
-
-            let fullTypeName = "";
-            if (asTypeAliasRef) {
+                fullTypeName = fullTypeName !== "" ? fullTypeName : tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+            } else {
                 fullTypeName = tc.getFullyQualifiedName(reffedType);
-            } else if (asRef) {
-                fullTypeName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             }
 
             if (asRef) {
@@ -601,7 +604,12 @@ export module TJS {
                         definition.allOf.push(this.getTypeDefinition(types[i], tc));
                     }
                 } else if (isRawType) {
-                    this.getDefinitionForRootType(typ, tc, reffedType, definition);
+                    // If the prop's declaration is a type alias, we should pass in the alias as the reffed type
+                    const propDeclaration: any = prop && prop.getDeclarations && prop.getDeclarations()[0];
+                    const newReffedType = (propDeclaration && propDeclaration.type && propDeclaration.type.elementType && propDeclaration.type.elementType.typeName)
+                        ? tc.getSymbolAtLocation(propDeclaration.type.elementType.typeName)
+                        : reffedType;
+                    this.getDefinitionForRootType(typ, tc, newReffedType, definition);
                 } else if (node && (node.kind == ts.SyntaxKind.EnumDeclaration || node.kind == ts.SyntaxKind.EnumMember)) {
                     this.getEnumDefinition(typ, tc, definition);
                 } else {

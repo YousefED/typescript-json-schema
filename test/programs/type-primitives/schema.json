@@ -14,7 +14,7 @@
             "default": 1
         },
         "integer2": {
-            "type": "integer",
+            "$ref": "#/definitions/integer",
             "default": 1
         },
         "string1": {
@@ -53,5 +53,10 @@
         "object1",
         "object2"
     ],
+    "definitions": {
+        "integer": {
+            "type": "integer"
+        }
+    },
     "$schema": "http://json-schema.org/draft-04/schema#"
 }

@@ -1,5 +1,5 @@
 
-/** 
+/**
  * Type-level description
  * @additionalProperties true
  */
@@ -9,7 +9,7 @@ export interface MySubObject {
 
 export interface MyObject {
     list : MySubObject[];
-    
+
     sub1 : MySubObject;
 
     /**

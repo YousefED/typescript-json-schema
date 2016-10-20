@@ -15,19 +15,20 @@
             "type": "object",
             "properties": {
                 "array": {
-                    "type": "array",
-                    "items": {
-                        "type": [
-                            "string",
-                            "number"
-                        ]
-                    }
+                    "$ref": "#/definitions/BasicArray"
                 }
             },
             "required": [
                 "array"
             ]
+        },
+        "BasicArray": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/BasicArray"
+            }
         }
     },
     "$schema": "http://json-schema.org/draft-04/schema#"
 }
+

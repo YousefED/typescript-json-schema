@@ -1,0 +1,58 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "Container": {
+          "description": "Testing nested generics",
+          "properties": {
+            "value": {
+              "type": [
+                "string",
+                "number"
+              ]
+            }
+          },
+          "required": [
+            "value"
+          ],
+          "type": "object"
+        },
+        "PositiveInteger": {
+            "description": "An integer greater than one",
+            "minimum": 1,
+            "type": "integer"
+        },
+        "OrString": {
+            "description": "Generic type or string",
+            "type": [
+              "string",
+              "number"
+            ]
+        }
+    },
+    "properties": {
+        "user_id": {
+            "$ref": "#/definitions/PositiveInteger",
+            "additionalProperties": false,
+            "description": "Property-level description"
+        },
+        "user_ids": {
+            "items": {
+                "$ref": "#/definitions/PositiveInteger"
+            },
+            "type": "array"
+        },
+        "identifier": {
+            "$ref": "#/definitions/OrString",
+            "default": "n/a",
+            "description": "String or integer"
+        },
+        "something_else": {
+            "$ref": "#/definitions/Container"
+        }
+    },
+    "required": [
+        "user_id",
+        "user_ids"
+    ],
+    "type": "object"
+}

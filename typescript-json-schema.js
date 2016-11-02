@@ -558,6 +558,7 @@ var JsonSchemaGenerator = (function () {
     JsonSchemaGenerator.annotedValidationKeywordPattern = /@[a-z.-]+\s*[^@]+/gi;
     return JsonSchemaGenerator;
 }());
+exports.JsonSchemaGenerator = JsonSchemaGenerator;
 function getProgramFromFiles(files, compilerOptions) {
     if (compilerOptions === void 0) { compilerOptions = {}; }
     var options = {

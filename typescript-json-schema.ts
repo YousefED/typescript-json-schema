@@ -21,7 +21,7 @@ export function getDefaultArgs() {
     };
 }
 
-class JsonSchemaGenerator {
+export class JsonSchemaGenerator {
     private static validationKeywords = [
         "ignore", "description", "type", "minimum", "exclusiveMinimum", "maximum",
         "exclusiveMaximum", "multipleOf", "minLength", "maxLength", "format",

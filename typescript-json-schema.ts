@@ -326,7 +326,7 @@ export class JsonSchemaGenerator {
         }
 
         if (enumValues.length > 0) {
-            definition["enum"] = enumValues;
+            definition["enum"] = enumValues.sort();
         }
 
         return definition;
@@ -381,7 +381,7 @@ export class JsonSchemaGenerator {
             if (isOnlyBooleans) {
                 addSimpleType("boolean");
             } else {
-                const enumSchema: any = { enum: enumValues };
+                const enumSchema: any = { enum: enumValues.sort() };
 
                 // If all values are of the same primitive type, add a "type" field to the schema
                 if (enumValues.every((x) => { return typeof x === "string"; })) {

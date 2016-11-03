@@ -282,7 +282,7 @@ var JsonSchemaGenerator = (function () {
             definition.type = (enumTypes.length === 1) ? enumTypes[0] : enumTypes;
         }
         if (enumValues.length > 0) {
-            definition["enum"] = enumValues;
+            definition["enum"] = enumValues.sort();
         }
         return definition;
     };
@@ -333,7 +333,7 @@ var JsonSchemaGenerator = (function () {
                 addSimpleType("boolean");
             }
             else {
-                var enumSchema = { enum: enumValues };
+                var enumSchema = { enum: enumValues.sort() };
                 if (enumValues.every(function (x) { return typeof x === "string"; })) {
                     enumSchema.type = "string";
                 }

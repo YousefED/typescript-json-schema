@@ -22,7 +22,6 @@
       "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
     }
   ],
-  "optionalDependencies": {},
   "keywords": [
     "typescript",
     "json",
@@ -31,11 +30,18 @@
     "schema"
   ],
   "dependencies": {
-    "typescript": "~2.0.3",
     "glob": "~7.1.1",
+    "json-stable-stringify": "^1.0.1",
+    "typescript": "~2.0.3",
     "yargs": "^6.3.0"
   },
   "devDependencies": {
+    "@types/assertion-error": "^1.0.30",
+    "@types/chai": "^3.4.34",
+    "@types/glob": "^5.0.30",
+    "@types/json-stable-stringify": "^1.0.29",
+    "@types/mocha": "^2.2.32",
+    "@types/node": "^6.0.46",
     "chai": "^3.5.0",
     "mocha": "^3.1.2",
     "source-map-support": "^0.4.0",

@@ -2,6 +2,14 @@
     "type": "object",
     "properties": {
         "direction": {
+            "$ref": "#/definitions/Cardinal"
+        }
+    },
+    "required": [
+        "direction"
+    ],
+    "definitions": {
+        "Cardinal": {
             "enum": [
                 "north",
                 "south",
@@ -11,8 +19,5 @@
             "type": "string"
         }
     },
-    "required": [
-        "direction"
-    ],
     "$schema": "http://json-schema.org/draft-04/schema#"
 }

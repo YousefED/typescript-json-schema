@@ -1,8 +1,7 @@
 
 type BasicArray = (string | number)[];
 
-interface MyObject
-{
+interface MyObject {
     array: BasicArray;
 }
 

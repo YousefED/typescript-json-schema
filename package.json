@@ -16,10 +16,12 @@
     "type": "git",
     "url": "git@github.com:YousefED/typescript-json-schema.git"
   },
-  "licenses": [{
-    "type": "Apache",
-    "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-  }],
+  "licenses": [
+    {
+      "type": "Apache",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  ],
   "optionalDependencies": {},
   "keywords": [
     "typescript",
@@ -36,10 +38,12 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "mocha": "^2.4.5",
-    "source-map-support": "^0.4.0"
+    "source-map-support": "^0.4.0",
+    "tslint": "^3.15.1"
   },
   "scripts": {
     "test": "npm run build && mocha -t 5000 --require source-map-support/register test",
-    "build": "tsc -p ."
+    "build": "tsc -p .",
+    "lint": "tslint -c tslint.json 'typescript-json-schema.ts' 'test/**/*.ts' --exclude '**/*.d.ts'"
   }
 }

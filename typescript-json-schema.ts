@@ -1,5 +1,4 @@
 import * as ts from "typescript";
-import * as fs from "fs";
 import * as glob from "glob";
 import * as path from "path";
 
@@ -29,13 +28,11 @@ export class JsonSchemaGenerator {
         "additionalProperties", "enum"];
 
     private static annotedValidationKeywordPattern = /@[a-z.-]+\s*[^@]+/gi;
-    //private static primitiveTypes = ["string", "number", "boolean", "any"];
+    // private static primitiveTypes = ["string", "number", "boolean", "any"];
 
     private allSymbols: { [name: string]: ts.Type };
     private inheritingTypes: { [baseName: string]: string[] };
     private tc: ts.TypeChecker;
-
-    private sandbox = { sandboxvar: null };
 
     private reffedDefinitions: { [key: string]: any } = {};
 
@@ -86,12 +83,10 @@ export class JsonSchemaGenerator {
                         to[context] = {};
                     }
                     to[context][keyword] = value;
-                }
-                else {
+                } else {
                     to[keyword] = value;
                 }
-            }
-            else {
+            } else {
                 otherAnnotations[keyword] = true;
             }
         }
@@ -120,7 +115,7 @@ export class JsonSchemaGenerator {
         if (!symbol) {
             return;
         }
-        const comments : ts.SymbolDisplayPart[] = symbol.getDocumentationComment();
+        const comments: ts.SymbolDisplayPart[] = symbol.getDocumentationComment();
         if (!comments || !comments.length) {
             return;
         }
@@ -139,7 +134,7 @@ export class JsonSchemaGenerator {
         } else if (typ.flags & (ts.TypeFlags as any).NumberLiteral) {
             return parseFloat((typ as any).text);
         } else if (typ.flags & (ts.TypeFlags as any).BooleanLiteral) {
-            return (typ as any).intrinsicName == "true";
+            return (typ as any).intrinsicName === "true";
         }
         return undefined;
     }
@@ -148,10 +143,12 @@ export class JsonSchemaGenerator {
      * Checks whether a type is a tuple type.
      */
     private resolveTupleType(propertyType: ts.Type): ts.TupleTypeNode {
-        if (!propertyType.getSymbol() && (propertyType.getFlags() & ts.TypeFlags.Reference))
+        if (!propertyType.getSymbol() && (propertyType.getFlags() & ts.TypeFlags.Reference)) {
             return (propertyType as ts.TypeReference).target as any;
-        if (!(propertyType.flags & ts.TypeFlags.Tuple))
+        }
+        if (!(propertyType.flags & ts.TypeFlags.Tuple)) {
             return null;
+        }
         return propertyType as any;
     }
 
@@ -161,7 +158,7 @@ export class JsonSchemaGenerator {
         const tupleType = this.resolveTupleType(propertyType);
 
         if (tupleType) { // tuple
-            const elemTypes : ts.Type[] = tupleType.elementTypes || (propertyType as any).typeArguments;
+            const elemTypes: ts.Type[] = tupleType.elementTypes || (propertyType as any).typeArguments;
             const fixedTypes = elemTypes.map(elType => this.getTypeDefinition(elType, tc));
             definition.type = "array";
             definition.items = fixedTypes;
@@ -177,7 +174,7 @@ export class JsonSchemaGenerator {
                     definition.type = "string";
                     break;
                 case "number":
-                    const isInteger = (definition.type == "integer" || (reffedType && reffedType.getName() == "integer"));
+                    const isInteger = (definition.type === "integer" || (reffedType && reffedType.getName() === "integer"));
                     definition.type = isInteger ? "integer" : "number";
                     break;
                 case "boolean":
@@ -201,17 +198,18 @@ export class JsonSchemaGenerator {
                     if (value !== undefined) {
                         definition.type = typeof value;
                         definition.enum = [ value ];
-                    } else if (symbol && symbol.getName() == "Array") {
+                    } else if (symbol && symbol.getName() === "Array") {
                         const arrayType = (<ts.TypeReference>propertyType).typeArguments[0];
                         definition.type = "array";
                         definition.items = this.getTypeDefinition(arrayType, tc);
                     } else {
                         // Report that type could not be processed
-                        let info : any = propertyType;
-                        try { info = JSON.stringify(propertyType); }
-                        catch(err) {}
+                        let info: any = propertyType;
+                        try {
+                            info = JSON.stringify(propertyType);
+                        } catch(err) {}
                         console.error("Unsupported type: ", info);
-                        //definition = this.getTypeDefinition(propertyType, tc);
+                        // definition = this.getTypeDefinition(propertyType, tc);
                     }
             }
         }
@@ -219,7 +217,7 @@ export class JsonSchemaGenerator {
         return definition;
     }
 
-    private getReferencedTypeSymbol(prop: ts.Symbol, tc: ts.TypeChecker) : ts.Symbol {
+    private getReferencedTypeSymbol(prop: ts.Symbol, tc: ts.TypeChecker): ts.Symbol {
         const decl = prop.getDeclarations();
         if (decl && decl.length) {
             const type = (<ts.TypeReferenceNode> (<any> decl[0]).type);
@@ -233,7 +231,6 @@ export class JsonSchemaGenerator {
     private getDefinitionForProperty(prop: ts.Symbol, tc: ts.TypeChecker, node: ts.Node) {
         const propertyName = prop.getName();
         const propertyType = tc.getTypeOfSymbolAtLocation(prop, node);
-        const propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
         const reffedType = this.getReferencedTypeSymbol(prop, tc);
 
@@ -252,7 +249,7 @@ export class JsonSchemaGenerator {
         if (initial) {
             if ((<any>initial).expression) { // node
                 console.warn("initializer is expression for property " + propertyName);
-            } else if ((<any>initial).kind && (<any>initial).kind == ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
+            } else if ((<any>initial).kind && (<any>initial).kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
                 definition.default = initial.getText();
             } else {
                 try {
@@ -260,7 +257,7 @@ export class JsonSchemaGenerator {
                     vm.runInNewContext("sandboxvar=" + initial.getText(), sandbox);
 
                     initial = sandbox.sandboxvar;
-                    if (initial === null || typeof (initial) === "string" || typeof (initial) === "number" || typeof (initial) === "boolean" || Object.prototype.toString.call(initial) === '[object Array]') {
+                    if (initial === null || typeof (initial) === "string" || typeof (initial) === "number" || typeof (initial) === "boolean" || Object.prototype.toString.call(initial) === "[object Array]") {
                         definition.default = initial;
                     } else if (initial) {
                         console.warn("unknown initializer for property " + propertyName + ": " + initial);
@@ -278,14 +275,14 @@ export class JsonSchemaGenerator {
         const node = clazzType.getSymbol().getDeclarations()[0];
         const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
         const enm = <ts.EnumDeclaration>node;
-        const values = tc.getIndexTypeOfType(clazzType, ts.IndexKind.String);
 
         var enumValues: any[] = [];
         let enumTypes: string[] = [];
 
         const addType = (type) => {
-            if (enumTypes.indexOf(type) == -1)
+            if (enumTypes.indexOf(type) === -1) {
                 enumTypes.push(type);
+            }
         };
 
         enm.members.forEach(member => {
@@ -296,7 +293,7 @@ export class JsonSchemaGenerator {
                 addType(typeof constantValue);
             } else {
                 // try to extract the enums value; it will probably by a cast expression
-                let initial : ts.Expression = member.initializer;
+                let initial: ts.Expression = member.initializer;
                 if (initial) {
                     if ((<any>initial).expression) { // node
                         const exp = (<any>initial).expression;
@@ -306,16 +303,16 @@ export class JsonSchemaGenerator {
                         if (text) {
                             enumValues.push(text);
                             addType("string");
-                        } else if (exp.kind == ts.SyntaxKind.TrueKeyword || exp.kind == ts.SyntaxKind.FalseKeyword) {
-                            enumValues.push((exp.kind == ts.SyntaxKind.TrueKeyword));
+                        } else if (exp.kind === ts.SyntaxKind.TrueKeyword || exp.kind === ts.SyntaxKind.FalseKeyword) {
+                            enumValues.push((exp.kind === ts.SyntaxKind.TrueKeyword));
                             addType("boolean");
                         } else {
                             console.warn("initializer is expression for enum: " + fullName + "." + caseLabel);
                         }
-                    } else if (initial.kind == ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
+                    } else if (initial.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
                         enumValues.push(initial.getText());
                         addType("string");
-                    } else if (initial.kind == ts.SyntaxKind.NullKeyword) {
+                    } else if (initial.kind === ts.SyntaxKind.NullKeyword) {
                         enumValues.push(null);
                         addType("null");
                     }
@@ -323,8 +320,9 @@ export class JsonSchemaGenerator {
             }
         });
 
-        if (enumTypes.length)
-            definition.type = (enumTypes.length == 1) ? enumTypes[0] : enumTypes;
+        if (enumTypes.length) {
+            definition.type = (enumTypes.length === 1) ? enumTypes[0] : enumTypes;
+        }
 
         if (enumValues.length > 0) {
             definition["enum"] = enumValues;
@@ -339,13 +337,15 @@ export class JsonSchemaGenerator {
         const schemas = [];
 
         const addSimpleType = (type) => {
-            if (simpleTypes.indexOf(type) == -1)
+            if (simpleTypes.indexOf(type) === -1) {
                 simpleTypes.push(type);
+            }
         };
 
         const addEnumValue = (val) => {
-            if (enumValues.indexOf(val) == -1)
+            if (enumValues.indexOf(val) === -1) {
                 enumValues.push(val);
+            }
         };
 
         for (let i = 0; i < unionType.types.length; ++i) {
@@ -353,26 +353,26 @@ export class JsonSchemaGenerator {
             const value = this.extractLiteralValue(valueType);
             if (value !== undefined) {
                 addEnumValue(value);
-            }
-            else {
+            } else {
                 const def = this.getTypeDefinition(unionType.types[i], tc);
                 if (def.type === "undefined") {
-                    if (prop)
+                    if (prop) {
                         (<any>prop).mayBeUndefined = true;
-                }
-                else {
+                    }
+                } else {
                     const keys = Object.keys(def);
-                    if (keys.length == 1 && keys[0] == "type")
+                    if (keys.length === 1 && keys[0] === "type") {
                         addSimpleType(def.type);
-                    else
+                    } else {
                         schemas.push(def);
+                    }
                 }
             }
         }
 
         if (enumValues.length > 0) {
             // If the values are true and false, just add "boolean" as simple type
-            const isOnlyBooleans = enumValues.length == 2 &&
+            const isOnlyBooleans = enumValues.length === 2 &&
                 typeof enumValues[0] === "boolean" &&
                 typeof enumValues[1] === "boolean" &&
                 enumValues[0] !== enumValues[1];
@@ -380,28 +380,32 @@ export class JsonSchemaGenerator {
             if (isOnlyBooleans) {
                 addSimpleType("boolean");
             } else {
-                const enumSchema : any = { enum: enumValues };
+                const enumSchema: any = { enum: enumValues };
 
                 // If all values are of the same primitive type, add a "type" field to the schema
-                if (enumValues.every((x) => { return typeof x == "string"; }))
+                if (enumValues.every((x) => { return typeof x === "string"; })) {
                     enumSchema.type = "string";
-                else if (enumValues.every((x) => { return typeof x == "number"; }))
+                } else if (enumValues.every((x) => { return typeof x === "number"; })) {
                     enumSchema.type = "number";
-                else if (enumValues.every((x) => { return typeof x == "boolean"; }))
+                } else if (enumValues.every((x) => { return typeof x === "boolean"; })) {
                     enumSchema.type = "boolean";
+                }
 
                 schemas.push(enumSchema);
             }
         }
 
-        if (simpleTypes.length > 0)
-            schemas.push({ type: simpleTypes.length == 1 ? simpleTypes[0] : simpleTypes });
-
-        if (schemas.length == 1) {
-            for (let k in schemas[0])
-                definition[k] = schemas[0][k];
+        if (simpleTypes.length > 0) {
+            schemas.push({ type: simpleTypes.length === 1 ? simpleTypes[0] : simpleTypes });
         }
-        else {
+
+        if (schemas.length === 1) {
+            for (let k in schemas[0]) {
+                if (schemas[0].hasOwnProperty(k)) {
+                    definition[k] = schemas[0][k];
+                }
+            }
+        } else {
             definition[unionModifier] = schemas;
         }
         return definition;
@@ -413,16 +417,16 @@ export class JsonSchemaGenerator {
         const props = tc.getPropertiesOfType(clazzType);
         const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
-        if(props.length == 0 && clazz.members && clazz.members.length == 1 && clazz.members[0].kind == ts.SyntaxKind.IndexSignature) {
+        if(props.length === 0 && clazz.members && clazz.members.length === 1 && clazz.members[0].kind === ts.SyntaxKind.IndexSignature) {
             // for case "array-types"
             const indexSignature = <ts.IndexSignatureDeclaration>clazz.members[0];
-            if(indexSignature.parameters.length != 1) {
-                throw "Not supported: IndexSignatureDeclaration parameters.length != 1"
+            if(indexSignature.parameters.length !== 1) {
+                throw "Not supported: IndexSignatureDeclaration parameters.length != 1";
             }
             const indexSymbol: ts.Symbol = (<any>indexSignature.parameters[0]).symbol;
             const indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
-            const isStringIndexed = (indexType.flags == ts.TypeFlags.String);
-            if(indexType.flags != ts.TypeFlags.Number && !isStringIndexed) {
+            const isStringIndexed = (indexType.flags === ts.TypeFlags.String);
+            if(indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
                 throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
             }
 
@@ -496,58 +500,65 @@ export class JsonSchemaGenerator {
 
     private addSimpleType(def: any, type: string) {
         for (let k in def) {
-            if (this.simpleTypesAllowedProperties.indexOf(k) == -1)
+            if (this.simpleTypesAllowedProperties.indexOf(k) === -1) {
                 return false;
+            }
         }
 
         if (!def.type) {
             def.type = type;
         } else if (def.type.push) {
-            if (!(<Object[]>def.type).every((val) => { return typeof val == "string"; }))
+            if (!(<Object[]>def.type).every((val) => { return typeof val === "string"; })) {
                 return false;
+            }
 
-            if (def.type.indexOf('null') == -1)
-                def.type.push('null');
+            if (def.type.indexOf("null") === -1) {
+                def.type.push("null");
+            }
         } else {
-            if (typeof def.type != "string")
+            if (typeof def.type !== "string") {
                 return false;
+            }
 
-            if (def.type != 'null')
-                def.type = [ def.type, 'null' ];
+            if (def.type !== "null") {
+                def.type = [ def.type, "null" ];
+            }
         }
         return true;
     }
 
     private makeNullable(def: any) {
-        if (!this.addSimpleType(def, 'null')) {
+        if (!this.addSimpleType(def, "null")) {
             let union = def.oneOf || def.anyOf;
-            if (union)
-                union.push({ type: 'null' });
-            else {
+            if (union) {
+                union.push({ type: "null" });
+            } else {
                 const subdef = {};
                 for (var k in def) {
-                    subdef[k] = def[k];
-                    delete def[k];
+                    if (def.hasOwnProperty(k)) {
+                        subdef[k] = def[k];
+                        delete def[k];
+                    }
                 }
-                def.anyOf = [ subdef, { type: 'null' } ];
+                def.anyOf = [ subdef, { type: "null" } ];
             }
         }
         return def;
     }
 
-    private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker, asRef = this.args.useRef, unionModifier: string = "anyOf", prop? : ts.Symbol, reffedType?: ts.Symbol): any {
-        const definition : any = {}; // real definition
+    private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker, asRef = this.args.useRef, unionModifier: string = "anyOf", prop?: ts.Symbol, reffedType?: ts.Symbol): any {
+        const definition: any = {}; // real definition
         let returnedDefinition = definition; // returned definition, may be a $ref
 
         const symbol = typ.getSymbol();
-        const isRawType = (!symbol || symbol.name == "integer" || symbol.name == "Array" || symbol.name == "Date");
+        const isRawType = (!symbol || symbol.name === "integer" || symbol.name === "Array" || symbol.name === "Date");
 
         // special case: an union where all child are string literals -> make an enum instead
         let isStringEnum = false;
         if (typ.flags & ts.TypeFlags.Union) {
             const unionType = <ts.UnionType>typ;
             isStringEnum = (unionType.types.every((propType, i, r) => {
-                return (propType.getFlags() & ts.TypeFlags.StringLiteral) != 0;
+                return (propType.getFlags() & ts.TypeFlags.StringLiteral) !== 0;
             }));
         }
 
@@ -576,10 +587,11 @@ export class JsonSchemaGenerator {
         // Parse comments
         const otherAnnotations = {};
         this.parseCommentsIntoDefinition(reffedType, definition, otherAnnotations); // handle comments in the type alias declaration
-        if (prop)
+        if (prop) {
             this.parseCommentsIntoDefinition(prop, returnedDefinition, otherAnnotations);
-        else
+        } else {
             this.parseCommentsIntoDefinition(symbol, definition, otherAnnotations);
+        }
 
         // Create the actual definition only if is an inline definition, or
         // if it will be a $ref and it is not yet created
@@ -601,14 +613,15 @@ export class JsonSchemaGenerator {
                 }
             } else if (isRawType) {
                 this.getDefinitionForRootType(typ, tc, reffedType, definition);
-            } else if (node && (node.kind == ts.SyntaxKind.EnumDeclaration || node.kind == ts.SyntaxKind.EnumMember)) {
+            } else if (node && (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)) {
                 this.getEnumDefinition(typ, tc, definition);
             } else {
                 this.getClassDefinition(typ, tc, definition);
             }
 
-            if (otherAnnotations['nullable'])
+            if (otherAnnotations["nullable"]) {
                 this.makeNullable(definition);
+            }
         }
 
         return returnedDefinition;
@@ -624,7 +637,7 @@ export class JsonSchemaGenerator {
             def.definitions = this.reffedDefinitions;
         }
         def["$schema"] = "http://json-schema.org/draft-04/schema#";
-        //console.log(JSON.stringify(def, null, 4) + "\n");
+        // console.log(JSON.stringify(def, null, 4) + "\n");
         return def;
     }
 
@@ -634,7 +647,9 @@ export class JsonSchemaGenerator {
             definitions: {}
         };
         for (const id in symbols) {
-            root.definitions[id] = this.getTypeDefinition(symbols[id], this.tc, this.args.useRootRef);
+            if (symbols.hasOwnProperty(id)) {
+                root.definitions[id] = this.getTypeDefinition(symbols[id], this.tc, this.args.useRootRef);
+            }
         }
         return root;
     }
@@ -645,17 +660,20 @@ export function getProgramFromFiles(files: string[], compilerOptions: ts.Compile
     const options: ts.CompilerOptions = {
         noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS
     };
-    for (const k in compilerOptions)
-        options[k] = compilerOptions[k];
+    for (const k in compilerOptions) {
+        if (compilerOptions.hasOwnProperty(k)) {
+            options[k] = compilerOptions[k];
+        }
+    }
     return ts.createProgram(files, options);
 }
 
 export function generateSchema(program: ts.Program, fullTypeName: string, args = getDefaultArgs()) {
-    const tc = program.getTypeChecker();
+    const typeChecker = program.getTypeChecker();
 
     var diagnostics = ts.getPreEmitDiagnostics(program);
 
-    if (diagnostics.length == 0) {
+    if (diagnostics.length === 0) {
 
         const allSymbols: { [name: string]: ts.Type } = {};
         const userSymbols: { [name: string]: ts.Type } = {};
@@ -664,13 +682,13 @@ export function generateSchema(program: ts.Program, fullTypeName: string, args =
         program.getSourceFiles().forEach((sourceFile, sourceFileIdx) => {
             function inspect(node: ts.Node, tc: ts.TypeChecker) {
 
-                if (node.kind == ts.SyntaxKind.ClassDeclaration
-                    || node.kind == ts.SyntaxKind.InterfaceDeclaration
-                    || node.kind == ts.SyntaxKind.EnumDeclaration
-                    || node.kind == ts.SyntaxKind.TypeAliasDeclaration
+                if (node.kind === ts.SyntaxKind.ClassDeclaration
+                    || node.kind === ts.SyntaxKind.InterfaceDeclaration
+                    || node.kind === ts.SyntaxKind.EnumDeclaration
+                    || node.kind === ts.SyntaxKind.TypeAliasDeclaration
                     ) {
                     const nodeType = tc.getTypeAtLocation(node);
-                    let fullName = tc.getFullyQualifiedName((<any>node).symbol)
+                    let fullName = tc.getFullyQualifiedName((<any>node).symbol);
 
                     // remove file name
                     // TODO: we probably don't want this eventually,
@@ -680,9 +698,10 @@ export function generateSchema(program: ts.Program, fullTypeName: string, args =
 
                     allSymbols[fullName] = nodeType;
 
-                    //if (sourceFileIdx == 0)
-                    if (!sourceFile.hasNoDefaultLib)
+                    // if (sourceFileIdx == 0)
+                    if (!sourceFile.hasNoDefaultLib) {
                         userSymbols[fullName] = nodeType;
+                    }
 
                     const baseTypes = nodeType.getBaseTypes() || [];
 
@@ -694,24 +713,23 @@ export function generateSchema(program: ts.Program, fullTypeName: string, args =
                         inheritingTypes[baseName].push(fullName);
                     });
                 } else {
-                    ts.forEachChild(node, (node) => inspect(node, tc));
+                    ts.forEachChild(node, (n) => inspect(n, tc));
                 }
             }
-            inspect(sourceFile, tc);
+            inspect(sourceFile, typeChecker);
         });
 
-        const generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, tc, args);
-        let definition : any;
-        if (fullTypeName == '*') { // All types in file(s)
+        const generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, typeChecker, args);
+        let definition: any;
+        if (fullTypeName === "*") { // All types in file(s)
             definition = generator.getSchemaForSymbols(userSymbols);
-        }
-        else { // Use specific type as root object
+        } else { // Use specific type as root object
             definition = generator.getSchemaForSymbol(fullTypeName);
         }
         return definition;
     } else {
         diagnostics.forEach((diagnostic) => {
-            let message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
+            let message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
             if(diagnostic.file) {
             let { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
             console.warn(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
@@ -738,11 +756,11 @@ export function programFromConfig(configFileName: string) {
     const program = ts.createProgram(configParseResult.fileNames, options);
     return program;
 
-    //const conf = ts.convertCompilerOptionsFromJson(null, path.dirname(filePattern), "tsconfig.json");
+    // const conf = ts.convertCompilerOptionsFromJson(null, path.dirname(filePattern), "tsconfig.json");
 }
 export function exec(filePattern: string, fullTypeName: string, args = getDefaultArgs()) {
     let program: ts.Program;
-    if(path.basename(filePattern) == "tsconfig.json") {
+    if(path.basename(filePattern) === "tsconfig.json") {
         program = programFromConfig(filePattern);
     } else {
         program = getProgramFromFiles(glob.sync(filePattern), {
@@ -810,7 +828,7 @@ if (typeof window === "undefined" && require.main === module) {
     run();
 }
 
-//exec("example/**/*.ts", "Invoice");
+// exec("example/**/*.ts", "Invoice");
 /*
 let args = defaultArgs;
 args.useRootRef = true;

@@ -1,8 +1,8 @@
 import {assert} from "chai";
-import {version as TypescriptVersion, CompilerOptions} from "typescript";
+import {CompilerOptions} from "typescript";
 import * as TJS from "../typescript-json-schema";
-import {readFileSync} from 'fs';
-import {resolve} from 'path';
+import {readFileSync} from "fs";
+import {resolve} from "path";
 
 const base = "test/programs/";
 
@@ -12,10 +12,10 @@ export function assertSchema(group: string, name: string, type: string, settings
             settings = TJS.getDefaultArgs();
             settings.generateRequired = true;
         }
-        
+
         const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(base + group + "/" + name)], compilerOptions), type, settings);
 
-        const file = readFileSync(base + group + "/schema.json", "utf8")
+        const file = readFileSync(base + group + "/schema.json", "utf8");
         const expected = JSON.parse(file);
 
         assert.isObject(actual);
@@ -37,7 +37,7 @@ describe("schema", function () {
     assertSchema("module-interface-single", "main.ts", "MyObject");
 
     // not supported right now
-    //assertSchema("module-interface-deep", "main.ts", "Def");
+    // assertSchema("module-interface-deep", "main.ts", "Def");
 
     assertSchema("enums-string", "main.ts", "MyObject");
     assertSchema("enums-number", "main.ts", "MyObject");
@@ -51,7 +51,7 @@ describe("schema", function () {
     assertSchema("map-types", "main.ts", "MyObject");
 
     assertSchema("namespace", "main.ts", "Type");
-    
+
     assertSchema("type-union", "main.ts", "MyObject");
     assertSchema("type-intersection", "main.ts", "MyObject");
 
@@ -66,9 +66,9 @@ describe("schema", function () {
 
     assertSchema("comments", "main.ts", "MyObject");
     assertSchema("comments-override", "main.ts", "MyObject");
-    
+
     assertSchema("type-union-tagged", "main.ts", "Shape");
-    
+
     assertSchema("strict-null-checks", "main.ts", "MyObject", undefined, {
         strictNullChecks: true
     });

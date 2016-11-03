@@ -17,11 +17,10 @@ type Ref = { foo: number };
 type MyType5 = Ref;
 
 
-interface MyObject
-{
-    var1 : MyType1;
-    var2 : MyType2;
-    var3 : MyType3;
-    var4 : MyType4;
-    var5 : MyType5;
+interface MyObject {
+    var1: MyType1;
+    var2: MyType2;
+    var3: MyType3;
+    var4: MyType4;
+    var5: MyType5;
 }

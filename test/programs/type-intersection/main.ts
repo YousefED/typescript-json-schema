@@ -5,7 +5,6 @@ interface Type2 {
     value2: number;
 }
 
-interface MyObject
-{
+interface MyObject {
     value: Type1 & Type2;
 }

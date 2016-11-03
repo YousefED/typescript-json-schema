@@ -23,13 +23,13 @@ interface MyObject {
      * @minimum 0
      * @maximum 100
      */
-    opacity : number;
-    
+    opacity: number;
+
     /**
      * Description of field position, of aliased type Vector3D, which should inherit its annotations
      */
-    position : Vector3D;
-    
+    position: Vector3D;
+
     /**
      * Description of rotation, a field with an anonymous type
      */
@@ -40,7 +40,5 @@ interface MyObject {
          * @maximum 90
          */
         yaw: number;
-    }
-    
+    };
 }
-

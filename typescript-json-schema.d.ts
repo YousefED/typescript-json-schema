@@ -18,7 +18,6 @@ export declare class JsonSchemaGenerator {
     private allSymbols;
     private inheritingTypes;
     private tc;
-    private sandbox;
     private reffedDefinitions;
     constructor(allSymbols: {
         [name: string]: ts.Type;

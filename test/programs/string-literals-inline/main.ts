@@ -1,3 +1,3 @@
 class MyObject {
-	foo: "ok" | "fail" | "abort"
+    foo: "ok" | "fail" | "abort";
 }

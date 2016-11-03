@@ -2,7 +2,7 @@
 interface MyType {}
 
 interface MyMap1 {
-    [id : string] : MyType;
+    [id: string]: MyType;
 }
 
 /**
@@ -10,10 +10,10 @@ interface MyMap1 {
  * @additionalProperties false
  */
 interface MyMap2 {
-    [id : string] : (string | number);
+    [id: string]: (string | number);
 }
 
 interface MyObject {
-    map1 : MyMap1;
-    map2 : MyMap2;
+    map1: MyMap1;
+    map2: MyMap2;
 }

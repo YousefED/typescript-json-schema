@@ -1,11 +1,11 @@
- 
+
 class MyObject {
      val: number;
-     val_nullable: number | null;
-     val_undef: number | undefined;
-     val_opt?: number;
+     valNullable: number | null;
+     valUndef: number | undefined;
+     valOpt?: number;
 
-     val_true_opt?: true;
-     val_true_or_null: true|null;
-     val_true: true|true; // twice to check that it will appear only once
+     valTrueOpt?: true;
+     valTrueOrNull: true|null;
+     valTrue: true|true; // twice to check that it will appear only once
 }

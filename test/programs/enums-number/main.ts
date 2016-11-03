@@ -4,5 +4,5 @@ enum Enum {
 }
 
 interface MyObject {
-  foo: Enum
+  foo: Enum;
 }

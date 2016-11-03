@@ -2,8 +2,8 @@
     FieldWithAnonType: {
         SubfieldA: number;
         SubfieldB: (string | number);
-        SubfieldC : {
+        SubfieldC: {
             SubsubfieldA: number[];
         }
-    }
+    };
 }

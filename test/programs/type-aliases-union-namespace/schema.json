@@ -1,0 +1,18 @@
+{
+    "type": "object",
+    "properties": {
+        "direction": {
+            "enum": [
+                "north",
+                "south",
+                "east",
+                "west"
+            ],
+            "type": "string"
+        }
+    },
+    "required": [
+        "direction"
+    ],
+    "$schema": "http://json-schema.org/draft-04/schema#"
+}

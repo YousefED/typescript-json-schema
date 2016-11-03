@@ -2,6 +2,7 @@
 var ts = require("typescript");
 var glob = require("glob");
 var path = require("path");
+var stringify = require("json-stable-stringify");
 var vm = require("vm");
 function getDefaultArgs() {
     return {
@@ -684,7 +685,7 @@ function exec(filePattern, fullTypeName, args) {
         });
     }
     var definition = generateSchema(program, fullTypeName, args);
-    var json = JSON.stringify(definition, null, 4) + "\n";
+    var json = stringify(definition, { space: 4 }) + "\n\n";
     if (args.out) {
         require("fs").writeFile(args.out, json, function (err) {
             if (err) {

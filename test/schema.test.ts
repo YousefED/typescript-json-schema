@@ -68,6 +68,7 @@ describe("schema", function () {
     assertSchema("comments-override", "main.ts", "MyObject");
 
     assertSchema("type-union-tagged", "main.ts", "Shape");
+    assertSchema("type-aliases-union-namespace", "main.ts", "MyModel");
 
     assertSchema("strict-null-checks", "main.ts", "MyObject", undefined, {
         strictNullChecks: true

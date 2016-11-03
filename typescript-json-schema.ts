@@ -572,10 +572,10 @@ export class JsonSchemaGenerator {
         }
 
         let fullTypeName = "";
-        if (asTypeAliasRef) {
-            fullTypeName = tc.getFullyQualifiedName(reffedType);
-        } else if (asRef) {
+        if (asRef) {
             fullTypeName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+        } else if (asTypeAliasRef) {
+            fullTypeName = tc.getFullyQualifiedName(reffedType);
         }
 
         if (asRef) {

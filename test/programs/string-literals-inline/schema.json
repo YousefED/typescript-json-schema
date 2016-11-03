@@ -4,9 +4,9 @@
         "foo": {
             "type": "string",
             "enum": [
-                "ok",
+                "abort",
                 "fail",
-                "abort"
+                "ok"
             ]
         }
     },

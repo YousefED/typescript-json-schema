@@ -11,9 +11,9 @@
     "definitions": {
         "Cardinal": {
             "enum": [
+                "east",
                 "north",
                 "south",
-                "east",
                 "west"
             ],
             "type": "string"

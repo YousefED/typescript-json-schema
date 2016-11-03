@@ -19,9 +19,9 @@
             "enum": [
                 0,
                 1,
-                true,
+                null,
                 "str",
-                null
+                true
             ]
         }
     },

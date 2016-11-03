@@ -662,10 +662,6 @@ export function generateSchema(program: ts.Program, fullTypeName: string, args =
         const inheritingTypes: { [baseName: string]: string[] } = {};
 
         program.getSourceFiles().forEach((sourceFile, sourceFileIdx) => {
-            /*console.log(sourceFile.fileName);
-            if(sourceFile.fileName.indexOf("main.ts") > -1) {
-                debugger;
-            } */
             function inspect(node: ts.Node, tc: ts.TypeChecker) {
 
                 if (node.kind == ts.SyntaxKind.ClassDeclaration

@@ -1,6 +1,7 @@
 import * as ts from "typescript";
 import * as glob from "glob";
 import * as path from "path";
+import * as stringify from "json-stable-stringify";
 
 
 const vm = require("vm");
@@ -770,7 +771,7 @@ export function exec(filePattern: string, fullTypeName: string, args = getDefaul
 
     const definition = generateSchema(program, fullTypeName, args);
 
-    const json = JSON.stringify(definition, null, 4) + "\n";
+    const json = stringify(definition, {space: 4}) + "\n\n";
     if(args.out) {
         require("fs").writeFile(args.out, json, function(err) {
             if(err) {

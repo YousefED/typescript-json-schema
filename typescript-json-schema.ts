@@ -17,7 +17,7 @@ export function getDefaultArgs() {
         usePropertyOrder: false,
         generateRequired: false,
         strictNullChecks: false,
-        out: undefined
+        out: undefined as string
     };
 }
 
@@ -62,7 +62,7 @@ export class JsonSchemaGenerator {
             const annotationTokens = annotation[0].split(" ");
             let keyword: string = annotationTokens[0].slice(1);
             const path = keyword.split(".");
-            let context = null;
+            let context: string = null;
 
             // TODO: paths etc. originate from Typson, not supported atm.
             if (path.length > 1) {
@@ -102,7 +102,7 @@ export class JsonSchemaGenerator {
      * @param to {object} the destination variable or definition.
      * @returns {string} the full comment minus the beginning description part.
      */
-    private copyDescription(comment: string, to): string {
+    private copyDescription(comment: string, to: {description: string}): string {
         const delimiter = "@";
         const delimiterIndex = comment.indexOf(delimiter);
         const description = comment.slice(0, delimiterIndex < 0 ? comment.length : delimiterIndex);
@@ -254,7 +254,7 @@ export class JsonSchemaGenerator {
                 definition.default = initial.getText();
             } else {
                 try {
-                    const sandbox = { sandboxvar: null };
+                    const sandbox = { sandboxvar: null as ts.Expression };
                     vm.runInNewContext("sandboxvar=" + initial.getText(), sandbox);
 
                     initial = sandbox.sandboxvar;
@@ -280,7 +280,7 @@ export class JsonSchemaGenerator {
         var enumValues: any[] = [];
         let enumTypes: string[] = [];
 
-        const addType = (type) => {
+        const addType = (type: string) => {
             if (enumTypes.indexOf(type) === -1) {
                 enumTypes.push(type);
             }
@@ -333,17 +333,17 @@ export class JsonSchemaGenerator {
     }
 
     private getUnionDefinition(unionType: ts.UnionType, prop: ts.Symbol, tc: ts.TypeChecker, unionModifier: string, definition: any): any {
-        const enumValues = [];
-        const simpleTypes = [];
-        const schemas = [];
+        const enumValues: (string | number | boolean)[] = [];
+        const simpleTypes: string[] = [];
+        const schemas: any[] = [];
 
-        const addSimpleType = (type) => {
+        const addSimpleType = (type: string) => {
             if (simpleTypes.indexOf(type) === -1) {
                 simpleTypes.push(type);
             }
         };
 
-        const addEnumValue = (val) => {
+        const addEnumValue = (val: string | number | boolean) => {
             if (enumValues.indexOf(val) === -1) {
                 enumValues.push(val);
             }
@@ -761,7 +761,7 @@ export function programFromConfig(configFileName: string) {
 }
 export function exec(filePattern: string, fullTypeName: string, args = getDefaultArgs()) {
     let program: ts.Program;
-    if(path.basename(filePattern) === "tsconfig.json") {
+    if (path.basename(filePattern) === "tsconfig.json") {
         program = programFromConfig(filePattern);
     } else {
         program = getProgramFromFiles(glob.sync(filePattern), {
@@ -772,9 +772,9 @@ export function exec(filePattern: string, fullTypeName: string, args = getDefaul
     const definition = generateSchema(program, fullTypeName, args);
 
     const json = stringify(definition, {space: 4}) + "\n\n";
-    if(args.out) {
-        require("fs").writeFile(args.out, json, function(err) {
-            if(err) {
+    if (args.out) {
+        require("fs").writeFile(args.out, json, function(err: Error) {
+            if (err) {
                 console.error("Unable to write output file: " + err.message);
             }
         });

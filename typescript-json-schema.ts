@@ -619,10 +619,10 @@ export class JsonSchemaGenerator {
             } else {
                 this.getClassDefinition(typ, tc, definition);
             }
+        }
 
-            if (otherAnnotations["nullable"]) {
-                this.makeNullable(definition);
-            }
+        if (otherAnnotations["nullable"]) {
+            this.makeNullable(returnedDefinition);
         }
 
         return returnedDefinition;

@@ -1,5 +1,12 @@
 {
-    "type": "object",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "MyType6": {
+            "properties": {
+            },
+            "type": "object"
+        }
+    },
     "properties": {
         "var1": {
             "type": [
@@ -17,10 +24,10 @@
         "var3": {
             "anyOf": [
                 {
-                    "type": "array",
                     "items": {
                         "type": "number"
-                    }
+                    },
+                    "type": "array"
                 },
                 {
                     "type": "string"
@@ -33,10 +40,10 @@
         "var4": {
             "anyOf": [
                 {
-                    "type": "array",
                     "items": {
                         "type": "number"
-                    }
+                    },
+                    "type": "array"
                 },
                 {
                     "type": "null"
@@ -46,7 +53,6 @@
         "var5": {
             "anyOf": [
                 {
-                    "type": "object",
                     "properties": {
                         "foo": {
                             "type": "number"
@@ -54,12 +60,26 @@
                     },
                     "required": [
                         "foo"
-                    ]
+                    ],
+                    "type": "object"
                 },
                 {
                     "type": "null"
                 }
             ]
+        },
+        "var6": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/MyType6"
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "var7": {
+            "$ref": "#/definitions/MyType6"
         }
     },
     "required": [
@@ -67,7 +87,9 @@
         "var2",
         "var3",
         "var4",
-        "var5"
+        "var5",
+        "var6",
+        "var7"
     ],
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    "type": "object"
 }

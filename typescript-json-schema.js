@@ -15,7 +15,7 @@ function getDefaultArgs() {
         usePropertyOrder: false,
         generateRequired: false,
         strictNullChecks: false,
-        out: undefined
+        out: ""
     };
 }
 exports.getDefaultArgs = getDefaultArgs;
@@ -547,9 +547,9 @@ var JsonSchemaGenerator = (function () {
             else {
                 this.getClassDefinition(typ, tc, definition);
             }
-            if (otherAnnotations["nullable"]) {
-                this.makeNullable(definition);
-            }
+        }
+        if (otherAnnotations["nullable"]) {
+            this.makeNullable(returnedDefinition);
         }
         return returnedDefinition;
     };
@@ -721,7 +721,7 @@ function run() {
         .boolean("required").default("required", defaultArgs.generateRequired)
         .describe("required", "Create required array for non-optional properties.")
         .boolean("strictNullChecks").default("strictNullChecks", defaultArgs.strictNullChecks)
-        .describe("strictNullChecks", "(TypeScript 2) Make values non-nullable by default.")
+        .describe("strictNullChecks", "Make values non-nullable by default.")
         .alias("out", "o")
         .describe("out", "The output file, defaults to using stdout")
         .argv;

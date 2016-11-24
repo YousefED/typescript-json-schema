@@ -3,12 +3,15 @@ import {CompilerOptions} from "typescript";
 import * as TJS from "../typescript-json-schema";
 import {readFileSync} from "fs";
 import {resolve} from "path";
+import * as Ajv from "ajv";
+
+const ajv = new Ajv();
 
 const base = "test/programs/";
 
 export function assertSchema(group: string, name: string, type: string, settings?: any, compilerOptions?: CompilerOptions) {
     it(group + " should create correct schema", function() {
-        if(!settings) {
+        if (!settings) {
             settings = TJS.getDefaultArgs();
             settings.generateRequired = true;
         }
@@ -19,7 +22,11 @@ export function assertSchema(group: string, name: string, type: string, settings
         const expected = JSON.parse(file);
 
         assert.isObject(actual);
-        assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected, "The schema is not as expected");
+
+        // test against the meta schema
+        ajv.validateSchema(actual);
+        assert.equal(ajv.errors, null, "The schema is not valid");
     });
 }
 

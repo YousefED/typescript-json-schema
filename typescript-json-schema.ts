@@ -17,7 +17,7 @@ export function getDefaultArgs() {
         usePropertyOrder: false,
         generateRequired: false,
         strictNullChecks: false,
-        out: undefined as string
+        out: ""
     };
 }
 
@@ -472,7 +472,7 @@ export class JsonSchemaGenerator {
             if (this.args.usePropertyOrder) {
                 // propertyOrder is non-standard, but useful:
                 // https://github.com/json-schema/json-schema/issues/87
-                const propertyOrder = props.reduce((order, prop) => {
+                const propertyOrder = props.reduce((order: string[], prop: ts.Symbol) => {
                     order.push(prop.getName());
                     return order;
                 }, []);
@@ -480,7 +480,7 @@ export class JsonSchemaGenerator {
                 definition.propertyOrder = propertyOrder;
             }
             if (this.args.generateRequired) {
-                const requiredProps = props.reduce((required, prop) => {
+                const requiredProps = props.reduce((required: string[], prop: ts.Symbol) => {
                     if (!(prop.flags & ts.SymbolFlags.Optional) && !(<any>prop).mayBeUndefined) {
                         required.push(prop.getName());
                     }

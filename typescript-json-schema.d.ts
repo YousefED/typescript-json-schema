@@ -9,7 +9,7 @@ export declare function getDefaultArgs(): {
     usePropertyOrder: boolean;
     generateRequired: boolean;
     strictNullChecks: boolean;
-    out: any;
+    out: string;
 };
 export declare class JsonSchemaGenerator {
     private args;
@@ -33,7 +33,7 @@ export declare class JsonSchemaGenerator {
         usePropertyOrder: boolean;
         generateRequired: boolean;
         strictNullChecks: boolean;
-        out: any;
+        out: string;
     });
     readonly ReffedDefinitions: {
         [key: string]: any;
@@ -69,7 +69,7 @@ export declare function generateSchema(program: ts.Program, fullTypeName: string
     usePropertyOrder: boolean;
     generateRequired: boolean;
     strictNullChecks: boolean;
-    out: any;
+    out: string;
 }): any;
 export declare function programFromConfig(configFileName: string): ts.Program;
 export declare function exec(filePattern: string, fullTypeName: string, args?: {
@@ -82,6 +82,6 @@ export declare function exec(filePattern: string, fullTypeName: string, args?: {
     usePropertyOrder: boolean;
     generateRequired: boolean;
     strictNullChecks: boolean;
-    out: any;
+    out: string;
 }): void;
 export declare function run(): void;

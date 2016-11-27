@@ -120,7 +120,7 @@ export class JsonSchemaGenerator {
         if (!comments || !comments.length) {
             return;
         }
-        let joined = comments.map(comment => comment.text.trim()).join("\n");
+        let joined = comments.map(comment => comment.kind === "lineBreak" ? comment.text : comment.text.trim()).join("");
         joined = this.copyDescription(joined, definition);
         this.copyValidationKeywords(joined, definition, otherAnnotations);
     }

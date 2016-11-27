@@ -91,7 +91,7 @@ var JsonSchemaGenerator = (function () {
         if (!comments || !comments.length) {
             return;
         }
-        var joined = comments.map(function (comment) { return comment.text.trim(); }).join("\n");
+        var joined = comments.map(function (comment) { return comment.kind === "lineBreak" ? comment.text : comment.text.trim(); }).join("");
         joined = this.copyDescription(joined, definition);
         this.copyValidationKeywords(joined, definition, otherAnnotations);
     };

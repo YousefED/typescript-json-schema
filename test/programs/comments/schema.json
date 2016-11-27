@@ -1,5 +1,5 @@
 {
-    "description": "Description of MyObject, a top level object,\n\nwhich also has a comment that spans\n\nmultiple lines",
+    "description": "Description of MyObject, a top level object,\nwhich also has a comment that spans\nmultiple lines",
     "additionalProperties": false,
     "type": "object",
     "properties": {

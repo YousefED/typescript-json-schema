@@ -144,10 +144,10 @@ export class JsonSchemaGenerator {
      * Checks whether a type is a tuple type.
      */
     private resolveTupleType(propertyType: ts.Type): ts.TupleTypeNode {
-        if (!propertyType.getSymbol() && (propertyType.getFlags() & ts.TypeFlags.Reference)) {
+        if (!propertyType.getSymbol() && (propertyType.getFlags() & ts.TypeFlags.Object && (<ts.ObjectType>propertyType).objectFlags & ts.ObjectFlags.Reference)) {
             return (propertyType as ts.TypeReference).target as any;
         }
-        if (!(propertyType.flags & ts.TypeFlags.Tuple)) {
+        if (!(propertyType.getFlags() & ts.TypeFlags.Object && (<ts.ObjectType>propertyType).objectFlags & ts.ObjectFlags.Tuple)) {
             return null;
         }
         return propertyType as any;
@@ -418,6 +418,8 @@ export class JsonSchemaGenerator {
         const props = tc.getPropertiesOfType(clazzType);
         const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
+        const modifierFlags = ts.getCombinedModifierFlags(node);
+
         if(props.length === 0 && clazz.members && clazz.members.length === 1 && clazz.members[0].kind === ts.SyntaxKind.IndexSignature) {
             // for case "array-types"
             const indexSignature = <ts.IndexSignatureDeclaration>clazz.members[0];
@@ -442,7 +444,7 @@ export class JsonSchemaGenerator {
                 definition.items = def;
             }
             return definition;
-        } else if (clazz.flags & ts.NodeFlags.Abstract) {
+        } else if (modifierFlags & ts.ModifierFlags.Abstract) {
             const oneOf = this.inheritingTypes[fullName].map((typename) => {
                 return this.getTypeDefinition(this.allSymbols[typename], tc);
             });
@@ -566,7 +568,7 @@ export class JsonSchemaGenerator {
         // aliased types must be handled slightly different
         const asTypeAliasRef = asRef && reffedType && (this.args.useTypeAliasRef || isStringEnum);
         if (!asTypeAliasRef) {
-            if (isRawType || (typ.getFlags() & ts.TypeFlags.Anonymous)) {
+            if (isRawType || typ.getFlags() & ts.TypeFlags.Object && (<ts.ObjectType>typ).objectFlags & ts.ObjectFlags.Anonymous) {
                 asRef = false; // raw types and inline types cannot be reffed,
                                 // unless we are handling a type alias
             }

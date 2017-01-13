@@ -28,9 +28,6 @@ export class JsonSchemaGenerator {
         "pattern", "minItems", "maxItems", "uniqueItems", "default",
         "additionalProperties", "enum"];
 
-    private static annotedValidationKeywordPattern = /@[a-z.-]+\s*[^@]+/gi;
-    // private static primitiveTypes = ["string", "number", "boolean", "any"];
-
     private allSymbols: { [name: string]: ts.Type };
     private inheritingTypes: { [baseName: string]: string[] };
     private tc: ts.TypeChecker;
@@ -46,95 +43,55 @@ export class JsonSchemaGenerator {
     public get ReffedDefinitions(): { [key: string]: any } {
         return this.reffedDefinitions;
     }
-    /**
-     * (source: Typson)
-     * Extracts the schema validation keywords stored in a comment and register them as properties.
-     * A validation keyword starts by a @. It has a name and a value. Several keywords may occur.
-     *
-     * @param comment {string} the full comment.
-     * @param to {object} the destination variable.
-     */
-    private copyValidationKeywords(comment: string, to: {}, otherAnnotations: {}) {
-        JsonSchemaGenerator.annotedValidationKeywordPattern.lastIndex = 0;
-        // TODO: to improve the use of the exec method: it could make the tokenization
-        let annotation: string[];
-        while ((annotation = JsonSchemaGenerator.annotedValidationKeywordPattern.exec(comment))) {
-            const annotationTokens = annotation[0].split(" ");
-            let keyword: string = annotationTokens[0].slice(1);
-            const path = keyword.split(".");
-            let context: string = null;
-
-            // TODO: paths etc. originate from Typson, not supported atm.
-            if (path.length > 1) {
-                context = path[0];
-                keyword = path[1];
-            }
-
-            keyword = keyword.replace("TJS-", "");
-
-            // case sensitive check inside the dictionary
-            if (JsonSchemaGenerator.validationKeywords.indexOf(keyword) >= 0 || JsonSchemaGenerator.validationKeywords.indexOf("TJS-" + keyword) >= 0) {
-                let value: string = annotationTokens.length > 1 ? annotationTokens.slice(1).join(" ") : "";
-                value = value.replace(/^\s+|\s+$/gm, "");  // trim all whitepsace characters, including newlines
-                try {
-                    value = JSON.parse(value);
-                } catch (e) { }
-                if (context) {
-                    if (!to[context]) {
-                        to[context] = {};
-                    }
-                    to[context][keyword] = value;
-                } else {
-                    to[keyword] = value;
-                }
-            } else {
-                otherAnnotations[keyword] = true;
-            }
-        }
-    }
 
     /**
-     * (source: Typson)
-     * Extracts the description part of a comment and register it in the description property.
-     * The description is supposed to start at first position and may be delimited by @.
-     *
-     * @param comment {string} the full comment.
-     * @param to {object} the destination variable or definition.
-     * @returns {string} the full comment minus the beginning description part.
+     * Try to parse a value and returns the string if it fails.
      */
-    private copyDescription(comment: string, to: {description: string}): string {
-        const delimiter = "@";
-        const delimiterIndex = comment.indexOf(delimiter);
-        const description = comment.slice(0, delimiterIndex < 0 ? comment.length : delimiterIndex);
-        if (description.length > 0) {
-            to.description = description.replace(/\s+$/g, "");
+    private parseValue(value: string) {
+        if (value === "false") {
+            return false;
         }
-        return delimiterIndex < 0 ? "" : comment.slice(delimiterIndex);
+        if (value === "true") {
+            return true;
+        }
+        let num = parseFloat(value);
+        return isNaN(num) ? value : num;
     }
 
-    private parseCommentsIntoDefinition(symbol: ts.Symbol, definition: any, otherAnnotations: {}): void {
+    private parseCommentsIntoDefinition(symbol: ts.Symbol, definition: {description: string}, otherAnnotations: {}): void {
         if (!symbol) {
             return;
         }
-        const comments: ts.SymbolDisplayPart[] = symbol.getDocumentationComment();
-        if (!comments || !comments.length) {
-            return;
+
+        // the comments for a symbol
+        let comments = symbol.getDocumentationComment();
+
+        if (comments.length) {
+            definition.description = comments.map(comment => comment.kind === "lineBreak" ? comment.text : comment.text.trim()).join("");
         }
-        let joined = comments.map(comment => comment.kind === "lineBreak" ? comment.text : comment.text.trim()).join("");
-        joined = this.copyDescription(joined, definition);
-        this.copyValidationKeywords(joined, definition, otherAnnotations);
+
+        // jsdocs are separate from comments
+        const jsdocs = symbol.getJsDocTags();
+        jsdocs.forEach(doc => {
+            if (JsonSchemaGenerator.validationKeywords.indexOf(doc.name) > 0 || JsonSchemaGenerator.validationKeywords.indexOf("TJS-" + doc.name) >= 0) {
+                definition[doc.name] = this.parseValue(doc.text);
+            } else {
+                // special annotations
+                otherAnnotations[doc.name] = true;
+            }
+        });
     }
 
-    private extractLiteralValue(typ: ts.Type): string|number|boolean {
-        if (typ.flags & (ts.TypeFlags as any).EnumLiteral) {
-            let str = (typ as any /*ts.LiteralType*/).text;
+    private extractLiteralValue(typ: ts.Type): string | number | boolean {
+        if (typ.flags & ts.TypeFlags.EnumLiteral) {
+            let str = (<ts.LiteralType>typ).text;
             let num = parseFloat(str);
             return isNaN(num) ? str : num;
         } else if (typ.flags & ts.TypeFlags.StringLiteral) {
-            return (/*<ts.StringLiteralType/ts.LiteralType>*/ typ as any).text;
-        } else if (typ.flags & (ts.TypeFlags as any).NumberLiteral) {
-            return parseFloat((typ as any).text);
-        } else if (typ.flags & (ts.TypeFlags as any).BooleanLiteral) {
+            return (<ts.LiteralType>typ).text;
+        } else if (typ.flags & ts.TypeFlags.NumberLiteral) {
+            return parseFloat((<ts.LiteralType>typ).text);
+        } else if (typ.flags & ts.TypeFlags.BooleanLiteral) {
             return (typ as any).intrinsicName === "true";
         }
         return undefined;

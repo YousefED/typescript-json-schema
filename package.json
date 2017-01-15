@@ -32,22 +32,21 @@
   "dependencies": {
     "glob": "~7.1.1",
     "json-stable-stringify": "^1.0.1",
-    "typescript": "~2.0.10",
-    "yargs": "^6.4.0"
+    "typescript": "~2.1.4",
+    "yargs": "^6.6.0"
   },
   "devDependencies": {
-    "@types/ajv": "0.0.4",
     "@types/assertion-error": "^1.0.30",
     "@types/chai": "^3.4.34",
     "@types/glob": "^5.0.30",
     "@types/json-stable-stringify": "^1.0.29",
-    "@types/mocha": "^2.2.33",
-    "@types/node": "^6.0.51",
-    "ajv": "^4.9.0",
+    "@types/mocha": "^2.2.37",
+    "@types/node": "^7.0.0",
+    "ajv": "^4.10.4",
     "chai": "^3.5.0",
-    "mocha": "^3.1.2",
-    "source-map-support": "^0.4.6",
-    "tslint": "^4.0.2"
+    "mocha": "^3.2.0",
+    "source-map-support": "^0.4.8",
+    "tslint": "^4.3.1"
   },
   "scripts": {
     "test": "npm run build && mocha -t 5000 --require source-map-support/register test",

@@ -8,14 +8,11 @@
     "curly": true,
     "forin": true,
     "label-position": true,
-    "label-undefined": true,
     "no-arg": true,
     "no-any": false,
     "jsdoc-format": true,
     "semicolon": [true, "always"],
-    "no-duplicate-key": true,
     "no-duplicate-variable": true,
-    "no-unreachable": true,
     "no-consecutive-blank-lines": false,
     "no-console": [
       true,
@@ -32,7 +29,6 @@
     "no-string-literal": false,
     "no-trailing-whitespace": true,
     "no-unused-expression": true,
-    "no-unused-variable": true,
     "no-use-before-declare": true,
     "one-line": [
       true,

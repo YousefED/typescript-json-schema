@@ -24,10 +24,10 @@ var JsonSchemaGenerator = (function () {
         if (args === void 0) { args = getDefaultArgs(); }
         this.args = args;
         this.reffedDefinitions = {};
-        this.simpleTypesAllowedProperties = [
-            "type",
-            "description"
-        ];
+        this.simpleTypesAllowedProperties = {
+            type: true,
+            description: true
+        };
         this.allSymbols = allSymbols;
         this.inheritingTypes = inheritingTypes;
         this.tc = tc;
@@ -39,61 +39,35 @@ var JsonSchemaGenerator = (function () {
         enumerable: true,
         configurable: true
     });
-    JsonSchemaGenerator.prototype.copyValidationKeywords = function (comment, to, otherAnnotations) {
-        JsonSchemaGenerator.annotedValidationKeywordPattern.lastIndex = 0;
-        var annotation;
-        while ((annotation = JsonSchemaGenerator.annotedValidationKeywordPattern.exec(comment))) {
-            var annotationTokens = annotation[0].split(" ");
-            var keyword = annotationTokens[0].slice(1);
-            var path_1 = keyword.split(".");
-            var context_1 = null;
-            if (path_1.length > 1) {
-                context_1 = path_1[0];
-                keyword = path_1[1];
-            }
-            keyword = keyword.replace("TJS-", "");
-            if (JsonSchemaGenerator.validationKeywords.indexOf(keyword) >= 0 || JsonSchemaGenerator.validationKeywords.indexOf("TJS-" + keyword) >= 0) {
-                var value = annotationTokens.length > 1 ? annotationTokens.slice(1).join(" ") : "";
-                value = value.replace(/^\s+|\s+$/gm, "");
-                try {
-                    value = JSON.parse(value);
-                }
-                catch (e) { }
-                if (context_1) {
-                    if (!to[context_1]) {
-                        to[context_1] = {};
-                    }
-                    to[context_1][keyword] = value;
-                }
-                else {
-                    to[keyword] = value;
-                }
-            }
-            else {
-                otherAnnotations[keyword] = true;
-            }
+    JsonSchemaGenerator.prototype.parseValue = function (value) {
+        if (value === "false") {
+            return false;
         }
-    };
-    JsonSchemaGenerator.prototype.copyDescription = function (comment, to) {
-        var delimiter = "@";
-        var delimiterIndex = comment.indexOf(delimiter);
-        var description = comment.slice(0, delimiterIndex < 0 ? comment.length : delimiterIndex);
-        if (description.length > 0) {
-            to.description = description.replace(/\s+$/g, "");
+        if (value === "true") {
+            return true;
         }
-        return delimiterIndex < 0 ? "" : comment.slice(delimiterIndex);
+        var num = parseFloat(value);
+        return isNaN(num) ? value : num;
     };
     JsonSchemaGenerator.prototype.parseCommentsIntoDefinition = function (symbol, definition, otherAnnotations) {
+        var _this = this;
         if (!symbol) {
             return;
         }
         var comments = symbol.getDocumentationComment();
-        if (!comments || !comments.length) {
-            return;
+        if (comments.length) {
+            definition.description = comments.map(function (comment) { return comment.kind === "lineBreak" ? comment.text : comment.text.trim(); }).join("");
         }
-        var joined = comments.map(function (comment) { return comment.kind === "lineBreak" ? comment.text : comment.text.trim(); }).join("");
-        joined = this.copyDescription(joined, definition);
-        this.copyValidationKeywords(joined, definition, otherAnnotations);
+        var jsdocs = symbol.getJsDocTags();
+        jsdocs.forEach(function (doc) {
+            var _a = doc.name === "TJS" ? /^-([\w]+)\s([\w]+)/g.exec(doc.text).slice(1, 3) : [doc.name, doc.text], name = _a[0], text = _a[1];
+            if (JsonSchemaGenerator.validationKeywords[name]) {
+                definition[name] = _this.parseValue(text);
+            }
+            else {
+                otherAnnotations[doc.name] = true;
+            }
+        });
     };
     JsonSchemaGenerator.prototype.extractLiteralValue = function (typ) {
         if (typ.flags & ts.TypeFlags.EnumLiteral) {
@@ -113,10 +87,10 @@ var JsonSchemaGenerator = (function () {
         return undefined;
     };
     JsonSchemaGenerator.prototype.resolveTupleType = function (propertyType) {
-        if (!propertyType.getSymbol() && (propertyType.getFlags() & ts.TypeFlags.Reference)) {
+        if (!propertyType.getSymbol() && (propertyType.getFlags() & ts.TypeFlags.Object && propertyType.objectFlags & ts.ObjectFlags.Reference)) {
             return propertyType.target;
         }
-        if (!(propertyType.flags & ts.TypeFlags.Tuple)) {
+        if (!(propertyType.getFlags() & ts.TypeFlags.Object && propertyType.objectFlags & ts.ObjectFlags.Tuple)) {
             return null;
         }
         return propertyType;
@@ -217,7 +191,7 @@ var JsonSchemaGenerator = (function () {
                     var sandbox = { sandboxvar: null };
                     vm.runInNewContext("sandboxvar=" + initial.getText(), sandbox);
                     initial = sandbox.sandboxvar;
-                    if (initial === null || typeof (initial) === "string" || typeof (initial) === "number" || typeof (initial) === "boolean" || Object.prototype.toString.call(initial) === "[object Array]") {
+                    if (initial === null || typeof initial === "string" || typeof initial === "number" || typeof initial === "boolean" || Object.prototype.toString.call(initial) === "[object Array]") {
                         definition.default = initial;
                     }
                     else if (initial) {
@@ -282,7 +256,7 @@ var JsonSchemaGenerator = (function () {
             definition.type = (enumTypes.length === 1) ? enumTypes[0] : enumTypes;
         }
         if (enumValues.length > 0) {
-            definition["enum"] = enumValues.sort();
+            definition.enum = enumValues.sort();
         }
         return definition;
     };
@@ -316,7 +290,12 @@ var JsonSchemaGenerator = (function () {
                 else {
                     var keys = Object.keys(def);
                     if (keys.length === 1 && keys[0] === "type") {
-                        addSimpleType(def.type);
+                        if (typeof def.type !== "string") {
+                            console.error("Expected only a simple type.");
+                        }
+                        else {
+                            addSimpleType(def.type);
+                        }
                     }
                     else {
                         schemas.push(def);
@@ -367,6 +346,7 @@ var JsonSchemaGenerator = (function () {
         var clazz = node;
         var props = tc.getPropertiesOfType(clazzType);
         var fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+        var modifierFlags = ts.getCombinedModifierFlags(node);
         if (props.length === 0 && clazz.members && clazz.members.length === 1 && clazz.members[0].kind === ts.SyntaxKind.IndexSignature) {
             var indexSignature = clazz.members[0];
             if (indexSignature.parameters.length !== 1) {
@@ -390,7 +370,7 @@ var JsonSchemaGenerator = (function () {
             }
             return definition;
         }
-        else if (clazz.flags & ts.NodeFlags.Abstract) {
+        else if (modifierFlags & ts.ModifierFlags.Abstract) {
             var oneOf = this.inheritingTypes[fullName].map(function (typename) {
                 return _this.getTypeDefinition(_this.allSymbols[typename], tc);
             });
@@ -436,14 +416,14 @@ var JsonSchemaGenerator = (function () {
     };
     JsonSchemaGenerator.prototype.addSimpleType = function (def, type) {
         for (var k in def) {
-            if (this.simpleTypesAllowedProperties.indexOf(k) === -1) {
+            if (!this.simpleTypesAllowedProperties[k]) {
                 return false;
             }
         }
         if (!def.type) {
             def.type = type;
         }
-        else if (def.type.push) {
+        else if (typeof def.type !== "string") {
             if (!def.type.every(function (val) { return typeof val === "string"; })) {
                 return false;
             }
@@ -496,7 +476,7 @@ var JsonSchemaGenerator = (function () {
         }
         var asTypeAliasRef = asRef && reffedType && (this.args.useTypeAliasRef || isStringEnum);
         if (!asTypeAliasRef) {
-            if (isRawType || (typ.getFlags() & ts.TypeFlags.Anonymous)) {
+            if (isRawType || typ.getFlags() & ts.TypeFlags.Object && typ.objectFlags & ts.ObjectFlags.Anonymous) {
                 asRef = false;
             }
         }
@@ -527,7 +507,7 @@ var JsonSchemaGenerator = (function () {
                     definition.title = fullTypeName;
                 }
             }
-            var node = symbol ? symbol.getDeclarations()[0] : null;
+            var node = symbol && symbol.getDeclarations() !== undefined ? symbol.getDeclarations()[0] : null;
             if (typ.flags & ts.TypeFlags.Union) {
                 this.getUnionDefinition(typ, prop, tc, unionModifier, definition);
             }
@@ -543,6 +523,10 @@ var JsonSchemaGenerator = (function () {
             }
             else if (node && (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)) {
                 this.getEnumDefinition(typ, tc, definition);
+            }
+            else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && Object.keys(symbol.members).length === 0) {
+                definition.type = "object";
+                definition.properties = {};
             }
             else {
                 this.getClassDefinition(typ, tc, definition);
@@ -577,14 +561,28 @@ var JsonSchemaGenerator = (function () {
         }
         return root;
     };
-    JsonSchemaGenerator.validationKeywords = [
-        "ignore", "description", "type", "minimum", "exclusiveMinimum", "maximum",
-        "exclusiveMaximum", "multipleOf", "minLength", "maxLength", "format",
-        "pattern", "minItems", "maxItems", "uniqueItems", "default",
-        "additionalProperties", "enum"];
-    JsonSchemaGenerator.annotedValidationKeywordPattern = /@[a-z.-]+\s*[^@]+/gi;
     return JsonSchemaGenerator;
 }());
+JsonSchemaGenerator.validationKeywords = {
+    ignore: true,
+    description: true,
+    type: true,
+    minimum: true,
+    exclusiveMinimum: true,
+    maximum: true,
+    exclusiveMaximum: true,
+    multipleOf: true,
+    minLength: true,
+    maxLength: true,
+    format: true,
+    pattern: true,
+    minItems: true,
+    maxItems: true,
+    uniqueItems: true,
+    default: true,
+    additionalProperties: true,
+    enum: true
+};
 exports.JsonSchemaGenerator = JsonSchemaGenerator;
 function getProgramFromFiles(files, compilerOptions) {
     if (compilerOptions === void 0) { compilerOptions = {}; }

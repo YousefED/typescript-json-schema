@@ -11,10 +11,34 @@ export declare function getDefaultArgs(): {
     strictNullChecks: boolean;
     out: string;
 };
+export declare type Definition = {
+    $ref?: string;
+    description?: string;
+    allOf?: Definition[];
+    oneOf?: Definition[];
+    anyOf?: Definition[];
+    title?: string;
+    type?: string | string[];
+    definitions?: {
+        [key: string]: any;
+    };
+    format?: string;
+    items?: Definition;
+    minItems?: number;
+    additionalItems?: {
+        anyOf: Definition;
+    };
+    enum?: string[] | Definition[];
+    default?: string | number | boolean | Object;
+    additionalProperties?: Definition;
+    required?: string[];
+    propertyOrder?: string[];
+    properties?: {};
+    defaultProperties?: string[];
+};
 export declare class JsonSchemaGenerator {
     private args;
     private static validationKeywords;
-    private static annotedValidationKeywordPattern;
     private allSymbols;
     private inheritingTypes;
     private tc;
@@ -36,10 +60,9 @@ export declare class JsonSchemaGenerator {
         out: string;
     });
     readonly ReffedDefinitions: {
-        [key: string]: any;
+        [key: string]: Definition;
     };
-    private copyValidationKeywords(comment, to, otherAnnotations);
-    private copyDescription(comment, to);
+    private parseValue(value);
     private parseCommentsIntoDefinition(symbol, definition, otherAnnotations);
     private extractLiteralValue(typ);
     private resolveTupleType(propertyType);
@@ -53,10 +76,10 @@ export declare class JsonSchemaGenerator {
     private addSimpleType(def, type);
     private makeNullable(def);
     private getTypeDefinition(typ, tc, asRef?, unionModifier?, prop?, reffedType?);
-    getSchemaForSymbol(symbolName: string, includeReffedDefinitions?: boolean): any;
+    getSchemaForSymbol(symbolName: string, includeReffedDefinitions?: boolean): Definition;
     getSchemaForSymbols(symbols: {
         [name: string]: ts.Type;
-    }): any;
+    }): Definition;
 }
 export declare function getProgramFromFiles(files: string[], compilerOptions?: ts.CompilerOptions): ts.Program;
 export declare function generateSchema(program: ts.Program, fullTypeName: string, args?: {
@@ -70,7 +93,7 @@ export declare function generateSchema(program: ts.Program, fullTypeName: string
     generateRequired: boolean;
     strictNullChecks: boolean;
     out: string;
-}): any;
+}): Definition;
 export declare function programFromConfig(configFileName: string): ts.Program;
 export declare function exec(filePattern: string, fullTypeName: string, args?: {
     useRef: boolean;

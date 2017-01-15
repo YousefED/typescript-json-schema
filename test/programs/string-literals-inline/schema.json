@@ -8,10 +8,14 @@
                 "fail",
                 "ok"
             ]
+        },
+        "bar": {
+            "type": "string"
         }
     },
     "required": [
-        "foo"
+        "foo",
+        "bar"
     ],
     "$schema": "http://json-schema.org/draft-04/schema#"
 }

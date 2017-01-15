@@ -22,11 +22,29 @@ export function getDefaultArgs() {
 }
 
 export class JsonSchemaGenerator {
-    private static validationKeywords = [
-        "ignore", "description", "type", "minimum", "exclusiveMinimum", "maximum",
-        "exclusiveMaximum", "multipleOf", "minLength", "maxLength", "format",
-        "pattern", "minItems", "maxItems", "uniqueItems", "default",
-        "additionalProperties", "enum"];
+    /**
+     * JSDoc keywords that should be used to annotate the JSON schema.
+     */
+    private static validationKeywords = {
+        ignore: true,
+        description: true,
+        type: true,
+        minimum: true,
+        exclusiveMinimum: true,
+        maximum: true,
+        exclusiveMaximum: true,
+        multipleOf: true,
+        minLength: true,
+        maxLength: true,
+        format: true,
+        pattern: true,
+        minItems: true,
+        maxItems: true,
+        uniqueItems: true,
+        default: true,
+        additionalProperties: true,
+        enum: true
+    };
 
     private allSymbols: { [name: string]: ts.Type };
     private inheritingTypes: { [baseName: string]: string[] };
@@ -73,7 +91,7 @@ export class JsonSchemaGenerator {
         // jsdocs are separate from comments
         const jsdocs = symbol.getJsDocTags();
         jsdocs.forEach(doc => {
-            if (JsonSchemaGenerator.validationKeywords.indexOf(doc.name) > 0 || JsonSchemaGenerator.validationKeywords.indexOf("TJS-" + doc.name) >= 0) {
+            if (JsonSchemaGenerator.validationKeywords[doc.name] || JsonSchemaGenerator.validationKeywords["TJS-" + doc.name]) {
                 definition[doc.name] = this.parseValue(doc.text);
             } else {
                 // special annotations
@@ -453,14 +471,14 @@ export class JsonSchemaGenerator {
         }
     }
 
-    private simpleTypesAllowedProperties = [
-        "type",
-        "description"
-    ];
+    private simpleTypesAllowedProperties = {
+        type: true,
+        description: true
+    };
 
     private addSimpleType(def: any, type: string) {
         for (let k in def) {
-            if (this.simpleTypesAllowedProperties.indexOf(k) === -1) {
+            if (!this.simpleTypesAllowedProperties[k]) {
                 return false;
             }
         }

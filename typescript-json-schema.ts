@@ -118,8 +118,10 @@ export class JsonSchemaGenerator {
         // jsdocs are separate from comments
         const jsdocs = symbol.getJsDocTags();
         jsdocs.forEach(doc => {
-            if (JsonSchemaGenerator.validationKeywords[doc.name] || JsonSchemaGenerator.validationKeywords["TJS-" + doc.name]) {
-                definition[doc.name] = this.parseValue(doc.text);
+            // if we have @TJS-... annotations, we have to parse them
+            const [name, text] = doc.name === "TJS" ? /^-([\w]+)\s([\w]+)/g.exec(doc.text).slice(1,3) : [doc.name, doc.text];
+            if (JsonSchemaGenerator.validationKeywords[name]) {
+                definition[name] = this.parseValue(text);
             } else {
                 // special annotations
                 otherAnnotations[doc.name] = true;
@@ -429,20 +431,20 @@ export class JsonSchemaGenerator {
         if(props.length === 0 && clazz.members && clazz.members.length === 1 && clazz.members[0].kind === ts.SyntaxKind.IndexSignature) {
             // for case "array-types"
             const indexSignature = <ts.IndexSignatureDeclaration>clazz.members[0];
-            if(indexSignature.parameters.length !== 1) {
+            if (indexSignature.parameters.length !== 1) {
                 throw "Not supported: IndexSignatureDeclaration parameters.length != 1";
             }
             const indexSymbol: ts.Symbol = (<any>indexSignature.parameters[0]).symbol;
             const indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
             const isStringIndexed = (indexType.flags === ts.TypeFlags.String);
-            if(indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
+            if (indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
                 throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
             }
 
             const typ = tc.getTypeAtLocation(indexSignature.type);
             const def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
 
-            if(isStringIndexed) {
+            if (isStringIndexed) {
                 definition.type = "object";
                 definition.additionalProperties = def;
             } else {
@@ -611,7 +613,7 @@ export class JsonSchemaGenerator {
                     definition.title = fullTypeName;
                 }
             }
-            const node = symbol ? symbol.getDeclarations()[0] : null;
+            const node = symbol && symbol.getDeclarations() !== undefined ? symbol.getDeclarations()[0] : null;
             if (typ.flags & ts.TypeFlags.Union) {
                 this.getUnionDefinition(typ as ts.UnionType, prop, tc, unionModifier, definition);
             } else if (typ.flags & ts.TypeFlags.Intersection) {
@@ -624,6 +626,10 @@ export class JsonSchemaGenerator {
                 this.getDefinitionForRootType(typ, tc, reffedType, definition);
             } else if (node && (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)) {
                 this.getEnumDefinition(typ, tc, definition);
+            } else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && Object.keys(symbol.members).length === 0) {
+                // {} is TypeLiteral with no members. Need special case because it doesn't have declarations.
+                definition.type = "object";
+                definition.properties = {};
             } else {
                 this.getClassDefinition(typ, tc, definition);
             }

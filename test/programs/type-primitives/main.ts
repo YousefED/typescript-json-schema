@@ -7,7 +7,7 @@ class MyObject {
 
     number1: number       = 1;
 
-    /** @type integer */
+    /** @TJS-type integer */
     integer1: number      = 1;
     integer2: integer     = 1;
 

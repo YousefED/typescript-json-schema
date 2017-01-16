@@ -506,9 +506,7 @@ var JsonSchemaGenerator = (function () {
         }
         if (!asRef || !this.reffedDefinitions[fullTypeName]) {
             if (asRef) {
-                this.reffedDefinitions[fullTypeName] = this.args.useTypeAliasRef && symbol && reffedType && reffedType.getFlags() & ts.TypeFlags.IndexedAccess ? {
-                    "$ref": "#/definitions/" + symbol.getName()
-                } : definition;
+                this.reffedDefinitions[fullTypeName] = asTypeAliasRef && reffedType.getFlags() & ts.TypeFlags.IndexedAccess && symbol ? this.getTypeDefinition(typ, tc, true, undefined, symbol, symbol) : definition;
                 if (this.args.useTitle && fullTypeName) {
                     definition.title = fullTypeName;
                 }

@@ -2,19 +2,7 @@
     "$schema": "http://json-schema.org/draft-04/schema#",
     "definitions": {
         "MyAlias": {
-            "properties": {
-                "alias": {
-                    "$ref": "#/definitions/MyAlias"
-                },
-                "self": {
-                    "$ref": "#/definitions/MyObject"
-                }
-            },
-            "required": [
-                "alias",
-                "self"
-            ],
-            "type": "object"
+            "$ref": "#/definitions/MyObject"
         },
         "MyObject": {
             "properties": {

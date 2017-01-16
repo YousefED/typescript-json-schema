@@ -63,8 +63,18 @@ describe("schema", function () {
 
     assertSchema("namespace", "main.ts", "Type");
 
-    assertSchema("type-union", "main.ts", "MyObject");
-    assertSchema("type-intersection", "main.ts", "MyObject");
+    assertSchema("type-anonymous", "main.ts", "MyObject");
+    assertSchema("type-primitives", "main.ts", "MyObject");
+    assertSchema("type-nullable", "main.ts", "MyObject");
+
+    assertSchema("optionals", "main.ts", "MyObject");
+
+    assertSchema("comments", "main.ts", "MyObject");
+    assertSchema("comments-override", "main.ts", "MyObject");
+
+    /**
+     * Type aliases
+     */
 
     assertSchema("type-alias-single", "main.ts", "MyString");
     assertSchema("type-aliases", "main.ts", "MyObject", {
@@ -92,16 +102,17 @@ describe("schema", function () {
         useTypeAliasRef: true,
         useRootRef: true
     });
+    assertSchema("type-no-aliases-recursive-topref", "main.ts", "MyAlias", {
+        useTypeAliasRef: false,
+        useRootRef: true
+    });
 
-    assertSchema("type-anonymous", "main.ts", "MyObject");
-    assertSchema("type-primitives", "main.ts", "MyObject");
-    assertSchema("type-nullable", "main.ts", "MyObject");
+    /**
+     *  unions and intersections
+     */
 
-    assertSchema("optionals", "main.ts", "MyObject");
-
-    assertSchema("comments", "main.ts", "MyObject");
-    assertSchema("comments-override", "main.ts", "MyObject");
-
+    assertSchema("type-union", "main.ts", "MyObject");
+    assertSchema("type-intersection", "main.ts", "MyObject");
     assertSchema("type-union-tagged", "main.ts", "Shape");
     assertSchema("type-aliases-union-namespace", "main.ts", "MyModel");
 

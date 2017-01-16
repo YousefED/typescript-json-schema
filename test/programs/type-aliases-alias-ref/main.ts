@@ -1,7 +1,6 @@
 
 interface MyObject {
-    number: number;
-    string: string;
+    prop: number;
 }
 
 type MyAlias = MyObject;

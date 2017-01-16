@@ -4,18 +4,17 @@
         "MyObject": {
             "type": "object",
             "properties": {
-                "number": {
+                "prop": {
                     "type": "number"
-                },
-                "string": {
-                    "type": "string"
                 }
             },
             "required": [
-                "number",
-                "string"
+                "prop"
             ]
+        },
+        "MyAlias": {
+            "$ref": "#/definitions/MyObject"
         }
     },
-    "$ref": "#/definitions/MyObject"
+    "$ref": "#/definitions/MyAlias"
 }

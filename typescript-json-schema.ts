@@ -615,7 +615,9 @@ export class JsonSchemaGenerator {
         // if it will be a $ref and it is not yet created
         if (!asRef || !this.reffedDefinitions[fullTypeName]) {
             if (asRef) { // must be here to prevent recursivity problems
-                this.reffedDefinitions[fullTypeName] = definition;
+                this.reffedDefinitions[fullTypeName] = this.args.useTypeAliasRef && symbol && reffedType && reffedType.getFlags() & ts.TypeFlags.IndexedAccess ? {
+                    "$ref": "#/definitions/" + symbol.getName()
+                } : definition;
                 if (this.args.useTitle && fullTypeName) {
                     definition.title = fullTypeName;
                 }
@@ -659,7 +661,6 @@ export class JsonSchemaGenerator {
             def.definitions = this.reffedDefinitions;
         }
         def["$schema"] = "http://json-schema.org/draft-04/schema#";
-        // console.log(JSON.stringify(def, null, 4) + "\n");
         return def;
     }
 
@@ -709,8 +710,10 @@ export function generateSchema(program: ts.Program, fullTypeName: string, args =
                     || node.kind === ts.SyntaxKind.EnumDeclaration
                     || node.kind === ts.SyntaxKind.TypeAliasDeclaration
                     ) {
+                    const symbol: ts.Symbol = (<any>node).symbol;
+                    let fullName = tc.getFullyQualifiedName(symbol);
+
                     const nodeType = tc.getTypeAtLocation(node);
-                    let fullName = tc.getFullyQualifiedName((<any>node).symbol);
 
                     // remove file name
                     // TODO: we probably don't want this eventually,

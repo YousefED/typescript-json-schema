@@ -72,6 +72,10 @@ describe("schema", function () {
     });
     assertSchema("type-aliases-fixed-size-array", "main.ts", "MyFixedSizeArray");
     assertSchema("type-aliases-multitype-array", "main.ts", "MyArray");
+    assertSchema("type-aliases-local-namsepace", "main.ts", "MyObject", {
+        useTypeAliasRef: true
+    });
+
     assertSchema("type-anonymous", "main.ts", "MyObject");
     assertSchema("type-primitives", "main.ts", "MyObject");
     assertSchema("type-nullable", "main.ts", "MyObject");

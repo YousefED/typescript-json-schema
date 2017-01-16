@@ -1,0 +1,35 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "B.B": {
+            "properties": {
+                "b": {
+                }
+            },
+            "required": [
+                "b"
+            ],
+            "type": "object"
+        },
+        "C.C": {
+            "properties": {
+                "c": {
+                    "$ref": "#/definitions/B.B"
+                }
+            },
+            "required": [
+                "c"
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "d": {
+            "$ref": "#/definitions/C.C"
+        }   
+    },
+    "required": [
+        "d"
+    ],
+    "type": "object"
+}

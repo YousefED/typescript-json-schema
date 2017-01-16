@@ -587,7 +587,11 @@ export class JsonSchemaGenerator {
 
         let fullTypeName = "";
         if (asTypeAliasRef) {
-            fullTypeName = tc.getFullyQualifiedName(reffedType).replace(REGEX_FILE_NAME, "");
+            fullTypeName = tc.getFullyQualifiedName(
+                reffedType.getFlags() & ts.SymbolFlags.Alias ?
+                    tc.getAliasedSymbol(reffedType) :
+                    reffedType
+            ).replace(REGEX_FILE_NAME, "");
         } else if (asRef) {
             fullTypeName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
         }

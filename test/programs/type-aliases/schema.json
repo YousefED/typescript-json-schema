@@ -1,10 +1,16 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "definitions": {
+        "MyAlias": {
+            "$ref": "#/definitions/MySubObject",
+            "description": "My sub object"
+        },
         "MyString": {
+            "description": "My string",
             "type": "string"
         },
         "MySubObject": {
+            "description": "My sub object",
             "properties": {
                 "propA": {
                     "type": "number"
@@ -13,14 +19,18 @@
                     "type": "number"
                 }
             },
-            "type": "object",
             "required": [
                 "propA",
                 "propB"
-            ]
+            ],
+            "type": "object"
         }
     },
+    "description": "My Object",
     "properties": {
+        "alias": {
+            "$ref": "#/definitions/MyAlias"
+        },
         "object": {
             "$ref": "#/definitions/MySubObject"
         },
@@ -30,7 +40,8 @@
     },
     "required": [
         "primitive",
-        "object"
+        "object",
+        "alias"
     ],
     "type": "object"
 }

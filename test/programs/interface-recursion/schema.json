@@ -7,7 +7,11 @@
             "properties":{
                 "propA":{"type":"number"},
                 "propB":{"$ref": "#/definitions/MyObject"}
-            }
+            },
+            "required": [
+                "propA",
+                "propB"
+            ]
         }
     }
 }

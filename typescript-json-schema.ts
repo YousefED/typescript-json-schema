@@ -6,6 +6,9 @@ import * as stringify from "json-stable-stringify";
 
 const vm = require("vm");
 
+const REGEX_FILE_NAME = /".*"\./;
+const REGEX_TJS_JSDOC = /^-([\w]+)\s([\w]+)/g;
+
 export function getDefaultArgs() {
     return {
         useRef: true,
@@ -119,7 +122,7 @@ export class JsonSchemaGenerator {
         const jsdocs = symbol.getJsDocTags();
         jsdocs.forEach(doc => {
             // if we have @TJS-... annotations, we have to parse them
-            const [name, text] = doc.name === "TJS" ? /^-([\w]+)\s([\w]+)/g.exec(doc.text).slice(1,3) : [doc.name, doc.text];
+            const [name, text] = doc.name === "TJS" ? new RegExp(REGEX_TJS_JSDOC).exec(doc.text).slice(1,3) : [doc.name, doc.text];
             if (JsonSchemaGenerator.validationKeywords[name]) {
                 definition[name] = this.parseValue(text);
             } else {
@@ -577,16 +580,16 @@ export class JsonSchemaGenerator {
         const asTypeAliasRef = asRef && reffedType && (this.args.useTypeAliasRef || isStringEnum);
         if (!asTypeAliasRef) {
             if (isRawType || typ.getFlags() & ts.TypeFlags.Object && (<ts.ObjectType>typ).objectFlags & ts.ObjectFlags.Anonymous) {
-                asRef = false; // raw types and inline types cannot be reffed,
+                asRef = false;  // raw types and inline types cannot be reffed,
                                 // unless we are handling a type alias
             }
         }
 
         let fullTypeName = "";
-        if (asRef) {
+        if (asTypeAliasRef) {
+            fullTypeName = tc.getFullyQualifiedName(reffedType).replace(REGEX_FILE_NAME, "");
+        } else if (asRef) {
             fullTypeName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-        } else if (asTypeAliasRef) {
-            fullTypeName = tc.getFullyQualifiedName(reffedType);
         }
 
         if (asRef) {

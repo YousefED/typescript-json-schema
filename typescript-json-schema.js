@@ -4,6 +4,8 @@ var glob = require("glob");
 var path = require("path");
 var stringify = require("json-stable-stringify");
 var vm = require("vm");
+var REGEX_FILE_NAME = /".*"\./;
+var REGEX_TJS_JSDOC = /^-([\w]+)\s([\w]+)/g;
 function getDefaultArgs() {
     return {
         useRef: true,
@@ -60,7 +62,7 @@ var JsonSchemaGenerator = (function () {
         }
         var jsdocs = symbol.getJsDocTags();
         jsdocs.forEach(function (doc) {
-            var _a = doc.name === "TJS" ? /^-([\w]+)\s([\w]+)/g.exec(doc.text).slice(1, 3) : [doc.name, doc.text], name = _a[0], text = _a[1];
+            var _a = doc.name === "TJS" ? new RegExp(REGEX_TJS_JSDOC).exec(doc.text).slice(1, 3) : [doc.name, doc.text], name = _a[0], text = _a[1];
             if (JsonSchemaGenerator.validationKeywords[name]) {
                 definition[name] = _this.parseValue(text);
             }
@@ -481,11 +483,13 @@ var JsonSchemaGenerator = (function () {
             }
         }
         var fullTypeName = "";
-        if (asRef) {
-            fullTypeName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+        if (asTypeAliasRef) {
+            fullTypeName = tc.getFullyQualifiedName(reffedType.getFlags() & ts.SymbolFlags.Alias ?
+                tc.getAliasedSymbol(reffedType) :
+                reffedType).replace(REGEX_FILE_NAME, "");
         }
-        else if (asTypeAliasRef) {
-            fullTypeName = tc.getFullyQualifiedName(reffedType);
+        else if (asRef) {
+            fullTypeName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
         }
         if (asRef) {
             returnedDefinition = {
@@ -502,7 +506,9 @@ var JsonSchemaGenerator = (function () {
         }
         if (!asRef || !this.reffedDefinitions[fullTypeName]) {
             if (asRef) {
-                this.reffedDefinitions[fullTypeName] = definition;
+                this.reffedDefinitions[fullTypeName] = this.args.useTypeAliasRef && symbol && reffedType && reffedType.getFlags() & ts.TypeFlags.IndexedAccess ? {
+                    "$ref": "#/definitions/" + symbol.getName()
+                } : definition;
                 if (this.args.useTitle && fullTypeName) {
                     definition.title = fullTypeName;
                 }
@@ -611,8 +617,9 @@ function generateSchema(program, fullTypeName, args) {
                     || node.kind === ts.SyntaxKind.InterfaceDeclaration
                     || node.kind === ts.SyntaxKind.EnumDeclaration
                     || node.kind === ts.SyntaxKind.TypeAliasDeclaration) {
+                    var symbol = node.symbol;
+                    var fullName_1 = tc.getFullyQualifiedName(symbol);
                     var nodeType = tc.getTypeAtLocation(node);
-                    var fullName_1 = tc.getFullyQualifiedName(node.symbol);
                     fullName_1 = fullName_1.replace(/".*"\./, "");
                     allSymbols_1[fullName_1] = nodeType;
                     if (!sourceFile.hasNoDefaultLib) {

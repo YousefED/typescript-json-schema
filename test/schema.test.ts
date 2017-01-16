@@ -76,6 +76,23 @@ describe("schema", function () {
         useTypeAliasRef: true
     });
 
+    assertSchema("type-aliases-alias-ref", "main.ts", "MyAlias", {
+        useTypeAliasRef: true,
+        useRootRef: false
+    });
+    assertSchema("type-aliases-alias-ref-topref", "main.ts", "MyAlias", {
+        useTypeAliasRef: true,
+        useRootRef: true
+    });
+    assertSchema("type-aliases-recursive-object-topref", "main.ts", "MyObject", {
+        useTypeAliasRef: true,
+        useRootRef: true
+    });
+    assertSchema("type-aliases-recursive-alias-topref", "main.ts", "MyAlias", {
+        useTypeAliasRef: true,
+        useRootRef: true
+    });
+
     assertSchema("type-anonymous", "main.ts", "MyObject");
     assertSchema("type-primitives", "main.ts", "MyObject");
     assertSchema("type-nullable", "main.ts", "MyObject");

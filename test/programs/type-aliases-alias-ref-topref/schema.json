@@ -1,0 +1,21 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "MyObject": {
+            "type": "object",
+            "properties": {
+                "number": {
+                    "type": "number"
+                },
+                "string": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "number",
+                "string"
+            ]
+        }
+    },
+    "$ref": "#/definitions/MyObject"
+}

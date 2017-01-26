@@ -1,3 +1,5 @@
+/* tslint:disable:no-inferrable-types */
+
 // Special type, should not appear in the schema
 type integer = number;
 

@@ -12,7 +12,7 @@ type Vector3D = number[];
  * Description of MyObject, a top level object,
  * which also has a comment that spans
  * multiple lines
- * 
+ *
  * @additionalProperties false
  * @unsupportedAnnotationThatShouldBeIgnored
  */

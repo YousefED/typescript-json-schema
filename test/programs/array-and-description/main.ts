@@ -1,6 +1,6 @@
 export interface MyObject {
   /**
-   * A name 
+   * A name
    */
   name?: string;
   description?: string;

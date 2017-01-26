@@ -74,13 +74,15 @@ export class JsonSchemaGenerator {
     };
 
     private allSymbols: { [name: string]: ts.Type };
+    private userSymbols: { [name: string]: ts.Type };
     private inheritingTypes: { [baseName: string]: string[] };
     private tc: ts.TypeChecker;
 
     private reffedDefinitions: { [key: string]: Definition } = {};
 
-    constructor(allSymbols: { [name: string]: ts.Type }, inheritingTypes: { [baseName: string]: string[] }, tc: ts.TypeChecker, private args = getDefaultArgs()) {
+    constructor(allSymbols: { [name: string]: ts.Type }, userSymbols: { [name: string]: ts.Type }, inheritingTypes: { [baseName: string]: string[] }, tc: ts.TypeChecker, private args = getDefaultArgs()) {
         this.allSymbols = allSymbols;
+        this.userSymbols = userSymbols;
         this.inheritingTypes = inheritingTypes;
         this.tc = tc;
     }
@@ -674,6 +676,10 @@ export class JsonSchemaGenerator {
         }
         return root;
     }
+
+    public getUserSymbols(): { [name: string]: ts.Type } {
+        return this.userSymbols;
+    }
 }
 
 export function getProgramFromFiles(files: string[], compilerOptions: ts.CompilerOptions = {}): ts.Program {
@@ -689,7 +695,7 @@ export function getProgramFromFiles(files: string[], compilerOptions: ts.Compile
     return ts.createProgram(files, options);
 }
 
-export function generateSchema(program: ts.Program, fullTypeName: string, args = getDefaultArgs()) {
+export function buildGenerator(program: ts.Program, args = getDefaultArgs()): JsonSchemaGenerator {
     const typeChecker = program.getTypeChecker();
 
     var diagnostics = ts.getPreEmitDiagnostics(program);
@@ -704,10 +710,10 @@ export function generateSchema(program: ts.Program, fullTypeName: string, args =
             function inspect(node: ts.Node, tc: ts.TypeChecker) {
 
                 if (node.kind === ts.SyntaxKind.ClassDeclaration
-                    || node.kind === ts.SyntaxKind.InterfaceDeclaration
-                    || node.kind === ts.SyntaxKind.EnumDeclaration
-                    || node.kind === ts.SyntaxKind.TypeAliasDeclaration
-                    ) {
+                  || node.kind === ts.SyntaxKind.InterfaceDeclaration
+                  || node.kind === ts.SyntaxKind.EnumDeclaration
+                  || node.kind === ts.SyntaxKind.TypeAliasDeclaration
+                ) {
                     const symbol: ts.Symbol = (<any>node).symbol;
                     let fullName = tc.getFullyQualifiedName(symbol);
 
@@ -742,25 +748,31 @@ export function generateSchema(program: ts.Program, fullTypeName: string, args =
             inspect(sourceFile, typeChecker);
         });
 
-        const generator = new JsonSchemaGenerator(allSymbols, inheritingTypes, typeChecker, args);
-        let definition: Definition;
-        if (fullTypeName === "*") { // All types in file(s)
-            definition = generator.getSchemaForSymbols(userSymbols);
-        } else { // Use specific type as root object
-            definition = generator.getSchemaForSymbol(fullTypeName);
-        }
-        return definition;
+        return new JsonSchemaGenerator(allSymbols, userSymbols, inheritingTypes, typeChecker, args);
     } else {
         diagnostics.forEach((diagnostic) => {
             let message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
             if(diagnostic.file) {
-            let { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-            console.warn(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
+                let { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+                console.warn(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
             } else {
                 console.warn(message);
             }
         });
     }
+}
+
+export function generateSchema(program: ts.Program, fullTypeName: string, args = getDefaultArgs()) {
+
+    const generator = buildGenerator(program, args);
+
+    let definition: Definition;
+    if (fullTypeName === "*") { // All types in file(s)
+        definition = generator.getSchemaForSymbols(generator.getUserSymbols());
+    } else { // Use specific type as root object
+        definition = generator.getSchemaForSymbol(fullTypeName);
+    }
+    return definition;
 }
 
 export function programFromConfig(configFileName: string) {

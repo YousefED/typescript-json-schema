@@ -69,7 +69,7 @@ const symbols = generator.getUserSymbols();
 
 // Get symbols for different types from generator.
 generator.getSchemaForSymbol("MyType");
-generator.getSchemaForSymbol("MyType");
+generator.getSchemaForSymbol("AnotherType");
 ```
 
 

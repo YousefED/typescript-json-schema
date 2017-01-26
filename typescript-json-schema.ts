@@ -9,7 +9,7 @@ const vm = require("vm");
 const REGEX_FILE_NAME = /".*"\./;
 const REGEX_TJS_JSDOC = /^-([\w]+)\s([\w]+)/g;
 
-export function getDefaultArgs() {
+export function getDefaultArgs(): Args {
     return {
         useRef: true,
         useTypeAliasRef: false,
@@ -23,6 +23,21 @@ export function getDefaultArgs() {
         out: ""
     };
 }
+
+export type Args = {
+    useRef: boolean;
+    useTypeAliasRef: boolean;
+    useRootRef: boolean;
+    useTitle: boolean;
+    useDefaultProperties: boolean;
+    disableExtraProperties: boolean;
+    usePropertyOrder: boolean;
+    generateRequired: boolean;
+    strictNullChecks: boolean;
+    out: string;
+};
+
+export type PartialArgs = Partial<Args>;
 
 export type Definition = {
     $ref?: string,
@@ -433,7 +448,7 @@ export class JsonSchemaGenerator {
 
         const modifierFlags = ts.getCombinedModifierFlags(node);
 
-        if(props.length === 0 && clazz.members && clazz.members.length === 1 && clazz.members[0].kind === ts.SyntaxKind.IndexSignature) {
+        if (props.length === 0 && clazz.members && clazz.members.length === 1 && clazz.members[0].kind === ts.SyntaxKind.IndexSignature) {
             // for case "array-types"
             const indexSignature = <ts.IndexSignatureDeclaration>clazz.members[0];
             if (indexSignature.parameters.length !== 1) {
@@ -456,15 +471,12 @@ export class JsonSchemaGenerator {
                 definition.type = "array";
                 definition.items = def;
             }
-            return definition;
         } else if (modifierFlags & ts.ModifierFlags.Abstract) {
             const oneOf = this.inheritingTypes[fullName].map((typename) => {
                 return this.getTypeDefinition(this.allSymbols[typename], tc);
             });
 
             definition.oneOf = oneOf;
-
-            return definition;
         } else {
             const propertyDefinitions = props.reduce((all, prop) => {
                 const propertyName = prop.getName();
@@ -507,6 +519,7 @@ export class JsonSchemaGenerator {
                 }
             }
         }
+        return definition;
     }
 
     private simpleTypesAllowedProperties = {
@@ -573,7 +586,7 @@ export class JsonSchemaGenerator {
         let isStringEnum = false;
         if (typ.flags & ts.TypeFlags.Union) {
             const unionType = <ts.UnionType>typ;
-            isStringEnum = (unionType.types.every((propType, i, r) => {
+            isStringEnum = (unionType.types.every(propType => {
                 return (propType.getFlags() & ts.TypeFlags.StringLiteral) !== 0;
             }));
         }
@@ -694,7 +707,16 @@ export function getProgramFromFiles(files: string[], compilerOptions: ts.Compile
     return ts.createProgram(files, options);
 }
 
-export function buildGenerator(program: ts.Program, args = getDefaultArgs()): JsonSchemaGenerator {
+export function buildGenerator(program: ts.Program, args: PartialArgs = {}): JsonSchemaGenerator {
+    // Use defaults unles otherwise specified
+    let settings = getDefaultArgs();
+
+    for (const pref in args) {
+        if (args.hasOwnProperty(pref)) {
+            settings[pref] = args[pref];
+        }
+    }
+
     const typeChecker = program.getTypeChecker();
 
     var diagnostics = ts.getPreEmitDiagnostics(program);
@@ -705,7 +727,7 @@ export function buildGenerator(program: ts.Program, args = getDefaultArgs()): Js
         const userSymbols: { [name: string]: ts.Type } = {};
         const inheritingTypes: { [baseName: string]: string[] } = {};
 
-        program.getSourceFiles().forEach((sourceFile, sourceFileIdx) => {
+        program.getSourceFiles().forEach((sourceFile, _sourceFileIdx) => {
             function inspect(node: ts.Node, tc: ts.TypeChecker) {
 
                 if (node.kind === ts.SyntaxKind.ClassDeclaration
@@ -747,22 +769,22 @@ export function buildGenerator(program: ts.Program, args = getDefaultArgs()): Js
             inspect(sourceFile, typeChecker);
         });
 
-        return new JsonSchemaGenerator(allSymbols, userSymbols, inheritingTypes, typeChecker, args);
+        return new JsonSchemaGenerator(allSymbols, userSymbols, inheritingTypes, typeChecker, settings);
     } else {
         diagnostics.forEach((diagnostic) => {
             let message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
             if(diagnostic.file) {
                 let { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-                console.warn(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
+                console.error(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
             } else {
-                console.warn(message);
+                console.error(message);
             }
         });
+        return null;
     }
 }
 
-export function generateSchema(program: ts.Program, fullTypeName: string, args = getDefaultArgs()) {
-
+export function generateSchema(program: ts.Program, fullTypeName: string, args: PartialArgs = {}) {
     const generator = buildGenerator(program, args);
 
     let definition: Definition;

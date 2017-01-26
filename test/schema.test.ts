@@ -9,15 +9,10 @@ const ajv = new Ajv();
 
 const base = "test/programs/";
 
-export function assertSchema(group: string, name: string, type: string, settings: any = {}, compilerOptions?: CompilerOptions) {
+export function assertSchema(group: string, name: string, type: string, settings: TJS.PartialArgs = {}, compilerOptions?: CompilerOptions) {
     it(group + " should create correct schema", () => {
-        const defaults = TJS.getDefaultArgs();
-        defaults.generateRequired = true;
-
-        for (let pref in defaults) {
-            if (!(pref in settings)) {
-                settings[pref] = defaults[pref];
-            }
+        if (!("generateRequired" in settings)) {
+            settings.generateRequired = true;
         }
 
         const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(base + group + "/" + name)], compilerOptions), type, settings);
@@ -36,10 +31,8 @@ export function assertSchema(group: string, name: string, type: string, settings
 
 describe("interfaces", () => {
     it("should return an instance of JsonSchemaGenerator", () => {
-
-        const defaults = TJS.getDefaultArgs();
-        const program = TJS.getProgramFromFiles([resolve(base + "array-and-description/main.ts")]);
-        const generator = TJS.buildGenerator(program, defaults);
+        const program = TJS.getProgramFromFiles([resolve(base + "comments/main.ts")]);
+        const generator = TJS.buildGenerator(program);
 
         assert.instanceOf(generator, TJS.JsonSchemaGenerator);
         assert.doesNotThrow(() => generator.getSchemaForSymbol("MyObject"));

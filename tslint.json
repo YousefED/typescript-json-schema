@@ -13,7 +13,7 @@
     "jsdoc-format": true,
     "semicolon": [true, "always"],
     "no-duplicate-variable": true,
-    "no-consecutive-blank-lines": false,
+    "no-consecutive-blank-lines": [false, 2],
     "no-console": [
       true,
       "debug",
@@ -24,7 +24,7 @@
     ],
     "no-debugger": true,
     "no-eval": true,
-    "no-inferrable-types": false,
+    "no-inferrable-types": [true, "ignore-params"],
     "no-shadowed-variable": true,
     "no-string-literal": false,
     "no-trailing-whitespace": true,

@@ -22,7 +22,7 @@ function getDefaultArgs() {
 }
 exports.getDefaultArgs = getDefaultArgs;
 var JsonSchemaGenerator = (function () {
-    function JsonSchemaGenerator(allSymbols, inheritingTypes, tc, args) {
+    function JsonSchemaGenerator(allSymbols, userSymbols, inheritingTypes, tc, args) {
         if (args === void 0) { args = getDefaultArgs(); }
         this.args = args;
         this.reffedDefinitions = {};
@@ -31,6 +31,7 @@ var JsonSchemaGenerator = (function () {
             description: true
         };
         this.allSymbols = allSymbols;
+        this.userSymbols = userSymbols;
         this.inheritingTypes = inheritingTypes;
         this.tc = tc;
     }
@@ -370,14 +371,12 @@ var JsonSchemaGenerator = (function () {
                 definition.type = "array";
                 definition.items = def;
             }
-            return definition;
         }
         else if (modifierFlags & ts.ModifierFlags.Abstract) {
             var oneOf = this.inheritingTypes[fullName].map(function (typename) {
                 return _this.getTypeDefinition(_this.allSymbols[typename], tc);
             });
             definition.oneOf = oneOf;
-            return definition;
         }
         else {
             var propertyDefinitions = props.reduce(function (all, prop) {
@@ -415,6 +414,7 @@ var JsonSchemaGenerator = (function () {
                 }
             }
         }
+        return definition;
     };
     JsonSchemaGenerator.prototype.addSimpleType = function (def, type) {
         for (var k in def) {
@@ -472,7 +472,7 @@ var JsonSchemaGenerator = (function () {
         var isStringEnum = false;
         if (typ.flags & ts.TypeFlags.Union) {
             var unionType = typ;
-            isStringEnum = (unionType.types.every(function (propType, i, r) {
+            isStringEnum = (unionType.types.every(function (propType) {
                 return (propType.getFlags() & ts.TypeFlags.StringLiteral) !== 0;
             }));
         }
@@ -558,12 +558,14 @@ var JsonSchemaGenerator = (function () {
             "$schema": "http://json-schema.org/draft-04/schema#",
             definitions: {}
         };
-        for (var id in symbols) {
-            if (symbols.hasOwnProperty(id)) {
-                root.definitions[id] = this.getTypeDefinition(symbols[id], this.tc, this.args.useRootRef);
-            }
+        for (var i = 0; i < symbols.length; i++) {
+            var symbol = symbols[i];
+            root.definitions[symbol] = this.getTypeDefinition(this.userSymbols[symbol], this.tc, this.args.useRootRef);
         }
         return root;
+    };
+    JsonSchemaGenerator.prototype.getUserSymbols = function () {
+        return Object.keys(this.userSymbols);
     };
     return JsonSchemaGenerator;
 }());
@@ -601,15 +603,21 @@ function getProgramFromFiles(files, compilerOptions) {
     return ts.createProgram(files, options);
 }
 exports.getProgramFromFiles = getProgramFromFiles;
-function generateSchema(program, fullTypeName, args) {
-    if (args === void 0) { args = getDefaultArgs(); }
+function buildGenerator(program, args) {
+    if (args === void 0) { args = {}; }
+    var settings = getDefaultArgs();
+    for (var pref in args) {
+        if (args.hasOwnProperty(pref)) {
+            settings[pref] = args[pref];
+        }
+    }
     var typeChecker = program.getTypeChecker();
     var diagnostics = ts.getPreEmitDiagnostics(program);
     if (diagnostics.length === 0) {
         var allSymbols_1 = {};
         var userSymbols_1 = {};
         var inheritingTypes_1 = {};
-        program.getSourceFiles().forEach(function (sourceFile, sourceFileIdx) {
+        program.getSourceFiles().forEach(function (sourceFile, _sourceFileIdx) {
             function inspect(node, tc) {
                 if (node.kind === ts.SyntaxKind.ClassDeclaration
                     || node.kind === ts.SyntaxKind.InterfaceDeclaration
@@ -638,28 +646,34 @@ function generateSchema(program, fullTypeName, args) {
             }
             inspect(sourceFile, typeChecker);
         });
-        var generator = new JsonSchemaGenerator(allSymbols_1, inheritingTypes_1, typeChecker, args);
-        var definition = void 0;
-        if (fullTypeName === "*") {
-            definition = generator.getSchemaForSymbols(userSymbols_1);
-        }
-        else {
-            definition = generator.getSchemaForSymbol(fullTypeName);
-        }
-        return definition;
+        return new JsonSchemaGenerator(allSymbols_1, userSymbols_1, inheritingTypes_1, typeChecker, settings);
     }
     else {
         diagnostics.forEach(function (diagnostic) {
             var message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
             if (diagnostic.file) {
                 var _a = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start), line = _a.line, character = _a.character;
-                console.warn(diagnostic.file.fileName + " (" + (line + 1) + "," + (character + 1) + "): " + message);
+                console.error(diagnostic.file.fileName + " (" + (line + 1) + "," + (character + 1) + "): " + message);
             }
             else {
-                console.warn(message);
+                console.error(message);
             }
         });
+        return null;
     }
+}
+exports.buildGenerator = buildGenerator;
+function generateSchema(program, fullTypeName, args) {
+    if (args === void 0) { args = {}; }
+    var generator = buildGenerator(program, args);
+    var definition;
+    if (fullTypeName === "*") {
+        definition = generator.getSchemaForSymbols(generator.getUserSymbols());
+    }
+    else {
+        definition = generator.getSchemaForSymbol(fullTypeName);
+    }
+    return definition;
 }
 exports.generateSchema = generateSchema;
 function programFromConfig(configFileName) {

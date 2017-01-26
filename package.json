@@ -1,6 +1,6 @@
 {
   "name": "typescript-json-schema",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "typescript-json-schema generates JSON Schema files from your Typescript sources",
   "main": "typescript-json-schema.js",
   "typings": "typescript-json-schema.d.ts",
@@ -32,7 +32,7 @@
   "dependencies": {
     "glob": "~7.1.1",
     "json-stable-stringify": "^1.0.1",
-    "typescript": "~2.1.4",
+    "typescript": "~2.1.5",
     "yargs": "^6.6.0"
   },
   "devDependencies": {
@@ -40,13 +40,13 @@
     "@types/chai": "^3.4.34",
     "@types/glob": "^5.0.30",
     "@types/json-stable-stringify": "^1.0.29",
-    "@types/mocha": "^2.2.37",
-    "@types/node": "^7.0.0",
-    "ajv": "^4.10.4",
+    "@types/mocha": "^2.2.38",
+    "@types/node": "^7.0.4",
+    "ajv": "^4.11.2",
     "chai": "^3.5.0",
     "mocha": "^3.2.0",
-    "source-map-support": "^0.4.8",
-    "tslint": "^4.3.1"
+    "source-map-support": "^0.4.10",
+    "tslint": "^4.4.2"
   },
   "scripts": {
     "test": "npm run build && mocha -t 5000 --require source-map-support/register test",

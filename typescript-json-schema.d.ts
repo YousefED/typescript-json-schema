@@ -1,5 +1,6 @@
 import * as ts from "typescript";
-export declare function getDefaultArgs(): {
+export declare function getDefaultArgs(): Args;
+export declare type Args = {
     useRef: boolean;
     useTypeAliasRef: boolean;
     useRootRef: boolean;
@@ -11,6 +12,7 @@ export declare function getDefaultArgs(): {
     strictNullChecks: boolean;
     out: string;
 };
+export declare type PartialArgs = Partial<Args>;
 export declare type Definition = {
     $ref?: string;
     description?: string;
@@ -40,25 +42,17 @@ export declare class JsonSchemaGenerator {
     private args;
     private static validationKeywords;
     private allSymbols;
+    private userSymbols;
     private inheritingTypes;
     private tc;
     private reffedDefinitions;
     constructor(allSymbols: {
         [name: string]: ts.Type;
+    }, userSymbols: {
+        [name: string]: ts.Type;
     }, inheritingTypes: {
         [baseName: string]: string[];
-    }, tc: ts.TypeChecker, args?: {
-        useRef: boolean;
-        useTypeAliasRef: boolean;
-        useRootRef: boolean;
-        useTitle: boolean;
-        useDefaultProperties: boolean;
-        disableExtraProperties: boolean;
-        usePropertyOrder: boolean;
-        generateRequired: boolean;
-        strictNullChecks: boolean;
-        out: string;
-    });
+    }, tc: ts.TypeChecker, args?: Args);
     readonly ReffedDefinitions: {
         [key: string]: Definition;
     };
@@ -77,34 +71,12 @@ export declare class JsonSchemaGenerator {
     private makeNullable(def);
     private getTypeDefinition(typ, tc, asRef?, unionModifier?, prop?, reffedType?);
     getSchemaForSymbol(symbolName: string, includeReffedDefinitions?: boolean): Definition;
-    getSchemaForSymbols(symbols: {
-        [name: string]: ts.Type;
-    }): Definition;
+    getSchemaForSymbols(symbols: string[]): Definition;
+    getUserSymbols(): string[];
 }
 export declare function getProgramFromFiles(files: string[], compilerOptions?: ts.CompilerOptions): ts.Program;
-export declare function generateSchema(program: ts.Program, fullTypeName: string, args?: {
-    useRef: boolean;
-    useTypeAliasRef: boolean;
-    useRootRef: boolean;
-    useTitle: boolean;
-    useDefaultProperties: boolean;
-    disableExtraProperties: boolean;
-    usePropertyOrder: boolean;
-    generateRequired: boolean;
-    strictNullChecks: boolean;
-    out: string;
-}): Definition;
+export declare function buildGenerator(program: ts.Program, args?: PartialArgs): JsonSchemaGenerator;
+export declare function generateSchema(program: ts.Program, fullTypeName: string, args?: PartialArgs): Definition;
 export declare function programFromConfig(configFileName: string): ts.Program;
-export declare function exec(filePattern: string, fullTypeName: string, args?: {
-    useRef: boolean;
-    useTypeAliasRef: boolean;
-    useRootRef: boolean;
-    useTitle: boolean;
-    useDefaultProperties: boolean;
-    disableExtraProperties: boolean;
-    usePropertyOrder: boolean;
-    generateRequired: boolean;
-    strictNullChecks: boolean;
-    out: string;
-}): void;
+export declare function exec(filePattern: string, fullTypeName: string, args?: Args): void;
 export declare function run(): void;

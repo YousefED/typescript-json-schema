@@ -10,7 +10,7 @@ const ajv = new Ajv();
 const base = "test/programs/";
 
 export function assertSchema(group: string, name: string, type: string, settings: any = {}, compilerOptions?: CompilerOptions) {
-    it(group + " should create correct schema", function() {
+    it(group + " should create correct schema", () => {
         const defaults = TJS.getDefaultArgs();
         defaults.generateRequired = true;
 
@@ -34,7 +34,19 @@ export function assertSchema(group: string, name: string, type: string, settings
     });
 }
 
-describe("schema", function () {
+describe("interfaces", () => {
+    it("should return an instance of JsonSchemaGenerator", () => {
+
+        const defaults = TJS.getDefaultArgs();
+        const program = TJS.getProgramFromFiles([resolve(base + "array-and-description/main.ts")]);
+        const generator = TJS.buildGenerator(program, defaults);
+
+        assert.instanceOf(generator, TJS.JsonSchemaGenerator);
+        assert.doesNotThrow(() => generator.getSchemaForSymbol("MyObject"));
+    });
+});
+
+describe("schema", () => {
     assertSchema("array-and-description", "main.ts", "MyObject");
     assertSchema("class-single", "main.ts", "MyObject");
 

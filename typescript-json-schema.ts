@@ -664,21 +664,20 @@ export class JsonSchemaGenerator {
         return def;
     }
 
-    public getSchemaForSymbols(symbols: { [name: string]: ts.Type }): Definition {
+    public getSchemaForSymbols(symbols: string[]): Definition {
         const root = {
             "$schema": "http://json-schema.org/draft-04/schema#",
             definitions: {}
         };
-        for (const id in symbols) {
-            if (symbols.hasOwnProperty(id)) {
-                root.definitions[id] = this.getTypeDefinition(symbols[id], this.tc, this.args.useRootRef);
-            }
+        for (let i = 0; i < symbols.length; i++) {
+            const symbol = symbols[i];
+            root.definitions[symbol] = this.getTypeDefinition(this.userSymbols[symbol], this.tc, this.args.useRootRef);
         }
         return root;
     }
 
-    public getUserSymbols(): { [name: string]: ts.Type } {
-        return this.userSymbols;
+    public getUserSymbols() {
+        return Object.keys(this.userSymbols);
     }
 }
 

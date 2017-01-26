@@ -43,6 +43,11 @@ describe("interfaces", () => {
 
         assert.instanceOf(generator, TJS.JsonSchemaGenerator);
         assert.doesNotThrow(() => generator.getSchemaForSymbol("MyObject"));
+        assert.doesNotThrow(() => generator.getSchemaForSymbol("Vector3D"));
+
+        const symbols = generator.getUserSymbols();
+        assert(symbols.indexOf("MyObject") > -1);
+        assert(symbols.indexOf("Vector3D") > -1);
     });
 });
 

@@ -7,7 +7,7 @@ Generate json-schemas from your Typescript sources.
 ## Features
 
 * Compiles your Typescript program to get complete type information.
-* Translates required properties, extends, annotation keywords, property initializers as defaults.
+* Translates required properties, extends, annotation keywords, property initializers as defaults. You can find examples for these features in the [test examples](https://github.com/YousefED/typescript-json-schema/tree/master/test/programs).
 
 ## Usage
 

@@ -45,6 +45,8 @@ describe("interfaces", () => {
 });
 
 describe("schema", () => {
+    assertSchema("force-type", "main.ts", "MyObject");
+
     assertSchema("array-and-description", "main.ts", "MyObject");
     assertSchema("class-single", "main.ts", "MyObject");
 

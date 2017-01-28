@@ -1,0 +1,23 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "properties": {
+        "mainWidget": {
+            "type": "number"
+        },
+        "name": {
+            "type": "string"
+        },
+        "otherWidgets": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        }
+    },
+    "required": [
+        "name",
+        "mainWidget",
+        "otherWidgets"
+    ],
+    "type": "object"
+}

@@ -45,8 +45,6 @@ describe("interfaces", () => {
 });
 
 describe("schema", () => {
-    assertSchema("force-type", "main.ts", "MyObject");
-
     assertSchema("array-and-description", "main.ts", "MyObject");
     assertSchema("class-single", "main.ts", "MyObject");
 
@@ -83,6 +81,8 @@ describe("schema", () => {
 
     assertSchema("comments", "main.ts", "MyObject");
     assertSchema("comments-override", "main.ts", "MyObject");
+
+    assertSchema("force-type", "main.ts", "MyObject");
 
     /**
      * Type aliases

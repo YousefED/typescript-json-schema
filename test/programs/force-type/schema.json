@@ -1,15 +1,20 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "Widget": {
+            "type": "number"
+        }
+    },
     "properties": {
         "mainWidget": {
-            "type": "number"
+            "$ref": "#/definitions/Widget"
         },
         "name": {
             "type": "string"
         },
         "otherWidgets": {
             "items": {
-                "type": "number"
+                "$ref": "#/definitions/Widget"
             },
             "type": "array"
         }

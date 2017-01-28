@@ -636,24 +636,27 @@ export class JsonSchemaGenerator {
                 }
             }
             const node = symbol && symbol.getDeclarations() !== undefined ? symbol.getDeclarations()[0] : null;
-            if (typ.flags & ts.TypeFlags.Union) {
-                this.getUnionDefinition(typ as ts.UnionType, prop, tc, unionModifier, definition);
-            } else if (typ.flags & ts.TypeFlags.Intersection) {
-                definition.allOf = [];
-                const types = (<ts.IntersectionType> typ).types;
-                for (let i = 0; i < types.length; ++i) {
-                    definition.allOf.push(this.getTypeDefinition(types[i], tc));
+
+            if (definition.type === undefined) {  // if users override the type, do not try to infer it
+                if (typ.flags & ts.TypeFlags.Union) {
+                    this.getUnionDefinition(typ as ts.UnionType, prop, tc, unionModifier, definition);
+                } else if (typ.flags & ts.TypeFlags.Intersection) {
+                    definition.allOf = [];
+                    const types = (<ts.IntersectionType> typ).types;
+                    for (let i = 0; i < types.length; ++i) {
+                        definition.allOf.push(this.getTypeDefinition(types[i], tc));
+                    }
+                } else if (isRawType) {
+                    this.getDefinitionForRootType(typ, tc, reffedType, definition);
+                } else if (node && (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)) {
+                    this.getEnumDefinition(typ, tc, definition);
+                } else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && Object.keys(symbol.members).length === 0) {
+                    // {} is TypeLiteral with no members. Need special case because it doesn't have declarations.
+                    definition.type = "object";
+                    definition.properties = {};
+                } else {
+                    this.getClassDefinition(typ, tc, definition);
                 }
-            } else if (isRawType) {
-                this.getDefinitionForRootType(typ, tc, reffedType, definition);
-            } else if (node && (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)) {
-                this.getEnumDefinition(typ, tc, definition);
-            } else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && Object.keys(symbol.members).length === 0) {
-                // {} is TypeLiteral with no members. Need special case because it doesn't have declarations.
-                definition.type = "object";
-                definition.properties = {};
-            } else {
-                this.getClassDefinition(typ, tc, definition);
             }
         }
 
@@ -811,8 +814,6 @@ export function programFromConfig(configFileName: string) {
 
     const program = ts.createProgram(configParseResult.fileNames, options);
     return program;
-
-    // const conf = ts.convertCompilerOptionsFromJson(null, path.dirname(filePattern), "tsconfig.json");
 }
 export function exec(filePattern: string, fullTypeName: string, args = getDefaultArgs()) {
     let program: ts.Program;

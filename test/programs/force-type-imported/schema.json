@@ -1,0 +1,28 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "Widget": {
+            "type": "number"
+        }
+    },
+    "properties": {
+        "mainWidget": {
+            "$ref": "#/definitions/Widget"
+        },
+        "name": {
+            "type": "string"
+        },
+        "otherWidgets": {
+            "items": {
+                "$ref": "#/definitions/Widget"
+            },
+            "type": "array"
+        }
+    },
+    "required": [
+        "name",
+        "mainWidget",
+        "otherWidgets"
+    ],
+    "type": "object"
+}

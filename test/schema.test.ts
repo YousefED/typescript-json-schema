@@ -68,7 +68,7 @@ describe("schema", () => {
     assertSchema("string-literals", "main.ts", "MyObject");
     assertSchema("string-literals-inline", "main.ts", "MyObject");
 
-    assertSchema("array-readonly", "main.ts", "ArrayThatIsReadonly");
+    assertSchema("array-readonly", "main.ts", "MyReadOnlyArray");
     assertSchema("array-types", "main.ts", "MyArray");
     assertSchema("map-types", "main.ts", "MyObject");
 

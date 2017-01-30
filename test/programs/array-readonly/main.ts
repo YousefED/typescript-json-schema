@@ -1,3 +1,1 @@
-export interface ArrayThatIsReadonly {
-  test: ReadonlyArray<any>;
-}
+export type MyReadOnlyArray = ReadonlyArray<number>;

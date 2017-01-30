@@ -223,7 +223,7 @@ export class JsonSchemaGenerator {
                     if (value !== undefined) {
                         definition.type = typeof value;
                         definition.enum = [ value ];
-                    } else if (symbol && symbol.getName() === "Array") {
+                    } else if (symbol && (symbol.getName() === "Array" || symbol.getName() === "ReadonlyArray")) {
                         const arrayType = (<ts.TypeReference>propertyType).typeArguments[0];
                         definition.type = "array";
                         definition.items = this.getTypeDefinition(arrayType, tc);
@@ -580,7 +580,7 @@ export class JsonSchemaGenerator {
         let returnedDefinition = definition; // returned definition, may be a $ref
 
         const symbol = typ.getSymbol();
-        const isRawType = (!symbol || symbol.name === "integer" || symbol.name === "Array" || symbol.name === "Date");
+        const isRawType = (!symbol || symbol.name === "integer" || symbol.name === "Array" || symbol.name === "ReadonlyArray" || symbol.name === "Date");
 
         // special case: an union where all child are string literals -> make an enum instead
         let isStringEnum = false;

@@ -143,7 +143,7 @@ var JsonSchemaGenerator = (function () {
                         definition.type = typeof value;
                         definition.enum = [value];
                     }
-                    else if (symbol && symbol.getName() === "Array") {
+                    else if (symbol && (symbol.getName() === "Array" || symbol.getName() === "ReadonlyArray")) {
                         var arrayType = propertyType.typeArguments[0];
                         definition.type = "array";
                         definition.items = this.getTypeDefinition(arrayType, tc);
@@ -468,7 +468,7 @@ var JsonSchemaGenerator = (function () {
         var definition = {};
         var returnedDefinition = definition;
         var symbol = typ.getSymbol();
-        var isRawType = (!symbol || symbol.name === "integer" || symbol.name === "Array" || symbol.name === "Date");
+        var isRawType = (!symbol || symbol.name === "integer" || symbol.name === "Array" || symbol.name === "ReadonlyArray" || symbol.name === "Date");
         var isStringEnum = false;
         if (typ.flags & ts.TypeFlags.Union) {
             var unionType = typ;

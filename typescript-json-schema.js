@@ -60,7 +60,7 @@ var JsonSchemaGenerator = (function () {
         }
         var comments = symbol.getDocumentationComment();
         if (comments.length) {
-            definition.description = comments.map(function (comment) { return comment.kind === "lineBreak" ? comment.text : comment.text.trim(); }).join("");
+            definition.description = comments.map(function (comment) { return comment.kind === "lineBreak" ? comment.text : comment.text.trim().replace(/\r\n/g, "\n"); }).join("");
         }
         var jsdocs = symbol.getJsDocTags();
         jsdocs.forEach(function (doc) {
@@ -502,9 +502,7 @@ var JsonSchemaGenerator = (function () {
         if (prop) {
             this.parseCommentsIntoDefinition(prop, returnedDefinition, otherAnnotations);
         }
-        else {
-            this.parseCommentsIntoDefinition(symbol, definition, otherAnnotations);
-        }
+        this.parseCommentsIntoDefinition(symbol, definition, otherAnnotations);
         if (!asRef || !this.reffedDefinitions[fullTypeName]) {
             if (asRef) {
                 this.reffedDefinitions[fullTypeName] = asTypeAliasRef && reffedType.getFlags() & ts.TypeFlags.IndexedAccess && symbol ? this.getTypeDefinition(typ, tc, true, undefined, symbol, symbol) : definition;

@@ -136,7 +136,7 @@ export class JsonSchemaGenerator {
         let comments = symbol.getDocumentationComment();
 
         if (comments.length) {
-            definition.description = comments.map(comment => comment.kind === "lineBreak" ? comment.text : comment.text.trim()).join("");
+            definition.description = comments.map(comment => comment.kind === "lineBreak" ? comment.text : comment.text.trim().replace(/\r\n/g, "\n")).join("");
         }
 
         // jsdocs are separate from comments
@@ -626,9 +626,8 @@ export class JsonSchemaGenerator {
         this.parseCommentsIntoDefinition(reffedType!, definition, otherAnnotations); // handle comments in the type alias declaration
         if (prop) {
             this.parseCommentsIntoDefinition(prop, returnedDefinition, otherAnnotations);
-        } else {
-            this.parseCommentsIntoDefinition(symbol, definition, otherAnnotations);
         }
+        this.parseCommentsIntoDefinition(symbol, definition, otherAnnotations);
 
         // Create the actual definition only if is an inline definition, or
         // if it will be a $ref and it is not yet created

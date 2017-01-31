@@ -72,6 +72,7 @@ export declare class JsonSchemaGenerator {
     private addSimpleType(def, type);
     private makeNullable(def);
     private getTypeDefinition(typ, tc, asRef?, unionModifier?, prop?, reffedType?);
+    setSchemaOverride(symbolName: string, schema: Definition): void;
     getSchemaForSymbol(symbolName: string, includeReffedDefinitions?: boolean): Definition;
     getSchemaForSymbols(symbols: string[]): Definition;
     getUserSymbols(): string[];

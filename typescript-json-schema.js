@@ -562,6 +562,9 @@ var JsonSchemaGenerator = (function () {
         }
         return returnedDefinition;
     };
+    JsonSchemaGenerator.prototype.setSchemaOverride = function (symbolName, schema) {
+        this.reffedDefinitions[symbolName] = schema;
+    };
     JsonSchemaGenerator.prototype.getSchemaForSymbol = function (symbolName, includeReffedDefinitions) {
         if (includeReffedDefinitions === void 0) { includeReffedDefinitions = true; }
         if (!this.allSymbols[symbolName]) {

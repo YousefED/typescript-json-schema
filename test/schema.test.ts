@@ -46,6 +46,19 @@ describe("interfaces", () => {
             assert(symbols.indexOf("Vector3D") > -1);
         }
     });
+    it("should output the schemas set by setSchemaOverride", () => {
+        const program = TJS.getProgramFromFiles([resolve(base + "interface-multi/main.ts")]);
+        const generator = TJS.buildGenerator(program);
+        assert(generator !== null);
+        if (generator !== null) {
+            const schemaOverride: TJS.Definition = { type: "string" };
+
+            generator.setSchemaOverride("MySubObject", schemaOverride);
+            const schema = generator.getSchemaForSymbol("MyObject");
+
+            assert.deepEqual(schema.definitions!["MySubObject"], schemaOverride);
+        }
+    });
 });
 
 describe("schema", () => {

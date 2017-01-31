@@ -687,6 +687,10 @@ export class JsonSchemaGenerator {
         return returnedDefinition;
     }
 
+    public setSchemaOverride(symbolName: string, schema: Definition) {
+        this.reffedDefinitions[symbolName] = schema;
+    }
+
     public getSchemaForSymbol(symbolName: string, includeReffedDefinitions: boolean = true): Definition {
         if(!this.allSymbols[symbolName]) {
             throw `type ${symbolName} not found`;

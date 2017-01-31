@@ -62,25 +62,7 @@ var JsonSchemaGenerator = (function () {
         if (comments.length) {
             definition.description = comments.map(function (comment) { return comment.kind === "lineBreak" ? comment.text : comment.text.trim(); }).join("");
         }
-        var jsdocs = symbol.getJsDocTags().slice();
-        for (var _i = 0, _a = symbol.getDeclarations(); _i < _a.length; _i++) {
-            var decl = _a[_i];
-            var rawDocs = decl.jsDoc;
-            if (rawDocs && rawDocs.length) {
-                var _loop_1 = function (jsdoc) {
-                    if (jsdoc.tags && jsdoc.tags.length) {
-                        var tagName_1 = jsdoc.tags[0].tagName;
-                        if (tagName_1 && tagName_1.text && !jsdocs.some(function (doc) { return doc.name === tagName_1.text; })) {
-                            jsdocs.push({ name: tagName_1.text, text: (jsdoc.tags[0].comment || "").trim() });
-                        }
-                    }
-                };
-                for (var _b = 0, rawDocs_1 = rawDocs; _b < rawDocs_1.length; _b++) {
-                    var jsdoc = rawDocs_1[_b];
-                    _loop_1(jsdoc);
-                }
-            }
-        }
+        var jsdocs = symbol.getJsDocTags();
         jsdocs.forEach(function (doc) {
             var _a = (doc.name === "TJS" ? new RegExp(REGEX_TJS_JSDOC).exec(doc.text).slice(1, 3) : [doc.name, doc.text]), name = _a[0], text = _a[1];
             if (JsonSchemaGenerator.validationKeywords[name]) {

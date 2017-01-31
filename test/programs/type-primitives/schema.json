@@ -17,6 +17,10 @@
             "type": "integer",
             "default": 1
         },
+        "integer3": {
+            "type": "integer",
+            "default": 1
+        },
         "string1": {
             "type": "string",
             "default": "defaultValue"
@@ -47,6 +51,7 @@
         "number1",
         "integer1",
         "integer2",
+        "integer3",
         "string1",
         "array1",
         "array2",

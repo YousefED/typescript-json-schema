@@ -11,7 +11,9 @@ class MyObject {
 
     /** @TJS-type integer */
     integer1: number      = 1;
-    integer2: integer     = 1;
+    /** @type integer */
+    integer2: number      = 1;
+    integer3: integer     = 1;
 
     string1: string       = "defaultValue";
 

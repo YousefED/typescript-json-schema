@@ -101,6 +101,7 @@ describe("schema", () => {
     assertSchema("comments-override", "main.ts", "MyObject");
 
     assertSchema("force-type", "main.ts", "MyObject");
+    assertSchema("force-type-imported", "main.ts", "MyObject");
 
     /**
      * Type aliases

@@ -9,7 +9,7 @@
         "declaration": true,
         "noImplicitAny": true,
         "suppressImplicitAnyIndexErrors": true,
-        "strictNullChecks": false,
+        "strictNullChecks": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
         "noUnusedLocals": true,

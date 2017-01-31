@@ -17,6 +17,7 @@ function getDefaultArgs() {
         usePropertyOrder: false,
         generateRequired: false,
         strictNullChecks: false,
+        ignoreErrors: false,
         out: ""
     };
 }
@@ -63,7 +64,7 @@ var JsonSchemaGenerator = (function () {
         }
         var jsdocs = symbol.getJsDocTags();
         jsdocs.forEach(function (doc) {
-            var _a = doc.name === "TJS" ? new RegExp(REGEX_TJS_JSDOC).exec(doc.text).slice(1, 3) : [doc.name, doc.text], name = _a[0], text = _a[1];
+            var _a = (doc.name === "TJS" ? new RegExp(REGEX_TJS_JSDOC).exec(doc.text).slice(1, 3) : [doc.name, doc.text]), name = _a[0], text = _a[1];
             if (JsonSchemaGenerator.validationKeywords[name]) {
                 definition[name] = _this.parseValue(text);
             }
@@ -168,7 +169,7 @@ var JsonSchemaGenerator = (function () {
                 return tc.getSymbolAtLocation(type.typeName);
             }
         }
-        return null;
+        return undefined;
     };
     JsonSchemaGenerator.prototype.getDefinitionForProperty = function (prop, tc, node) {
         var propertyName = prop.getName();
@@ -193,12 +194,12 @@ var JsonSchemaGenerator = (function () {
                 try {
                     var sandbox = { sandboxvar: null };
                     vm.runInNewContext("sandboxvar=" + initial.getText(), sandbox);
-                    initial = sandbox.sandboxvar;
-                    if (initial === null || typeof initial === "string" || typeof initial === "number" || typeof initial === "boolean" || Object.prototype.toString.call(initial) === "[object Array]") {
-                        definition.default = initial;
+                    var val = sandbox.sandboxvar;
+                    if (val === null || typeof val === "string" || typeof val === "number" || typeof val === "boolean" || Object.prototype.toString.call(val) === "[object Array]") {
+                        definition.default = val;
                     }
-                    else if (initial) {
-                        console.warn("unknown initializer for property " + propertyName + ": " + initial);
+                    else if (val) {
+                        console.warn("unknown initializer for property " + propertyName + ": " + val);
                     }
                 }
                 catch (e) {
@@ -615,7 +616,7 @@ function buildGenerator(program, args) {
     }
     var typeChecker = program.getTypeChecker();
     var diagnostics = ts.getPreEmitDiagnostics(program);
-    if (diagnostics.length === 0) {
+    if (diagnostics.length === 0 || args.ignoreErrors) {
         var allSymbols_1 = {};
         var userSymbols_1 = {};
         var inheritingTypes_1 = {};
@@ -668,6 +669,9 @@ exports.buildGenerator = buildGenerator;
 function generateSchema(program, fullTypeName, args) {
     if (args === void 0) { args = {}; }
     var generator = buildGenerator(program, args);
+    if (generator === null) {
+        return null;
+    }
     var definition;
     if (fullTypeName === "*") {
         definition = generator.getSchemaForSymbols(generator.getUserSymbols());
@@ -704,6 +708,9 @@ function exec(filePattern, fullTypeName, args) {
         });
     }
     var definition = generateSchema(program, fullTypeName, args);
+    if (definition === null) {
+        return;
+    }
     var json = stringify(definition, { space: 4 }) + "\n\n";
     if (args.out) {
         require("fs").writeFile(args.out, json, function (err) {
@@ -741,6 +748,8 @@ function run() {
         .describe("required", "Create required array for non-optional properties.")
         .boolean("strictNullChecks").default("strictNullChecks", defaultArgs.strictNullChecks)
         .describe("strictNullChecks", "Make values non-nullable by default.")
+        .boolean("ignoreErrors").default("ignoreErrors", defaultArgs.ignoreErrors)
+        .describe("ignoreErrors", "Generate even if the program has errors.")
         .alias("out", "o")
         .describe("out", "The output file, defaults to using stdout")
         .argv;
@@ -754,6 +763,7 @@ function run() {
         usePropertyOrder: args.propOrder,
         generateRequired: args.required,
         strictNullChecks: args.strictNullChecks,
+        ignoreErrors: args.ignoreErrors,
         out: args.out
     });
 }

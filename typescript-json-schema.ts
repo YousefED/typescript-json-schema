@@ -20,6 +20,7 @@ export function getDefaultArgs(): Args {
         usePropertyOrder: false,
         generateRequired: false,
         strictNullChecks: false,
+        ignoreErrors: false,
         out: ""
     };
 }
@@ -34,10 +35,13 @@ export type Args = {
     usePropertyOrder: boolean;
     generateRequired: boolean;
     strictNullChecks: boolean;
+    ignoreErrors: boolean;
     out: string;
 };
 
 export type PartialArgs = Partial<Args>;
+
+export type PrimitiveType = number | boolean | string | null;
 
 export type Definition = {
     $ref?: string,
@@ -54,8 +58,8 @@ export type Definition = {
     additionalItems?: {
         anyOf: Definition
     },
-    enum?: string[] | Definition[],
-    default?: string | number | boolean | Object,
+    enum?: PrimitiveType[] | Definition[],
+    default?: PrimitiveType | Object,
     additionalProperties?: Definition,
     required?: string[],
     propertyOrder?: string[],
@@ -139,7 +143,7 @@ export class JsonSchemaGenerator {
         const jsdocs = symbol.getJsDocTags();
         jsdocs.forEach(doc => {
             // if we have @TJS-... annotations, we have to parse them
-            const [name, text] = doc.name === "TJS" ? new RegExp(REGEX_TJS_JSDOC).exec(doc.text).slice(1,3) : [doc.name, doc.text];
+            const [name, text] = (doc.name === "TJS" ? new RegExp(REGEX_TJS_JSDOC).exec(doc.text!)!.slice(1,3) : [doc.name, doc.text]) as string[];
             if (JsonSchemaGenerator.validationKeywords[name]) {
                 definition[name] = this.parseValue(text);
             } else {
@@ -149,7 +153,7 @@ export class JsonSchemaGenerator {
         });
     }
 
-    private extractLiteralValue(typ: ts.Type): string | number | boolean {
+    private extractLiteralValue(typ: ts.Type): PrimitiveType | undefined {
         if (typ.flags & ts.TypeFlags.EnumLiteral) {
             let str = (<ts.LiteralType>typ).text;
             let num = parseFloat(str);
@@ -167,7 +171,7 @@ export class JsonSchemaGenerator {
     /**
      * Checks whether a type is a tuple type.
      */
-    private resolveTupleType(propertyType: ts.Type): ts.TupleTypeNode {
+    private resolveTupleType(propertyType: ts.Type): ts.TupleTypeNode|null {
         if (!propertyType.getSymbol() && (propertyType.getFlags() & ts.TypeFlags.Object && (<ts.ObjectType>propertyType).objectFlags & ts.ObjectFlags.Reference)) {
             return (propertyType as ts.TypeReference).target as any;
         }
@@ -183,8 +187,8 @@ export class JsonSchemaGenerator {
         const tupleType = this.resolveTupleType(propertyType);
 
         if (tupleType) { // tuple
-            const elemTypes: ts.Type[] = tupleType.elementTypes || (propertyType as any).typeArguments;
-            const fixedTypes = elemTypes.map(elType => this.getTypeDefinition(elType, tc));
+            const elemTypes: ts.NodeArray<ts.TypeNode> = tupleType.elementTypes || (propertyType as any).typeArguments;
+            const fixedTypes = elemTypes.map(elType => this.getTypeDefinition(elType as any, tc));
             definition.type = "array";
             definition.items = fixedTypes;
             definition.minItems = fixedTypes.length;
@@ -242,7 +246,7 @@ export class JsonSchemaGenerator {
         return definition;
     }
 
-    private getReferencedTypeSymbol(prop: ts.Symbol, tc: ts.TypeChecker): ts.Symbol {
+    private getReferencedTypeSymbol(prop: ts.Symbol, tc: ts.TypeChecker): ts.Symbol|undefined {
         const decl = prop.getDeclarations();
         if (decl && decl.length) {
             const type = (<ts.TypeReferenceNode> (<any> decl[0]).type);
@@ -250,7 +254,7 @@ export class JsonSchemaGenerator {
                 return tc.getSymbolAtLocation(type.typeName);
             }
         }
-        return null;
+        return undefined;
     }
 
     private getDefinitionForProperty(prop: ts.Symbol, tc: ts.TypeChecker, node: ts.Node) {
@@ -278,14 +282,14 @@ export class JsonSchemaGenerator {
                 definition.default = initial.getText();
             } else {
                 try {
-                    const sandbox = { sandboxvar: null as ts.Expression };
+                    const sandbox = { sandboxvar: null as any };
                     vm.runInNewContext("sandboxvar=" + initial.getText(), sandbox);
 
-                    initial = sandbox.sandboxvar;
-                    if (initial === null || typeof initial === "string" || typeof initial === "number" || typeof initial === "boolean" || Object.prototype.toString.call(initial) === "[object Array]") {
-                        definition.default = initial;
-                    } else if (initial) {
-                        console.warn("unknown initializer for property " + propertyName + ": " + initial);
+                    const val = sandbox.sandboxvar;
+                    if (val === null || typeof val === "string" || typeof val === "number" || typeof val === "boolean" || Object.prototype.toString.call(val) === "[object Array]") {
+                        definition.default = val;
+                    } else if (val) {
+                        console.warn("unknown initializer for property " + propertyName + ": " + val);
                     }
                 } catch (e) {
                     console.warn("exception evaluating initializer for property " + propertyName);
@@ -301,7 +305,7 @@ export class JsonSchemaGenerator {
         const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
         const enm = <ts.EnumDeclaration>node;
 
-        var enumValues: Definition[] = [];
+        var enumValues: (number|boolean|string|null)[] = [];
         let enumTypes: string[] = [];
 
         const addType = (type: string) => {
@@ -318,7 +322,7 @@ export class JsonSchemaGenerator {
                 addType(typeof constantValue);
             } else {
                 // try to extract the enums value; it will probably by a cast expression
-                let initial: ts.Expression = member.initializer;
+                let initial: ts.Expression|undefined = member.initializer;
                 if (initial) {
                     if ((<any>initial).expression) { // node
                         const exp = (<any>initial).expression;
@@ -357,7 +361,7 @@ export class JsonSchemaGenerator {
     }
 
     private getUnionDefinition(unionType: ts.UnionType, prop: ts.Symbol, tc: ts.TypeChecker, unionModifier: string, definition: Definition) {
-        const enumValues: (string | number | boolean)[] = [];
+        const enumValues: PrimitiveType[] = [];
         const simpleTypes: string[] = [];
         const schemas: Definition[] = [];
 
@@ -367,7 +371,7 @@ export class JsonSchemaGenerator {
             }
         };
 
-        const addEnumValue = (val: string | number | boolean) => {
+        const addEnumValue = (val: PrimitiveType) => {
             if (enumValues.indexOf(val) === -1) {
                 enumValues.push(val);
             }
@@ -461,7 +465,7 @@ export class JsonSchemaGenerator {
                 throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
             }
 
-            const typ = tc.getTypeAtLocation(indexSignature.type);
+            const typ = tc.getTypeAtLocation(indexSignature.type!);
             const def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
 
             if (isStringIndexed) {
@@ -603,9 +607,9 @@ export class JsonSchemaGenerator {
         let fullTypeName = "";
         if (asTypeAliasRef) {
             fullTypeName = tc.getFullyQualifiedName(
-                reffedType.getFlags() & ts.SymbolFlags.Alias ?
-                    tc.getAliasedSymbol(reffedType) :
-                    reffedType
+                reffedType!.getFlags() & ts.SymbolFlags.Alias ?
+                    tc.getAliasedSymbol(reffedType!) :
+                    reffedType!
             ).replace(REGEX_FILE_NAME, "");
         } else if (asRef) {
             fullTypeName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
@@ -619,7 +623,7 @@ export class JsonSchemaGenerator {
 
         // Parse comments
         const otherAnnotations = {};
-        this.parseCommentsIntoDefinition(reffedType, definition, otherAnnotations); // handle comments in the type alias declaration
+        this.parseCommentsIntoDefinition(reffedType!, definition, otherAnnotations); // handle comments in the type alias declaration
         if (prop) {
             this.parseCommentsIntoDefinition(prop, returnedDefinition, otherAnnotations);
         } else {
@@ -630,7 +634,7 @@ export class JsonSchemaGenerator {
         // if it will be a $ref and it is not yet created
         if (!asRef || !this.reffedDefinitions[fullTypeName]) {
             if (asRef) { // must be here to prevent recursivity problems
-                this.reffedDefinitions[fullTypeName] = asTypeAliasRef && reffedType.getFlags() & ts.TypeFlags.IndexedAccess && symbol ? this.getTypeDefinition(typ, tc, true, undefined, symbol, symbol) : definition;
+                this.reffedDefinitions[fullTypeName] = asTypeAliasRef && reffedType!.getFlags() & ts.TypeFlags.IndexedAccess && symbol ? this.getTypeDefinition(typ, tc, true, undefined, symbol, symbol) : definition;
                 if (this.args.useTitle && fullTypeName) {
                     definition.title = fullTypeName;
                 }
@@ -639,7 +643,7 @@ export class JsonSchemaGenerator {
 
             if (definition.type === undefined) {  // if users override the type, do not try to infer it
                 if (typ.flags & ts.TypeFlags.Union) {
-                    this.getUnionDefinition(typ as ts.UnionType, prop, tc, unionModifier, definition);
+                    this.getUnionDefinition(typ as ts.UnionType, prop!, tc, unionModifier, definition);
                 } else if (typ.flags & ts.TypeFlags.Intersection) {
                     definition.allOf = [];
                     const types = (<ts.IntersectionType> typ).types;
@@ -647,7 +651,7 @@ export class JsonSchemaGenerator {
                         definition.allOf.push(this.getTypeDefinition(types[i], tc));
                     }
                 } else if (isRawType) {
-                    this.getDefinitionForRootType(typ, tc, reffedType, definition);
+                    this.getDefinitionForRootType(typ, tc, reffedType!, definition);
                 } else if (node && (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)) {
                     this.getEnumDefinition(typ, tc, definition);
                 } else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && Object.keys(symbol.members).length === 0) {
@@ -710,7 +714,7 @@ export function getProgramFromFiles(files: string[], compilerOptions: ts.Compile
     return ts.createProgram(files, options);
 }
 
-export function buildGenerator(program: ts.Program, args: PartialArgs = {}): JsonSchemaGenerator {
+export function buildGenerator(program: ts.Program, args: PartialArgs = {}): JsonSchemaGenerator|null {
     // Use defaults unles otherwise specified
     let settings = getDefaultArgs();
 
@@ -724,7 +728,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
 
     var diagnostics = ts.getPreEmitDiagnostics(program);
 
-    if (diagnostics.length === 0) {
+    if (diagnostics.length === 0 || args.ignoreErrors) {
 
         const allSymbols: { [name: string]: ts.Type } = {};
         const userSymbols: { [name: string]: ts.Type } = {};
@@ -787,8 +791,12 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
     }
 }
 
-export function generateSchema(program: ts.Program, fullTypeName: string, args: PartialArgs = {}) {
+export function generateSchema(program: ts.Program, fullTypeName: string, args: PartialArgs = {}): Definition|null {
     const generator = buildGenerator(program, args);
+
+    if (generator === null) {
+        return null;
+    }
 
     let definition: Definition;
     if (fullTypeName === "*") { // All types in file(s)
@@ -799,7 +807,7 @@ export function generateSchema(program: ts.Program, fullTypeName: string, args: 
     return definition;
 }
 
-export function programFromConfig(configFileName: string) {
+export function programFromConfig(configFileName: string): ts.Program {
     // basically a copy of https://github.com/Microsoft/TypeScript/blob/3663d400270ccae8b69cbeeded8ffdc8fa12d7ad/src/compiler/tsc.ts -> parseConfigFile
     const result = ts.parseConfigFileTextToJson(configFileName, ts.sys.readFile(configFileName));
     const configObject = result.config;
@@ -815,6 +823,7 @@ export function programFromConfig(configFileName: string) {
     const program = ts.createProgram(configParseResult.fileNames, options);
     return program;
 }
+
 export function exec(filePattern: string, fullTypeName: string, args = getDefaultArgs()) {
     let program: ts.Program;
     if (path.basename(filePattern) === "tsconfig.json") {
@@ -826,6 +835,9 @@ export function exec(filePattern: string, fullTypeName: string, args = getDefaul
     }
 
     const definition = generateSchema(program, fullTypeName, args);
+    if (definition === null) {
+        return;
+    }
 
     const json = stringify(definition, {space: 4}) + "\n\n";
     if (args.out) {
@@ -863,6 +875,8 @@ export function run() {
             .describe("required", "Create required array for non-optional properties.")
         .boolean("strictNullChecks").default("strictNullChecks", defaultArgs.strictNullChecks)
             .describe("strictNullChecks", "Make values non-nullable by default.")
+        .boolean("ignoreErrors").default("ignoreErrors", defaultArgs.ignoreErrors)
+            .describe("ignoreErrors", "Generate even if the program has errors.")
         .alias("out", "o")
             .describe("out", "The output file, defaults to using stdout")
         .argv;
@@ -877,6 +891,7 @@ export function run() {
         usePropertyOrder: args.propOrder,
         generateRequired: args.required,
         strictNullChecks: args.strictNullChecks,
+        ignoreErrors: args.ignoreErrors,
         out: args.out
     });
 }

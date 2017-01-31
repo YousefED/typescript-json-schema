@@ -10,9 +10,11 @@ export declare type Args = {
     usePropertyOrder: boolean;
     generateRequired: boolean;
     strictNullChecks: boolean;
+    ignoreErrors: boolean;
     out: string;
 };
 export declare type PartialArgs = Partial<Args>;
+export declare type PrimitiveType = number | boolean | string | null;
 export declare type Definition = {
     $ref?: string;
     description?: string;
@@ -30,8 +32,8 @@ export declare type Definition = {
     additionalItems?: {
         anyOf: Definition;
     };
-    enum?: string[] | Definition[];
-    default?: string | number | boolean | Object;
+    enum?: PrimitiveType[] | Definition[];
+    default?: PrimitiveType | Object;
     additionalProperties?: Definition;
     required?: string[];
     propertyOrder?: string[];
@@ -75,8 +77,8 @@ export declare class JsonSchemaGenerator {
     getUserSymbols(): string[];
 }
 export declare function getProgramFromFiles(files: string[], compilerOptions?: ts.CompilerOptions): ts.Program;
-export declare function buildGenerator(program: ts.Program, args?: PartialArgs): JsonSchemaGenerator;
-export declare function generateSchema(program: ts.Program, fullTypeName: string, args?: PartialArgs): Definition;
+export declare function buildGenerator(program: ts.Program, args?: PartialArgs): JsonSchemaGenerator | null;
+export declare function generateSchema(program: ts.Program, fullTypeName: string, args?: PartialArgs): Definition | null;
 export declare function programFromConfig(configFileName: string): ts.Program;
 export declare function exec(filePattern: string, fullTypeName: string, args?: Args): void;
 export declare function run(): void;

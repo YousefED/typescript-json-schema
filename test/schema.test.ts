@@ -24,8 +24,10 @@ export function assertSchema(group: string, name: string, type: string, settings
         assert.deepEqual(actual, expected, "The schema is not as expected");
 
         // test against the meta schema
-        ajv.validateSchema(actual);
-        assert.equal(ajv.errors, null, "The schema is not valid");
+        if (actual !== null) {
+            ajv.validateSchema(actual);
+            assert.equal(ajv.errors, null, "The schema is not valid");
+        }
     });
 }
 
@@ -35,12 +37,14 @@ describe("interfaces", () => {
         const generator = TJS.buildGenerator(program);
 
         assert.instanceOf(generator, TJS.JsonSchemaGenerator);
-        assert.doesNotThrow(() => generator.getSchemaForSymbol("MyObject"));
-        assert.doesNotThrow(() => generator.getSchemaForSymbol("Vector3D"));
+        if (generator !== null) {
+            assert.doesNotThrow(() => generator.getSchemaForSymbol("MyObject"));
+            assert.doesNotThrow(() => generator.getSchemaForSymbol("Vector3D"));
 
-        const symbols = generator.getUserSymbols();
-        assert(symbols.indexOf("MyObject") > -1);
-        assert(symbols.indexOf("Vector3D") > -1);
+            const symbols = generator.getUserSymbols();
+            assert(symbols.indexOf("MyObject") > -1);
+            assert(symbols.indexOf("Vector3D") > -1);
+        }
     });
 });
 

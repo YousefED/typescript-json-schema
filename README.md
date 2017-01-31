@@ -72,6 +72,45 @@ generator.getSchemaForSymbol("MyType");
 generator.getSchemaForSymbol("AnotherType");
 ```
 
+### Annotations
+
+The schema generator converts annotations to JSON schema properties. 
+
+For example
+
+```ts
+export interface Shape {
+    /**
+     * The size of the shape.
+     *
+     * @minimum 0
+     * @TJS-type integer
+     */
+    size: number;
+}
+```
+
+will be translated to 
+```json
+{
+    "$ref": "#/definitions/Shape",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "Shape": {
+            "properties": {
+                "size": {
+                    "description": "The size of the shape.",
+                    "minimum": 0,
+                    "type": "integer"
+                }
+            },
+            "type": "object"
+        }
+    }
+}
+```
+
+Note that we needed to use `@TJS-type` instead of just `@type` because of an [issue with the typescript compiler](https://github.com/Microsoft/TypeScript/issues/13498). 
 
 ## Background
 

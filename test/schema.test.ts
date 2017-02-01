@@ -139,6 +139,10 @@ describe("schema", () => {
         useTypeAliasRef: false,
         useRootRef: true
     });
+    assertSchema("type-aliases-annotated-unref", "main.ts", "MyString");
+    assertSchema("type-aliases-annotated-import", "main.ts", "MyObject", {
+        useTypeAliasRef: true
+    });
 
     /**
      *  unions and intersections

@@ -152,4 +152,10 @@ describe("schema", () => {
     assertSchema("strict-null-checks", "main.ts", "MyObject", undefined, {
         strictNullChecks: true
     });
+
+    /**
+     * annotations
+     */
+
+    assertSchema("annotation-default", "main.ts", "MyObject");
 });

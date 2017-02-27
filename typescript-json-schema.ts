@@ -881,7 +881,7 @@ export function run() {
         .boolean("propOrder").default("propOrder", defaultArgs.usePropertyOrder)
             .describe("propOrder", "Create property order definitions.")
         .boolean("useTypeOfKeyword").default("useTypeOfKeyword", defaultArgs.usePropertyOrder)
-            .describe("useTypeOfKeyword", "Use typeOf keyword (https://github.com/epoberezkin/ajv-keywords#typeof).")
+            .describe("useTypeOfKeyword", "Use typeOf keyword (https://goo.gl/DC6sni) for functions.")
         .boolean("required").default("required", defaultArgs.generateRequired)
             .describe("required", "Create required array for non-optional properties.")
         .boolean("strictNullChecks").default("strictNullChecks", defaultArgs.strictNullChecks)

@@ -8,15 +8,18 @@
     "typescript-json-schema": "./bin/typescript-json-schema"
   },
   "author": "Yousef El-Dardiry and Dominik Moritz",
-  "contributors": [{
-    "name": "Yousef El-Dardiry",
-    "email": "yousef@tweetbeam.com",
-    "url": "http://www.twitter.com/yousefed"
-  },{
-    "name": "Dominik Moritz",
-    "email": "domoritz@gmail.com",
-    "url": "https://www.domoritz.de/"
-  }],
+  "contributors": [
+    {
+      "name": "Yousef El-Dardiry",
+      "email": "yousef@tweetbeam.com",
+      "url": "http://www.twitter.com/yousefed"
+    },
+    {
+      "name": "Dominik Moritz",
+      "email": "domoritz@gmail.com",
+      "url": "https://www.domoritz.de/"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "git@github.com:YousefED/typescript-json-schema.git"

@@ -1,0 +1,92 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "properties": {
+        "varBoolean": {
+            "default": true,
+            "type": "boolean"
+        },
+        "varBooleanArray": {
+            "default": [
+                true,
+                false,
+                true
+            ],
+            "items": {
+                "type": "boolean"
+            },
+            "type": "array"
+        },
+        "varFloat": {
+            "default": 3.21,
+            "type": "number"
+        },
+        "varFloatArray": {
+            "default": [
+                1.23,
+                65.21,
+                -123.4,
+                0,
+                1000000.0001
+            ],
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "varInteger": {
+            "default": 123,
+            "type": "number"
+        },
+        "varIntegerArray": {
+            "default": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "varMixedArray": {
+            "default": [
+                true,
+                123,
+                3.21,
+                "foo"
+            ],
+            "items": {},
+            "type": "array"
+        },
+        "varString": {
+            "default": "foo",
+            "type": "string"
+        },
+        "varStringArray": {
+            "default": [
+                "a",
+                "b",
+                "c",
+                "..."
+            ],
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        }
+    },
+    "required": [
+        "varBoolean",
+        "varInteger",
+        "varFloat",
+        "varString",
+        "varBooleanArray",
+        "varIntegerArray",
+        "varFloatArray",
+        "varStringArray",
+        "varMixedArray"
+    ],
+    "type": "object"
+}

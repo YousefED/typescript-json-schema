@@ -114,14 +114,11 @@ export class JsonSchemaGenerator {
      * Try to parse a value and returns the string if it fails.
      */
     private parseValue(value: string) {
-        if (value === "false") {
-            return false;
+        try {
+            return JSON.parse(value);
+        } catch (error) {
+            return value;
         }
-        if (value === "true") {
-            return true;
-        }
-        let num = parseFloat(value);
-        return isNaN(num) ? value : num;
     }
 
     /**

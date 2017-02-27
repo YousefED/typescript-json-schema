@@ -8,15 +8,18 @@
     "typescript-json-schema": "./bin/typescript-json-schema"
   },
   "author": "Yousef El-Dardiry and Dominik Moritz",
-  "contributors": [{
-    "name": "Yousef El-Dardiry",
-    "email": "yousef@tweetbeam.com",
-    "url": "http://www.twitter.com/yousefed"
-  },{
-    "name": "Dominik Moritz",
-    "email": "domoritz@gmail.com",
-    "url": "https://www.domoritz.de/"
-  }],
+  "contributors": [
+    {
+      "name": "Yousef El-Dardiry",
+      "email": "yousef@tweetbeam.com",
+      "url": "http://www.twitter.com/yousefed"
+    },
+    {
+      "name": "Dominik Moritz",
+      "email": "domoritz@gmail.com",
+      "url": "https://www.domoritz.de/"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "git@github.com:YousefED/typescript-json-schema.git"
@@ -42,15 +45,15 @@
   },
   "devDependencies": {
     "@types/assertion-error": "^1.0.30",
-    "@types/chai": "^3.4.34",
+    "@types/chai": "^3.4.35",
     "@types/glob": "^5.0.30",
-    "@types/json-stable-stringify": "^1.0.29",
-    "@types/mocha": "^2.2.38",
-    "@types/node": "^7.0.4",
-    "ajv": "^4.11.2",
+    "@types/json-stable-stringify": "^1.0.30",
+    "@types/mocha": "^2.2.39",
+    "@types/node": "^7.0.5",
+    "ajv": "^4.11.3",
     "chai": "^3.5.0",
     "mocha": "^3.2.0",
-    "source-map-support": "^0.4.10",
+    "source-map-support": "^0.4.11",
     "tslint": "^4.4.2"
   },
   "scripts": {

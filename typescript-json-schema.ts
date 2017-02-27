@@ -18,6 +18,7 @@ export function getDefaultArgs(): Args {
         useDefaultProperties: false,
         disableExtraProperties: false,
         usePropertyOrder: false,
+        useTypeOfKeyword: false,
         generateRequired: false,
         strictNullChecks: false,
         ignoreErrors: false,
@@ -33,6 +34,7 @@ export type Args = {
     useDefaultProperties: boolean;
     disableExtraProperties: boolean;
     usePropertyOrder: boolean;
+    useTypeOfKeyword: boolean;
     generateRequired: boolean;
     strictNullChecks: boolean;
     ignoreErrors: boolean;
@@ -65,6 +67,8 @@ export type Definition = {
     propertyOrder?: string[],
     properties?: {},
     defaultProperties?: string[],
+
+    typeof?: "function"
 };
 
 export class JsonSchemaGenerator {
@@ -443,6 +447,11 @@ export class JsonSchemaGenerator {
 
     private getClassDefinition(clazzType: ts.Type, tc: ts.TypeChecker, definition: Definition): Definition {
         const node = clazzType.getSymbol().getDeclarations()[0];
+        if (this.args.useTypeOfKeyword && node.kind === ts.SyntaxKind.FunctionType) {
+            definition.typeof = "function";
+            return definition;
+        }
+
         const clazz = <ts.ClassDeclaration>node;
         const props = tc.getPropertiesOfType(clazzType);
         const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
@@ -871,6 +880,8 @@ export function run() {
             .describe("noExtraProps", "Disable additional properties in objects by default.")
         .boolean("propOrder").default("propOrder", defaultArgs.usePropertyOrder)
             .describe("propOrder", "Create property order definitions.")
+        .boolean("useTypeOfKeyword").default("useTypeOfKeyword", defaultArgs.usePropertyOrder)
+            .describe("useTypeOfKeyword", "Use typeOf keyword (https://goo.gl/DC6sni) for functions.")
         .boolean("required").default("required", defaultArgs.generateRequired)
             .describe("required", "Create required array for non-optional properties.")
         .boolean("strictNullChecks").default("strictNullChecks", defaultArgs.strictNullChecks)
@@ -889,6 +900,7 @@ export function run() {
         useDefaultProperties: args.defaultProps,
         disableExtraProperties: args.noExtraProps,
         usePropertyOrder: args.propOrder,
+        useTypeOfKeyword: args.useTypeOfKeyword,
         generateRequired: args.required,
         strictNullChecks: args.strictNullChecks,
         ignoreErrors: args.ignoreErrors,

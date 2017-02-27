@@ -158,4 +158,6 @@ describe("schema", () => {
      */
 
     assertSchema("annotation-default", "main.ts", "MyObject");
+
+    assertSchema("typeof-keyword", "main.ts", "MyObject", {useTypeOfKeyword: true});
 });

@@ -1,0 +1,3 @@
+interface MyObject {
+  foo: () => string;
+}

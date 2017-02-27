@@ -24,15 +24,16 @@ In case no tsconfig.json is available for your project, you can directly specify
 Usage: node typescript-json-schema.js <path-to-typescript-files-or-tsconfig> <type>
 
 Options:
-  --refs              Create shared ref definitions.                        [boolean] [default: true]
-  --aliasRefs         Create shared ref definitions for the type aliases.   [boolean] [default: false]
-  --topRef            Create a top-level ref definition.                    [boolean] [default: false]
-  --titles            Creates titles in the output schema.                  [boolean] [default: false]
-  --defaultProps      Create default properties definitions.                [boolean] [default: false]
-  --noExtraProps      Disable additional properties in objects by default.  [boolean] [default: false]
-  --propOrder         Create property order definitions.                    [boolean] [default: false]
-  --required          Create required array for non-optional properties.    [boolean] [default: false]
-  --strictNullChecks  Make values non-nullable by default.                  [boolean] [default: false]
+  --refs              Create shared ref definitions.                               [boolean] [default: true]
+  --aliasRefs         Create shared ref definitions for the type aliases.          [boolean] [default: false]
+  --topRef            Create a top-level ref definition.                           [boolean] [default: false]
+--titles              Creates titles in the output schema.                         [boolean] [default: false]
+  --defaultProps      Create default properties definitions.                       [boolean] [default: false]
+  --noExtraProps      Disable additional properties in objects by default.         [boolean] [default: false]
+  --propOrder         Create property order definitions.                           [boolean] [default: false]
+  --required          Create required array for non-optional properties.           [boolean] [default: false]
+  --strictNullChecks  Make values non-nullable by default.                         [boolean] [default: false]
+  --useTypeOfKeyword  Use `typeOf` keyword (https://goo.gl/DC6sni) for functions.  [boolean] [default: false]
   --out, -o           The output file, defaults to using stdout
 ```
 

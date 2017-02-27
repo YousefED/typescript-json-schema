@@ -15,6 +15,7 @@ function getDefaultArgs() {
         useDefaultProperties: false,
         disableExtraProperties: false,
         usePropertyOrder: false,
+        useTypeOfKeyword: false,
         generateRequired: false,
         strictNullChecks: false,
         ignoreErrors: false,
@@ -345,6 +346,10 @@ var JsonSchemaGenerator = (function () {
     JsonSchemaGenerator.prototype.getClassDefinition = function (clazzType, tc, definition) {
         var _this = this;
         var node = clazzType.getSymbol().getDeclarations()[0];
+        if (this.args.useTypeOfKeyword && node.kind === ts.SyntaxKind.FunctionType) {
+            definition.typeof = "function";
+            return definition;
+        }
         var clazz = node;
         var props = tc.getPropertiesOfType(clazzType);
         var fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
@@ -743,6 +748,8 @@ function run() {
         .describe("noExtraProps", "Disable additional properties in objects by default.")
         .boolean("propOrder").default("propOrder", defaultArgs.usePropertyOrder)
         .describe("propOrder", "Create property order definitions.")
+        .boolean("useTypeOfKeyword").default("useTypeOfKeyword", defaultArgs.usePropertyOrder)
+        .describe("useTypeOfKeyword", "Use typeOf keyword (https://goo.gl/DC6sni) for functions.")
         .boolean("required").default("required", defaultArgs.generateRequired)
         .describe("required", "Create required array for non-optional properties.")
         .boolean("strictNullChecks").default("strictNullChecks", defaultArgs.strictNullChecks)
@@ -760,6 +767,7 @@ function run() {
         useDefaultProperties: args.defaultProps,
         disableExtraProperties: args.noExtraProps,
         usePropertyOrder: args.propOrder,
+        useTypeOfKeyword: args.useTypeOfKeyword,
         generateRequired: args.required,
         strictNullChecks: args.strictNullChecks,
         ignoreErrors: args.ignoreErrors,

@@ -44,14 +44,12 @@ var JsonSchemaGenerator = (function () {
         configurable: true
     });
     JsonSchemaGenerator.prototype.parseValue = function (value) {
-        if (value === "false") {
-            return false;
+        try {
+            return JSON.parse(value);
         }
-        if (value === "true") {
-            return true;
+        catch (error) {
+            return value;
         }
-        var num = parseFloat(value);
-        return isNaN(num) ? value : num;
     };
     JsonSchemaGenerator.prototype.parseCommentsIntoDefinition = function (symbol, definition, otherAnnotations) {
         var _this = this;

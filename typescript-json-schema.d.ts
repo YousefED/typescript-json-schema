@@ -8,6 +8,7 @@ export declare type Args = {
     useDefaultProperties: boolean;
     disableExtraProperties: boolean;
     usePropertyOrder: boolean;
+    useTypeOfKeyword: boolean;
     generateRequired: boolean;
     strictNullChecks: boolean;
     ignoreErrors: boolean;
@@ -39,6 +40,7 @@ export declare type Definition = {
     propertyOrder?: string[];
     properties?: {};
     defaultProperties?: string[];
+    typeof?: "function";
 };
 export declare class JsonSchemaGenerator {
     private args;

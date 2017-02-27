@@ -42,15 +42,15 @@
   },
   "devDependencies": {
     "@types/assertion-error": "^1.0.30",
-    "@types/chai": "^3.4.34",
+    "@types/chai": "^3.4.35",
     "@types/glob": "^5.0.30",
-    "@types/json-stable-stringify": "^1.0.29",
-    "@types/mocha": "^2.2.38",
-    "@types/node": "^7.0.4",
-    "ajv": "^4.11.2",
+    "@types/json-stable-stringify": "^1.0.30",
+    "@types/mocha": "^2.2.39",
+    "@types/node": "^7.0.5",
+    "ajv": "^4.11.3",
     "chai": "^3.5.0",
     "mocha": "^3.2.0",
-    "source-map-support": "^0.4.10",
+    "source-map-support": "^0.4.11",
     "tslint": "^4.4.2"
   },
   "scripts": {

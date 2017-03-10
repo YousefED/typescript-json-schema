@@ -22,9 +22,14 @@ export function getDefaultArgs(): Args {
         generateRequired: false,
         strictNullChecks: false,
         ignoreErrors: false,
-        out: ""
+        out: "",
+        validationKeywords: [],
     };
 }
+
+export type ValidationKeywords = {
+  [prop: string]: boolean
+};
 
 export type Args = {
     useRef: boolean;
@@ -39,6 +44,7 @@ export type Args = {
     strictNullChecks: boolean;
     ignoreErrors: boolean;
     out: string;
+    validationKeywords: string[];
 };
 
 export type PartialArgs = Partial<Args>;
@@ -102,12 +108,23 @@ export class JsonSchemaGenerator {
     private tc: ts.TypeChecker;
 
     private reffedDefinitions: { [key: string]: Definition } = {};
+    private userValidationKeywords: ValidationKeywords;
 
-    constructor(allSymbols: { [name: string]: ts.Type }, userSymbols: { [name: string]: ts.Type }, inheritingTypes: { [baseName: string]: string[] }, tc: ts.TypeChecker, private args = getDefaultArgs()) {
+    constructor(
+      allSymbols: { [name: string]: ts.Type },
+      userSymbols: { [name: string]: ts.Type },
+      inheritingTypes: { [baseName: string]: string[] },
+      tc: ts.TypeChecker,
+      private args = getDefaultArgs(),
+    ) {
         this.allSymbols = allSymbols;
         this.userSymbols = userSymbols;
         this.inheritingTypes = inheritingTypes;
         this.tc = tc;
+        this.userValidationKeywords = args.validationKeywords.reduce(
+          (acc, word) => ({ ...acc, [word]: true }),
+          {}
+        );
     }
 
     public get ReffedDefinitions(): { [key: string]: Definition } {
@@ -145,7 +162,7 @@ export class JsonSchemaGenerator {
         jsdocs.forEach(doc => {
             // if we have @TJS-... annotations, we have to parse them
             const [name, text] = (doc.name === "TJS" ? new RegExp(REGEX_TJS_JSDOC).exec(doc.text!)!.slice(1,3) : [doc.name, doc.text]) as string[];
-            if (JsonSchemaGenerator.validationKeywords[name]) {
+            if (JsonSchemaGenerator.validationKeywords[name] || this.userValidationKeywords[name]) {
                 definition[name] = this.parseValue(text);
             } else {
                 // special annotations
@@ -890,6 +907,8 @@ export function run() {
             .describe("ignoreErrors", "Generate even if the program has errors.")
         .alias("out", "o")
             .describe("out", "The output file, defaults to using stdout")
+        .array("validationKeywords").default("validationKeywords", defaultArgs.validationKeywords)
+            .describe("validationKeywords", "Provide additional validation keywords to include.")
         .argv;
 
     exec(args._[0], args._[1], {
@@ -904,7 +923,8 @@ export function run() {
         generateRequired: args.required,
         strictNullChecks: args.strictNullChecks,
         ignoreErrors: args.ignoreErrors,
-        out: args.out
+        out: args.out,
+        validationKeywords: args.validationKeywords,
     });
 }
 

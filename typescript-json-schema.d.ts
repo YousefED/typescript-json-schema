@@ -1,5 +1,8 @@
 import * as ts from "typescript";
 export declare function getDefaultArgs(): Args;
+export declare type ValidationKeywords = {
+    [prop: string]: boolean;
+};
 export declare type Args = {
     useRef: boolean;
     useTypeAliasRef: boolean;
@@ -13,6 +16,7 @@ export declare type Args = {
     strictNullChecks: boolean;
     ignoreErrors: boolean;
     out: string;
+    validationKeywords: string[];
 };
 export declare type PartialArgs = Partial<Args>;
 export declare type PrimitiveType = number | boolean | string | null;
@@ -50,6 +54,7 @@ export declare class JsonSchemaGenerator {
     private inheritingTypes;
     private tc;
     private reffedDefinitions;
+    private userValidationKeywords;
     constructor(allSymbols: {
         [name: string]: ts.Type;
     }, userSymbols: {

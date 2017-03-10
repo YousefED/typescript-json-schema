@@ -160,4 +160,7 @@ describe("schema", () => {
     assertSchema("annotation-default", "main.ts", "MyObject");
 
     assertSchema("typeof-keyword", "main.ts", "MyObject", {useTypeOfKeyword: true});
+
+    const userValidationOpts = { validationKeywords: [ "chance", "important" ] };
+    assertSchema("user-validation-keywords", "main.ts", "MyObject", userValidationOpts);
 });

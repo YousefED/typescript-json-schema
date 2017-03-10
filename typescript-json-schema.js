@@ -1,13 +1,4 @@
 "use strict";
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
 var ts = require("typescript");
 var glob = require("glob");
 var path = require("path");
@@ -28,8 +19,7 @@ function getDefaultArgs() {
         generateRequired: false,
         strictNullChecks: false,
         ignoreErrors: false,
-        out: "",
-        validationKeywords: [],
+        out: ""
     };
 }
 exports.getDefaultArgs = getDefaultArgs;
@@ -46,10 +36,6 @@ var JsonSchemaGenerator = (function () {
         this.userSymbols = userSymbols;
         this.inheritingTypes = inheritingTypes;
         this.tc = tc;
-        this.userValidationKeywords = args.validationKeywords.reduce(function (acc, word) {
-            return (__assign({}, acc, (_a = {}, _a[word] = true, _a)));
-            var _a;
-        }, {});
     }
     Object.defineProperty(JsonSchemaGenerator.prototype, "ReffedDefinitions", {
         get: function () {
@@ -78,7 +64,7 @@ var JsonSchemaGenerator = (function () {
         var jsdocs = symbol.getJsDocTags();
         jsdocs.forEach(function (doc) {
             var _a = (doc.name === "TJS" ? new RegExp(REGEX_TJS_JSDOC).exec(doc.text).slice(1, 3) : [doc.name, doc.text]), name = _a[0], text = _a[1];
-            if (JsonSchemaGenerator.validationKeywords[name] || _this.userValidationKeywords[name]) {
+            if (JsonSchemaGenerator.validationKeywords[name]) {
                 definition[name] = _this.parseValue(text);
             }
             else {
@@ -772,8 +758,6 @@ function run() {
         .describe("ignoreErrors", "Generate even if the program has errors.")
         .alias("out", "o")
         .describe("out", "The output file, defaults to using stdout")
-        .array("validationKeywords").default("validationKeywords", defaultArgs.validationKeywords)
-        .describe("validationKeywords", "Provide additional validation keywords to include.")
         .argv;
     exec(args._[0], args._[1], {
         useRef: args.refs,
@@ -787,8 +771,7 @@ function run() {
         generateRequired: args.required,
         strictNullChecks: args.strictNullChecks,
         ignoreErrors: args.ignoreErrors,
-        out: args.out,
-        validationKeywords: args.validationKeywords,
+        out: args.out
     });
 }
 exports.run = run;

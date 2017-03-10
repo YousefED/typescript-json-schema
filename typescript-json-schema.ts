@@ -29,7 +29,7 @@ export function getDefaultArgs(): Args {
 
 export type ValidationKeywords = {
   [prop: string]: boolean
-}
+};
 
 export type Args = {
     useRef: boolean;

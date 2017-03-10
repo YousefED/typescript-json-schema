@@ -161,6 +161,6 @@ describe("schema", () => {
 
     assertSchema("typeof-keyword", "main.ts", "MyObject", {useTypeOfKeyword: true});
 
-    const userValidationOpts = { validationKeywords: [ 'chance', 'important' ] };
+    const userValidationOpts = { validationKeywords: [ "chance", "important" ] };
     assertSchema("user-validation-keywords", "main.ts", "MyObject", userValidationOpts);
 });

@@ -291,7 +291,7 @@ export class JsonSchemaGenerator {
         }
 
         // try to get default value
-        let initial = (<ts.VariableDeclaration>prop.valueDeclaration).initializer;
+        let initial = prop.valueDeclaration ? (<ts.VariableDeclaration>prop.valueDeclaration).initializer : undefined;
 
         if (initial) {
             if ((<any>initial).expression) { // node
@@ -677,9 +677,14 @@ export class JsonSchemaGenerator {
                 } else if (node && (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)) {
                     this.getEnumDefinition(typ, tc, definition);
                 } else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && Object.keys(symbol.members).length === 0) {
-                    // {} is TypeLiteral with no members. Need special case because it doesn't have declarations.
-                    definition.type = "object";
-                    definition.properties = {};
+                    // A type literal might not have members but might have declarations so we need to handle that
+                    if (symbol.declarations !== undefined) this.getClassDefinition(typ, tc, definition);
+                    else {
+                        // {} is TypeLiteral with no members nor declarations. Need special case because it doesn't have declarations.
+                        definition.type = "object";
+                        definition.properties = {};
+                    }
+
                 } else {
                     this.getClassDefinition(typ, tc, definition);
                 }

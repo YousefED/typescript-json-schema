@@ -678,8 +678,9 @@ export class JsonSchemaGenerator {
                     this.getEnumDefinition(typ, tc, definition);
                 } else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && Object.keys(symbol.members).length === 0) {
                     // A type literal might not have members but might have declarations so we need to handle that
-                    if (symbol.declarations !== undefined) this.getClassDefinition(typ, tc, definition);
-                    else {
+                    if (symbol.declarations !== undefined) {
+                        this.getClassDefinition(typ, tc, definition);
+                    } else {
                         // {} is TypeLiteral with no members nor declarations. Need special case because it doesn't have declarations.
                         definition.type = "object";
                         definition.properties = {};

@@ -96,6 +96,7 @@ describe("schema", () => {
     assertSchema("type-nullable", "main.ts", "MyObject");
 
     assertSchema("optionals", "main.ts", "MyObject");
+    assertSchema("partial-mapped-type", "main.ts", "MyObject");
 
     assertSchema("comments", "main.ts", "MyObject");
     assertSchema("comments-override", "main.ts", "MyObject");

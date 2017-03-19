@@ -8,6 +8,9 @@
             "type": "number"
         }
     },
-    "required": [ "propA", "propB" ],
+    "required": [
+        "propA",
+        "propB"
+    ],
     "$schema": "http://json-schema.org/draft-04/schema#"
 }

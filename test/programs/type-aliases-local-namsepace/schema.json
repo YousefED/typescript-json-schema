@@ -3,8 +3,7 @@
     "definitions": {
         "B.B": {
             "properties": {
-                "b": {
-                }
+                "b": {}
             },
             "required": [
                 "b"
@@ -26,7 +25,7 @@
     "properties": {
         "d": {
             "$ref": "#/definitions/C.C"
-        }   
+        }
     },
     "required": [
         "d"

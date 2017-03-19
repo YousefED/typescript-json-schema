@@ -1,23 +1,31 @@
 {
     "type": "object",
-    "required": [ "FieldWithAnonType" ],
+    "required": [
+        "FieldWithAnonType"
+    ],
     "properties": {
         "FieldWithAnonType": {
             "type": "object",
-            "required": [ "SubfieldA", "SubfieldB", "SubfieldC"],
+            "required": [
+                "SubfieldA",
+                "SubfieldB",
+                "SubfieldC"
+            ],
             "properties": {
                 "SubfieldA": {
                     "type": "number"
                 },
                 "SubfieldB": {
                     "type": [
-                         "string",
-                         "number"
+                        "string",
+                        "number"
                     ]
                 },
                 "SubfieldC": {
                     "type": "object",
-                    "required": [ "SubsubfieldA"],
+                    "required": [
+                        "SubsubfieldA"
+                    ],
                     "properties": {
                         "SubsubfieldA": {
                             "type": "array",

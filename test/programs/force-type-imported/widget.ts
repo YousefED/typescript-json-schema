@@ -1,2 +1,2 @@
 /** @TJS-type number */
-export class Widget {}
+export class Widget { }

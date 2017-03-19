@@ -1,9 +1,9 @@
- interface MyObject {
+interface MyObject {
     FieldWithAnonType: {
-        SubfieldA: number;
-        SubfieldB: (string | number);
+        SubfieldA: number
+        SubfieldB: (string | number)
         SubfieldC: {
-            SubsubfieldA: number[];
+            SubsubfieldA: number[]
         }
-    };
+    }
 }

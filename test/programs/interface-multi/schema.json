@@ -9,7 +9,10 @@
             "$ref": "#/definitions/MySubObject"
         }
     },
-    "required": [ "subA", "subB" ],
+    "required": [
+        "subA",
+        "subB"
+    ],
     "definitions": {
         "MySubObject": {
             "type": "object",
@@ -21,7 +24,10 @@
                     "type": "number"
                 }
             },
-            "required": [ "propA", "propB" ]
+            "required": [
+                "propA",
+                "propB"
+            ]
         }
     }
 }

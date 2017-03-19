@@ -50,6 +50,7 @@
     "@types/json-stable-stringify": "^1.0.30",
     "@types/mocha": "^2.2.39",
     "@types/node": "^7.0.5",
+    "@types/yargs": "^6.6.0",
     "ajv": "^4.11.3",
     "chai": "^3.5.0",
     "mocha": "^3.2.0",
@@ -59,6 +60,6 @@
   "scripts": {
     "test": "npm run build && mocha -t 5000 --require source-map-support/register test",
     "build": "tsc -p .",
-    "lint": "tslint -c tslint.json 'typescript-json-schema.ts' 'test/**/*.ts' --exclude '**/*.d.ts'"
+    "lint": "tslint -c tslint.json 'typescript-json-schema.ts' 'test/**/*.ts' --exclude '**/*.d.ts' --fix"
   }
 }

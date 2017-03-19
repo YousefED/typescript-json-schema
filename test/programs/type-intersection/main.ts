@@ -1,10 +1,10 @@
 interface Type1 {
-    value1: string;
+    value1: string
 }
 interface Type2 {
-    value2: number;
+    value2: number
 }
 
 interface MyObject {
-    value: Type1 & Type2;
+    value: Type1 & Type2
 }

@@ -1,7 +1,6 @@
-
 interface MyObject {
-    alias: MyAlias;
-    self: MyObject;
+    alias: MyAlias
+    self: MyObject
 }
 
-type MyAlias = MyObject;
+type MyAlias = MyObject

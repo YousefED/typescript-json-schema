@@ -9,5 +9,8 @@
             "type": "number"
         }
     },
-    "required": [ "propA", "propB" ]
+    "required": [
+        "propA",
+        "propB"
+    ]
 }

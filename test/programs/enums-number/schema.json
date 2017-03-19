@@ -2,10 +2,12 @@
     "type": "object",
     "properties": {
         "foo": {
-          "$ref": "#/definitions/Enum"
+            "$ref": "#/definitions/Enum"
         }
     },
-    "required": [ "foo" ],
+    "required": [
+        "foo"
+    ],
     "definitions": {
         "Enum": {
             "type": "number",
@@ -17,4 +19,3 @@
     },
     "$schema": "http://json-schema.org/draft-04/schema#"
 }
-

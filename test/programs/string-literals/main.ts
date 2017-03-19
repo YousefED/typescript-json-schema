@@ -1,6 +1,6 @@
-type result = "ok" | "fail" | "abort";
+type result = "ok" | "fail" | "abort"
 
 class MyObject {
-    foo: result;
-    bar: result | string;
+    foo: result
+    bar: result | string
 }

@@ -1,4 +1,3 @@
-
 /**
  * Description of Vector3D, a type alias to a array of integers with length 3
  * If run without useTypeAliasRef, this comment should be ignored but
@@ -6,7 +5,7 @@
  * @minItems 3
  * @maxItems 3
  */
-type Vector3D = number[];
+type Vector3D = number[]
 
 /**
  * Description of MyObject, a top level object,
@@ -23,12 +22,12 @@ interface MyObject {
      * @minimum 0
      * @maximum 100
      */
-    opacity: number;
+    opacity: number
 
     /**
      * Description of field position, of aliased type Vector3D, which should inherit its annotations
      */
-    position: Vector3D;
+    position: Vector3D
 
     /**
      * Description of rotation, a field with an anonymous type
@@ -39,6 +38,6 @@ interface MyObject {
          * @minimum -90
          * @maximum 90
          */
-        yaw: number;
-    };
+        yaw: number
+    }
 }

@@ -28,10 +28,16 @@
                     "maximum": 90
                 }
             },
-            "required": [ "yaw" ],
+            "required": [
+                "yaw"
+            ],
             "description": "Description of rotation, a field with an anonymous type"
         }
     },
-    "required": [ "opacity", "position", "rotation" ],
+    "required": [
+        "opacity",
+        "position",
+        "rotation"
+    ],
     "$schema": "http://json-schema.org/draft-04/schema#"
 }

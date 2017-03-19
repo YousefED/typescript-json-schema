@@ -1,4 +1,4 @@
 interface MyObject {
-    required:number;
-    optional?:number;
+    required: number
+    optional?: number
 }

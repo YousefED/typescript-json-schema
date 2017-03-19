@@ -24,54 +24,56 @@ In case no tsconfig.json is available for your project, you can directly specify
 Usage: node typescript-json-schema.js <path-to-typescript-files-or-tsconfig> <type>
 
 Options:
-  --refs                Create shared ref definitions.                               [boolean] [default: true]
-  --aliasRefs           Create shared ref definitions for the type aliases.          [boolean] [default: false]
-  --topRef              Create a top-level ref definition.                           [boolean] [default: false]
-  --titles              Creates titles in the output schema.                         [boolean] [default: false]
-  --defaultProps        Create default properties definitions.                       [boolean] [default: false]
-  --noExtraProps        Disable additional properties in objects by default.         [boolean] [default: false]
-  --propOrder           Create property order definitions.                           [boolean] [default: false]
-  --required            Create required array for non-optional properties.           [boolean] [default: false]
-  --strictNullChecks    Make values non-nullable by default.                         [boolean] [default: false]
-  --useTypeOfKeyword    Use `typeOf` keyword (https://goo.gl/DC6sni) for functions.  [boolean] [default: false]
-  --out, -o             The output file, defaults to using stdout
-  --validationKeywords  Provide additional validation keywords to include            [array]   [default: []]
+  --useRef                  Create shared ref definitions.                              [boolean] [default: true]
+  --useTypeAliasRef         Create shared ref definitions for the type aliases.         [boolean] [default: false]
+  --useRootRef              Create a top-level ref definition.                          [boolean] [default: false]
+  --useTitle                Creates titles in the output schema.                        [boolean] [default: false]
+  --useDefaultProperties    Create default properties definitions.                      [boolean] [default: false]
+  --disableExtraProperties  Disable additional properties in objects by default.        [boolean] [default: false]
+  --usePropertyOrder        Create property order definitions.                          [boolean] [default: false]
+  --useTypeOfKeyword        Use typeOf keyword (https://goo.gl/DC6sni) for functions.   [boolean] [default: false]
+  --ignoreObjectMethods     Exclude methods from the generated schema                   [boolean] [default: false]
+  --generateRequired        Create required array for non-optional properties.          [boolean] [default: false]
+  --strictNullChecks        Make values non-nullable by default.                        [boolean] [default: false]
+  --ignoreErrors            Generate even if the program has errors.                    [boolean] [default: false]
+  --validationKeywords      Provide additional validation keywords to include.          [array]   [default: []]
+  --out, -o                 The output file, defaults to using stdout
 ```
 
 ### Programmatic use
 
 ```ts
-import {resolve} from "path";
+import { resolve } from "path"
 
-import {CompilerOptions} from "typescript";
-import * as TJS from "typescript-json-schema";
+import { CompilerOptions } from "typescript"
+import * as TJS from "typescript-json-schema"
 
 // optionally pass argument to schema generator
 const settings: TJS.PartialArgs = {
     generateRequired: true
-};
+}
 
 // optionally pass ts compiler options
 compilerOptions: CompilerOptions = {
     strictNullChecks: true
 }
 
-const program = TJS.getProgramFromFiles([resolve("my-file.ts")], compilerOptions);
+const program = TJS.getProgramFromFiles([resolve("my-file.ts")], compilerOptions)
 
 // We can either get the schema for one file and one type...
-const schema = TJS.generateSchema(program, "MyType", settings);
+const schema = TJS.generateSchema(program, "MyType", settings)
 
 
 // ... or a generator that lets us incrementally get more schemas
 
-const generator = TJS.buildGenerator(program, settings);
+const generator = TJS.buildGenerator(program, settings)
 
 // all symbols
-const symbols = generator.getUserSymbols();
+const symbols = generator.getUserSymbols()
 
 // Get symbols for different types from generator.
-generator.getSchemaForSymbol("MyType");
-generator.getSchemaForSymbol("AnotherType");
+generator.getSchemaForSymbol("MyType")
+generator.getSchemaForSymbol("AnotherType")
 ```
 
 ### Annotations
@@ -88,7 +90,7 @@ export interface Shape {
      * @minimum 0
      * @TJS-type integer
      */
-    size: number;
+    size: number
 }
 ```
 

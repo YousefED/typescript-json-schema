@@ -1,8 +1,8 @@
-import { Widget } from "./widget";
+import { Widget } from "./widget"
 
 export interface MyObject {
-    name: string;
+    name: string
 
-    mainWidget: Widget;
-    otherWidgets: Widget[];
+    mainWidget: Widget
+    otherWidgets: Widget[]
 }

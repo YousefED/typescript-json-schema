@@ -6,12 +6,12 @@
             "type": "string",
             "description": "Must be 'first' or 'last'",
             "chance": {
-              "pickone": [
-                [
-                  "first",
-                  "last"
+                "pickone": [
+                    [
+                        "first",
+                        "last"
+                    ]
                 ]
-              ]
             },
             "minLength": 1,
             "important": ""

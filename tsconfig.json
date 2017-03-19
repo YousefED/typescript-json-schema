@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "es2015",
         "module": "commonjs",
         "moduleResolution": "node",
         "isolatedModules": false,
@@ -19,7 +19,9 @@
         "preserveConstEnums": true,
         "sourceMap": true,
         "watch": false,
-        "typeRoots" : ["node_modules/@types"]
+        "typeRoots": [
+            "node_modules/@types"
+        ]
     },
     "include": [
         "**/*.ts",

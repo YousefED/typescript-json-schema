@@ -1,3 +1,3 @@
 interface MyObject {
-  foo: () => string;
+    foo: () => string
 }

@@ -8,7 +8,10 @@
             "$ref": "#/definitions/MyMap2"
         }
     },
-    "required": [ "map1", "map2" ],
+    "required": [
+        "map1",
+        "map2"
+    ],
     "definitions": {
         "MyMap1": {
             "type": "object",

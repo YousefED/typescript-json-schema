@@ -1,20 +1,19 @@
-
 /**
  * Type-level description
  * @additionalProperties true
  */
 export interface MySubObject {
-    value: string;
+    value: string
 }
 
 export interface MyObject {
-    list: MySubObject[];
+    list: MySubObject[]
 
-    sub1: MySubObject;
+    sub1: MySubObject
 
     /**
      * Property-level description
      * @additionalProperties false
      */
-    sub2: MySubObject;
+    sub2: MySubObject
 }

@@ -1,1 +1,1 @@
-export type MyReadOnlyArray = ReadonlyArray<number>;
+export type MyReadOnlyArray = ReadonlyArray<number>

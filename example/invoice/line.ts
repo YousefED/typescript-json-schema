@@ -9,23 +9,23 @@ interface Invoice {
      * Who will pay?
      * Not me!
      */
-    customer: string;
+    customer: string
 
     /**
      * Invoice content
      * @minItems 1
      * @maxItems 50
      */
-    lines: InvoiceLine[];
+    lines: InvoiceLine[]
 
-    dimension: Dimension; // Total dimension of the order
+    dimension: Dimension // Total dimension of the order
 
-    blob: any; // Additional stuff
+    blob: any // Additional stuff
 }
 
 interface InvoiceLine {
 
-    product: Product;
+    product: Product
 
     /**
      * @minimum 0
@@ -34,5 +34,5 @@ interface InvoiceLine {
      * @exclusiveMaximum false
      * @multipleOf 2
      */
-    quantity: number;
+    quantity: number
 }

@@ -5,25 +5,25 @@ interface Product {
      * Uniquely defines the product
      * @pattern [A-Z][a-z][0-9]_
      */
-    name: string;
+    name: string
 
     /** How big it is */
-    dimension?: Dimension;
+    dimension?: Dimension
 
     /** Classification */
-    category: Category;
+    category: Category
 }
 
 interface WeightedProduct extends Product {
-    weight: number;
+    weight: number
 }
 
 interface Category {
     /** Uniquely identifies the category */
-    name: string | number;
+    name: string | number
 
     /** Classification level from 1 to 5 (highest)
      * @type integer
      */
-    level: number;
+    level: number
 }

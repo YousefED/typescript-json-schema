@@ -3,17 +3,29 @@
     "ban": true,
     "class-name": true,
     "eofline": true,
-    "indent": [true, "spaces"],
-    "comment-format": [true, "check-space"],
+    "indent": [
+      true,
+      "spaces"
+    ],
+    "comment-format": [
+      true,
+      "check-space"
+    ],
     "curly": true,
     "forin": true,
     "label-position": true,
     "no-arg": true,
     "no-any": false,
     "jsdoc-format": true,
-    "semicolon": [true, "always"],
+    "semicolon": [
+      true,
+      "never"
+    ],
     "no-duplicate-variable": true,
-    "no-consecutive-blank-lines": [false, 2],
+    "no-consecutive-blank-lines": [
+      false,
+      2
+    ],
     "no-console": [
       true,
       "debug",
@@ -24,7 +36,10 @@
     ],
     "no-debugger": true,
     "no-eval": true,
-    "no-inferrable-types": [true, "ignore-params"],
+    "no-inferrable-types": [
+      true,
+      "ignore-params"
+    ],
     "no-shadowed-variable": true,
     "no-string-literal": false,
     "no-trailing-whitespace": true,
@@ -48,8 +63,20 @@
       }
     ],
     "no-switch-case-fall-through": true,
-    "quotemark": [true, "double", "avoid-escape"],
-    "triple-equals": [true, "allow-null-check"],
-    "variable-name": [true, "check-format", "allow-leading-underscore", "ban-keywords"]
+    "quotemark": [
+      true,
+      "double",
+      "avoid-escape"
+    ],
+    "triple-equals": [
+      true,
+      "allow-null-check"
+    ],
+    "variable-name": [
+      true,
+      "check-format",
+      "allow-leading-underscore",
+      "ban-keywords"
+    ]
   }
 }

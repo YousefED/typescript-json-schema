@@ -1,6 +1,6 @@
 module MyModule {
     interface MyObject {
-        propA: number;
-        propB: number;
+        propA: number
+        propB: number
     }
 }

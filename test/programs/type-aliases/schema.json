@@ -39,9 +39,9 @@
         }
     },
     "required": [
-        "primitive",
+        "alias",
         "object",
-        "alias"
+        "primitive"
     ],
     "type": "object"
 }

@@ -79,14 +79,14 @@
     },
     "required": [
         "varBoolean",
-        "varInteger",
-        "varFloat",
-        "varString",
         "varBooleanArray",
-        "varIntegerArray",
+        "varFloat",
         "varFloatArray",
-        "varStringArray",
-        "varMixedArray"
+        "varInteger",
+        "varIntegerArray",
+        "varMixedArray",
+        "varString",
+        "varStringArray"
     ],
     "type": "object"
 }

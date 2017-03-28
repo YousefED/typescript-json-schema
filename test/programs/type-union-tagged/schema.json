@@ -46,9 +46,9 @@
                 }
             },
             "required": [
+                "height",
                 "kind",
-                "width",
-                "height"
+                "width"
             ]
         },
         "Circle": {

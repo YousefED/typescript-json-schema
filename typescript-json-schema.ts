@@ -542,7 +542,7 @@ export class JsonSchemaGenerator {
                 }, []);
 
                 if (requiredProps.length > 0) {
-                    definition.required = requiredProps;
+                    definition.required = requiredProps.sort();
                 }
             }
         }

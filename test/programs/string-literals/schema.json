@@ -9,8 +9,8 @@
         }
     },
     "required": [
-        "foo",
-        "bar"
+        "bar",
+        "foo"
     ],
     "definitions": {
         "result": {

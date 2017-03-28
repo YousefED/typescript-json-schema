@@ -43,15 +43,15 @@
         }
     },
     "required": [
-        "boolean1",
-        "number1",
-        "integer1",
-        "integer2",
-        "string1",
         "array1",
         "array2",
+        "boolean1",
+        "integer1",
+        "integer2",
+        "number1",
         "object1",
-        "object2"
+        "object2",
+        "string1"
     ],
     "$schema": "http://json-schema.org/draft-04/schema#"
 }

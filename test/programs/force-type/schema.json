@@ -20,8 +20,8 @@
         }
     },
     "required": [
-        "name",
         "mainWidget",
+        "name",
         "otherWidgets"
     ],
     "type": "object"

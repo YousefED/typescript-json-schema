@@ -64,9 +64,11 @@ describe("interfaces", () => {
 describe("schema", () => {
     assertSchema("array-and-description", "main.ts", "MyObject");
     assertSchema("class-single", "main.ts", "MyObject");
+    assertSchema("class-extends", "main.ts", "MyObject");
 
     assertSchema("interface-single", "main.ts", "MyObject");
     assertSchema("interface-multi", "main.ts", "MyObject");
+    assertSchema("interface-extends", "main.ts", "MyObject");
 
     assertSchema("interface-recursion", "main.ts", "MyObject", {
         useRootRef: true

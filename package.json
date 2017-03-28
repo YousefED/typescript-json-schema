@@ -41,7 +41,7 @@
     "glob": "~7.1.1",
     "json-stable-stringify": "^1.0.1",
     "typescript": "~2.1.5",
-    "yargs": "^6.6.0"
+    "yargs": "^7.0.2"
   },
   "devDependencies": {
     "@types/assertion-error": "^1.0.30",

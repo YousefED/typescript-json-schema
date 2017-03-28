@@ -1,43 +1,26 @@
 {
-    "type": "object",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "additionalProperties": false,
     "properties": {
         "value": {
-            "allOf": [
-                {
-                    "$ref": "#/definitions/Type1"
-                },
-                {
-                    "$ref": "#/definitions/Type2"
-                }
-            ]
-        }
-    },
-    "required": [
-        "value"
-    ],
-    "definitions": {
-        "Type1": {
-            "type": "object",
+            "additionalProperties": false,
             "properties": {
                 "value1": {
                     "type": "string"
-                }
-            },
-            "required": [
-                "value1"
-            ]
-        },
-        "Type2": {
-            "type": "object",
-            "properties": {
+                },
                 "value2": {
                     "type": "number"
                 }
             },
             "required": [
+                "value1",
                 "value2"
-            ]
+            ],
+            "type": "object"
         }
     },
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    "required": [
+        "value"
+    ],
+    "type": "object"
 }

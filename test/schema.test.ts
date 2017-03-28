@@ -147,7 +147,9 @@ describe("schema", () => {
      */
 
     assertSchema("type-union", "main.ts", "MyObject");
-    assertSchema("type-intersection", "main.ts", "MyObject");
+    assertSchema("type-intersection", "main.ts", "MyObject", {
+        disableExtraProperties: true
+    });
     assertSchema("type-union-tagged", "main.ts", "Shape");
     assertSchema("type-aliases-union-namespace", "main.ts", "MyModel");
 

@@ -77,6 +77,28 @@ export type Definition = {
     typeof?: "function"
 };
 
+function extend(target: any, ..._: any[]) {
+    if (target == null) { // TypeError if undefined or null
+      throw new TypeError("Cannot convert undefined or null to object");
+    }
+
+    const to = Object(target);
+
+    for (var index = 1; index < arguments.length; index++) {
+      const nextSource = arguments[index];
+
+      if (nextSource != null) { // Skip over if undefined or null
+        for (const nextKey in nextSource) {
+          // Avoid bugs when hasOwnProperty is shadowed
+          if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+            to[nextKey] = nextSource[nextKey];
+          }
+        }
+      }
+    }
+    return to;
+}
+
 export class JsonSchemaGenerator {
     /**
      * JSDoc keywords that should be used to annotate the JSON schema.
@@ -667,10 +689,22 @@ export class JsonSchemaGenerator {
                 if (typ.flags & ts.TypeFlags.Union) {
                     this.getUnionDefinition(typ as ts.UnionType, prop!, tc, unionModifier, definition);
                 } else if (typ.flags & ts.TypeFlags.Intersection) {
-                    definition.allOf = [];
+                    // extend object instead of using allOf because allOf does not work well with additional properties. See #107
+                    if (this.args.disableExtraProperties) {
+                        definition.additionalProperties = false;
+                    }
+
                     const types = (<ts.IntersectionType> typ).types;
                     for (let i = 0; i < types.length; ++i) {
-                        definition.allOf.push(this.getTypeDefinition(types[i], tc));
+                        const other = this.getTypeDefinition(types[i], tc, false);
+                        definition.type = other.type;  // should always be object
+                        definition.properties = extend(definition.properties || {}, other.properties);
+                        if (Object.keys(other.default || {}).length > 0) {
+                            definition.default = extend(definition.default || {}, other.default);
+                        }
+                        if (other.required) {
+                            definition.required = (definition.required || []).concat(other.required);
+                        }
                     }
                 } else if (isRawType) {
                     this.getDefinitionForRootType(typ, tc, reffedType!, definition);

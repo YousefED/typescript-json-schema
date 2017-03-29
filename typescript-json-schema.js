@@ -1,4 +1,12 @@
 "use strict";
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 var ts = require("typescript");
 var glob = require("glob");
 var path = require("path");
@@ -19,10 +27,32 @@ function getDefaultArgs() {
         generateRequired: false,
         strictNullChecks: false,
         ignoreErrors: false,
-        out: ""
+        out: "",
+        validationKeywords: [],
     };
 }
 exports.getDefaultArgs = getDefaultArgs;
+function extend(target) {
+    var _ = [];
+    for (var _i = 1; _i < arguments.length; _i++) {
+        _[_i - 1] = arguments[_i];
+    }
+    if (target == null) {
+        throw new TypeError("Cannot convert undefined or null to object");
+    }
+    var to = Object(target);
+    for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+        if (nextSource != null) {
+            for (var nextKey in nextSource) {
+                if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                    to[nextKey] = nextSource[nextKey];
+                }
+            }
+        }
+    }
+    return to;
+}
 var JsonSchemaGenerator = (function () {
     function JsonSchemaGenerator(allSymbols, userSymbols, inheritingTypes, tc, args) {
         if (args === void 0) { args = getDefaultArgs(); }
@@ -36,6 +66,10 @@ var JsonSchemaGenerator = (function () {
         this.userSymbols = userSymbols;
         this.inheritingTypes = inheritingTypes;
         this.tc = tc;
+        this.userValidationKeywords = args.validationKeywords.reduce(function (acc, word) {
+            return (__assign({}, acc, (_a = {}, _a[word] = true, _a)));
+            var _a;
+        }, {});
     }
     Object.defineProperty(JsonSchemaGenerator.prototype, "ReffedDefinitions", {
         get: function () {
@@ -64,7 +98,7 @@ var JsonSchemaGenerator = (function () {
         var jsdocs = symbol.getJsDocTags();
         jsdocs.forEach(function (doc) {
             var _a = (doc.name === "TJS" ? new RegExp(REGEX_TJS_JSDOC).exec(doc.text).slice(1, 3) : [doc.name, doc.text]), name = _a[0], text = _a[1];
-            if (JsonSchemaGenerator.validationKeywords[name]) {
+            if (JsonSchemaGenerator.validationKeywords[name] || _this.userValidationKeywords[name]) {
                 definition[name] = _this.parseValue(text);
             }
             else {
@@ -414,7 +448,7 @@ var JsonSchemaGenerator = (function () {
                     return required;
                 }, []);
                 if (requiredProps.length > 0) {
-                    definition.required = requiredProps;
+                    definition.required = requiredProps.sort();
                 }
             }
         }
@@ -519,10 +553,20 @@ var JsonSchemaGenerator = (function () {
                     this.getUnionDefinition(typ, prop, tc, unionModifier, definition);
                 }
                 else if (typ.flags & ts.TypeFlags.Intersection) {
-                    definition.allOf = [];
+                    if (this.args.disableExtraProperties) {
+                        definition.additionalProperties = false;
+                    }
                     var types = typ.types;
                     for (var i = 0; i < types.length; ++i) {
-                        definition.allOf.push(this.getTypeDefinition(types[i], tc));
+                        var other = this.getTypeDefinition(types[i], tc, false);
+                        definition.type = other.type;
+                        definition.properties = extend(definition.properties || {}, other.properties);
+                        if (Object.keys(other.default || {}).length > 0) {
+                            definition.default = extend(definition.default || {}, other.default);
+                        }
+                        if (other.required) {
+                            definition.required = (definition.required || []).concat(other.required);
+                        }
                     }
                 }
                 else if (isRawType) {
@@ -758,6 +802,8 @@ function run() {
         .describe("ignoreErrors", "Generate even if the program has errors.")
         .alias("out", "o")
         .describe("out", "The output file, defaults to using stdout")
+        .array("validationKeywords").default("validationKeywords", defaultArgs.validationKeywords)
+        .describe("validationKeywords", "Provide additional validation keywords to include.")
         .argv;
     exec(args._[0], args._[1], {
         useRef: args.refs,
@@ -771,7 +817,8 @@ function run() {
         generateRequired: args.required,
         strictNullChecks: args.strictNullChecks,
         ignoreErrors: args.ignoreErrors,
-        out: args.out
+        out: args.out,
+        validationKeywords: args.validationKeywords,
     });
 }
 exports.run = run;

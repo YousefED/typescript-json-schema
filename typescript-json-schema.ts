@@ -99,6 +99,20 @@ function extend(target: any, ..._: any[]) {
     return to;
 }
 
+function unique(arr: string[]): string[] {
+    const temp = {};
+    for (const e of arr) {
+      temp[e] = true;
+    }
+    const r: string[] = [];
+    for (const k in temp) {
+      if (temp.hasOwnProperty(k)) {
+        r.push(k);
+      }
+    }
+    return r;
+}
+
 export class JsonSchemaGenerator {
     /**
      * JSDoc keywords that should be used to annotate the JSON schema.
@@ -564,7 +578,7 @@ export class JsonSchemaGenerator {
                 }, []);
 
                 if (requiredProps.length > 0) {
-                    definition.required = requiredProps.sort();
+                    definition.required = unique(requiredProps).sort();
                 }
             }
         }
@@ -703,7 +717,7 @@ export class JsonSchemaGenerator {
                             definition.default = extend(definition.default || {}, other.default);
                         }
                         if (other.required) {
-                            definition.required = (definition.required || []).concat(other.required);
+                            definition.required = unique((definition.required || []).concat(other.required)).sort();
                         }
                     }
                 } else if (isRawType) {

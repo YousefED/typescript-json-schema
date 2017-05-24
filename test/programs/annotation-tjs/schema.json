@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "properties": {
+    "dateTime": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "email": {
+      "format": "email",
+      "type": "string"
+    },
+    "hostname": {
+      "format": "hostname",
+      "type": "string"
+    },
+    "ipv4": {
+      "format": "ipv4",
+      "type": "string"
+    },
+    "ipv6": {
+      "format": "ipv6",
+      "type": "string"
+    },
+    "jsonPointer": {
+      "format": "json-pointer",
+      "type": "string"
+    },
+    "uri": {
+      "format": "uri",
+      "type": "string"
+    },
+    "uriReference": {
+      "format": "uri-reference",
+      "type": "string"
+    },
+    "uriTemplate": {
+      "format": "uri-template",
+      "type": "string"
+    }
+  },
+  "required": [
+    "dateTime",
+    "email",
+    "hostname",
+    "ipv4",
+    "ipv6",
+    "jsonPointer",
+    "uri",
+    "uriReference",
+    "uriTemplate"
+  ],
+  "type": "object"
+}

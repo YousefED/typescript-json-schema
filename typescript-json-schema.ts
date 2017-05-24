@@ -7,7 +7,7 @@ import * as stringify from "json-stable-stringify";
 const vm = require("vm");
 
 const REGEX_FILE_NAME = /".*"\./;
-const REGEX_TJS_JSDOC = /^-([\w]+)\s([\w]+)/g;
+const REGEX_TJS_JSDOC = /^-([\w]+)\s([\w-]+)/g;
 
 export function getDefaultArgs(): Args {
     return {

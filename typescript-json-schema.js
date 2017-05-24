@@ -13,7 +13,7 @@ var path = require("path");
 var stringify = require("json-stable-stringify");
 var vm = require("vm");
 var REGEX_FILE_NAME = /".*"\./;
-var REGEX_TJS_JSDOC = /^-([\w]+)\s([\w]+)/g;
+var REGEX_TJS_JSDOC = /^-([\w]+)\s([\w-]+)/g;
 function getDefaultArgs() {
     return {
         useRef: true,
@@ -52,6 +52,20 @@ function extend(target) {
         }
     }
     return to;
+}
+function unique(arr) {
+    var temp = {};
+    for (var _i = 0, arr_1 = arr; _i < arr_1.length; _i++) {
+        var e = arr_1[_i];
+        temp[e] = true;
+    }
+    var r = [];
+    for (var k in temp) {
+        if (temp.hasOwnProperty(k)) {
+            r.push(k);
+        }
+    }
+    return r;
 }
 var JsonSchemaGenerator = (function () {
     function JsonSchemaGenerator(allSymbols, userSymbols, inheritingTypes, tc, args) {
@@ -448,7 +462,7 @@ var JsonSchemaGenerator = (function () {
                     return required;
                 }, []);
                 if (requiredProps.length > 0) {
-                    definition.required = requiredProps.sort();
+                    definition.required = unique(requiredProps).sort();
                 }
             }
         }
@@ -565,7 +579,7 @@ var JsonSchemaGenerator = (function () {
                             definition.default = extend(definition.default || {}, other.default);
                         }
                         if (other.required) {
-                            definition.required = (definition.required || []).concat(other.required);
+                            definition.required = unique((definition.required || []).concat(other.required)).sort();
                         }
                     }
                 }

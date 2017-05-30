@@ -1,7 +1,7 @@
-import * as ts from "typescript";
 import * as glob from "glob";
-import * as path from "path";
 import * as stringify from "json-stable-stringify";
+import * as path from "path";
+import * as ts from "typescript";
 
 
 const vm = require("vm");
@@ -13,13 +13,13 @@ export function getDefaultArgs(): Args {
     return {
         ref: true,
         aliasRef: false,
-        topRef: false,
+        topRef: true,
         titles: false,
         defaultProps: false,
-        noExtraProps: false,
+        noExtraProps: true,
         propOrder: false,
         typeOfKeyword: false,
-        required: false,
+        required: true,
         strictNullChecks: false,
         ignoreErrors: false,
         out: "",

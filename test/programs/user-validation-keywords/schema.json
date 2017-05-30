@@ -1,23 +1,30 @@
 {
+    "$ref": "#/definitions/MyObject",
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "type": "object",
-    "properties": {
-        "name": {
-            "type": "string",
-            "description": "Must be 'first' or 'last'",
-            "chance": {
-              "pickone": [
-                [
-                  "first",
-                  "last"
-                ]
-              ]
+    "definitions": {
+        "MyObject": {
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "chance": {
+                        "pickone": [
+                            [
+                                "first",
+                                "last"
+                            ]
+                        ]
+                    },
+                    "description": "Must be 'first' or 'last'",
+                    "important": "",
+                    "minLength": 1,
+                    "type": "string"
+                }
             },
-            "minLength": 1,
-            "important": ""
+            "required": [
+                "name"
+            ],
+            "type": "object"
         }
-    },
-    "required": [
-        "name"
-    ]
+    }
 }
+

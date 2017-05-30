@@ -1,41 +1,59 @@
 {
-    "type": "object",
-    "properties": {
-        "val": {
-            "type": "number"
-        },
-        "valNullable": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "valUndef": {
-            "type": "number"
-        },
-        "valOpt": {
-            "type": "number"
-        },
-        "valTrue": {
-            "enum": [ true ],
-            "type": "boolean"
-        },
-        "valTrueOpt": {
-            "enum": [ true ],
-            "type": "boolean"
-        },
-        "valTrueOrNull": {
-            "anyOf": [
-                { "enum": [ true ], "type": "boolean" },
-                { "type": "null"  }
-            ]
+    "$ref": "#/definitions/MyObject",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "MyObject": {
+            "additionalProperties": false,
+            "properties": {
+                "val": {
+                    "type": "number"
+                },
+                "valNullable": {
+                    "type": [
+                        "null",
+                        "number"
+                    ]
+                },
+                "valOpt": {
+                    "type": "number"
+                },
+                "valTrue": {
+                    "enum": [
+                        true
+                    ],
+                    "type": "boolean"
+                },
+                "valTrueOpt": {
+                    "enum": [
+                        true
+                    ],
+                    "type": "boolean"
+                },
+                "valTrueOrNull": {
+                    "anyOf": [
+                        {
+                            "enum": [
+                                true
+                            ],
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "valUndef": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "val",
+                "valNullable",
+                "valTrue",
+                "valTrueOrNull"
+            ],
+            "type": "object"
         }
-    },
-    "required": [
-        "val",
-        "valNullable",
-        "valTrue",
-        "valTrueOrNull"
-    ],
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    }
 }
+

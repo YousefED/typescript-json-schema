@@ -1,12 +1,19 @@
 {
-    "type": "object",
-    "properties": {
-        "foo": {
-            "typeof": "function"
+    "$ref": "#/definitions/MyObject",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "MyObject": {
+            "additionalProperties": false,
+            "properties": {
+                "foo": {
+                    "typeof": "function"
+                }
+            },
+            "required": [
+                "foo"
+            ],
+            "type": "object"
         }
-    },
-    "required": [
-        "foo"
-    ],
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    }
 }
+

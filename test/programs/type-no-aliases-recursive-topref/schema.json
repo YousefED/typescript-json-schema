@@ -3,6 +3,7 @@
     "$schema": "http://json-schema.org/draft-04/schema#",
     "definitions": {
         "MyObject": {
+            "additionalProperties": false,
             "properties": {
                 "alias": {
                     "$ref": "#/definitions/MyObject"
@@ -19,3 +20,4 @@
         }
     }
 }
+

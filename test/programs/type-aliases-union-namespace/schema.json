@@ -1,13 +1,6 @@
 {
-    "type": "object",
-    "properties": {
-        "direction": {
-            "$ref": "#/definitions/Cardinal"
-        }
-    },
-    "required": [
-        "direction"
-    ],
+    "$ref": "#/definitions/MyModel",
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "definitions": {
         "Cardinal": {
             "enum": [
@@ -17,7 +10,19 @@
                 "west"
             ],
             "type": "string"
+        },
+        "MyModel": {
+            "additionalProperties": false,
+            "properties": {
+                "direction": {
+                    "$ref": "#/definitions/Cardinal"
+                }
+            },
+            "required": [
+                "direction"
+            ],
+            "type": "object"
         }
-    },
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    }
 }
+

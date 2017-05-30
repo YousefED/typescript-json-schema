@@ -1,28 +1,33 @@
 {
+    "$ref": "#/definitions/MyObject",
     "$schema": "http://json-schema.org/draft-04/schema#",
     "definitions": {
+        "MyObject": {
+            "additionalProperties": false,
+            "properties": {
+                "mainWidget": {
+                    "$ref": "#/definitions/Widget"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "otherWidgets": {
+                    "items": {
+                        "$ref": "#/definitions/Widget"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "mainWidget",
+                "name",
+                "otherWidgets"
+            ],
+            "type": "object"
+        },
         "Widget": {
             "type": "number"
         }
-    },
-    "properties": {
-        "mainWidget": {
-            "$ref": "#/definitions/Widget"
-        },
-        "name": {
-            "type": "string"
-        },
-        "otherWidgets": {
-            "items": {
-                "$ref": "#/definitions/Widget"
-            },
-            "type": "array"
-        }
-    },
-    "required": [
-        "mainWidget",
-        "name",
-        "otherWidgets"
-    ],
-    "type": "object"
+    }
 }
+

@@ -1,31 +1,35 @@
 {
-    "type": "object",
-    "properties": {
-        "list": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/MySubObject"
-            }
-        },
-        "sub1": {
-            "$ref": "#/definitions/MySubObject"
-        },
-        "sub2": {
-            "$ref": "#/definitions/MySubObject",
-            "description": "Property-level description",
-            "additionalProperties": false
-        }
-    },
-    "required": [
-        "list",
-        "sub1",
-        "sub2"
-    ],
+    "$ref": "#/definitions/MyObject",
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "definitions": {
+        "MyObject": {
+            "additionalProperties": false,
+            "properties": {
+                "list": {
+                    "items": {
+                        "$ref": "#/definitions/MySubObject"
+                    },
+                    "type": "array"
+                },
+                "sub1": {
+                    "$ref": "#/definitions/MySubObject"
+                },
+                "sub2": {
+                    "$ref": "#/definitions/MySubObject",
+                    "additionalProperties": false,
+                    "description": "Property-level description"
+                }
+            },
+            "required": [
+                "list",
+                "sub1",
+                "sub2"
+            ],
+            "type": "object"
+        },
         "MySubObject": {
-            "description": "Type-level description",
             "additionalProperties": true,
-            "type": "object",
+            "description": "Type-level description",
             "properties": {
                 "value": {
                     "type": "string"
@@ -33,8 +37,9 @@
             },
             "required": [
                 "value"
-            ]
+            ],
+            "type": "object"
         }
-    },
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    }
 }
+

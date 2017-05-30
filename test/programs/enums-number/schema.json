@@ -1,20 +1,26 @@
 {
-    "type": "object",
-    "properties": {
-        "foo": {
-          "$ref": "#/definitions/Enum"
-        }
-    },
-    "required": [ "foo" ],
+    "$ref": "#/definitions/MyObject",
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "definitions": {
         "Enum": {
-            "type": "number",
             "enum": [
                 1,
                 2
-            ]
+            ],
+            "type": "number"
+        },
+        "MyObject": {
+            "additionalProperties": false,
+            "properties": {
+                "foo": {
+                    "$ref": "#/definitions/Enum"
+                }
+            },
+            "required": [
+                "foo"
+            ],
+            "type": "object"
         }
-    },
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    }
 }
 

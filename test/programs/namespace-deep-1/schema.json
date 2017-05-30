@@ -1,0 +1,62 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "RootNamespace.Def": {
+            "type": "object",
+            "properties": {
+                "nest": {
+                    "$ref": "#/definitions/RootNamespace.Def"
+                },
+                "prev": {
+                    "$ref": "#/definitions/RootNamespace.Def"
+                },
+                "propA": {
+                    "$ref": "#/definitions/RootNamespace.SubNamespace.HelperA"
+                },
+                "propB": {
+                    "$ref": "#/definitions/RootNamespace.SubNamespace.HelperB"
+                }
+            },
+            "required": [
+                "nest",
+                "prev",
+                "propA",
+                "propB"
+            ],
+            "additionalProperties": false
+        },
+        "RootNamespace.SubNamespace.HelperA": {
+            "type": "object",
+            "properties": {
+                "propA": {
+                    "type": "number"
+                },
+                "propB": {
+                    "$ref": "#/definitions/RootNamespace.SubNamespace.HelperB"
+                }
+            },
+            "required": [
+                "propA",
+                "propB"
+            ],
+            "additionalProperties": false
+        },
+        "RootNamespace.SubNamespace.HelperB": {
+            "type": "object",
+            "properties": {
+                "propA": {
+                    "$ref": "#/definitions/RootNamespace.SubNamespace.HelperA"
+                },
+                "propB": {
+                    "$ref": "#/definitions/RootNamespace.Def"
+                }
+            },
+            "required": [
+                "propA",
+                "propB"
+            ],
+            "additionalProperties": false
+        }
+    },
+    "$ref": "#/definitions/RootNamespace.Def"
+}

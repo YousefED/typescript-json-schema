@@ -173,10 +173,14 @@ describe("schema", () => {
         assertSchema("string-literals-inline", "MyObject");
     });
 
+    describe("namspeaces", () => {
+        assertSchema("namespace", "Type");
+        assertSchema("namespace-deep-1", "RootNamespace.Def");
+        assertSchema("namespace-deep-2", "RootNamespace.SubNamespace.HelperA");
+    });
+
     describe("other", () => {
         assertSchema("array-and-description", "MyObject");
-
-        assertSchema("namespace", "Type");
 
         assertSchema("optionals", "MyObject");
 

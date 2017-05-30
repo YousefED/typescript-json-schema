@@ -12,13 +12,13 @@ ajv.addMetaSchema(metaSchema, "http://json-schema.org/draft-04/schema#");
 
 const BASE = "test/programs/";
 
-export function assertSchema(group: string, name: string, type: string, settings: TJS.PartialArgs = {}, compilerOptions?: CompilerOptions) {
+export function assertSchema(group: string, type: string, settings: TJS.PartialArgs = {}, compilerOptions?: CompilerOptions) {
     it(group + " should create correct schema", () => {
         if (!("generateRequired" in settings)) {
-            settings.generateRequired = true;
+            settings.required = true;
         }
 
-        const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(BASE + group + "/" + name)], compilerOptions), type, settings);
+        const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(BASE + group + "/main.ts")], compilerOptions), type, settings);
 
         const file = readFileSync(BASE + group + "/schema.json", "utf8");
         const expected = JSON.parse(file);
@@ -65,109 +65,110 @@ describe("interfaces", () => {
 });
 
 describe("schema", () => {
-    assertSchema("array-and-description", "main.ts", "MyObject");
-    assertSchema("class-single", "main.ts", "MyObject");
-    assertSchema("class-extends", "main.ts", "MyObject");
 
-    assertSchema("interface-single", "main.ts", "MyObject");
-    assertSchema("interface-multi", "main.ts", "MyObject");
-    assertSchema("interface-extends", "main.ts", "MyObject");
+    describe("type aliases", () => {
+        assertSchema("type-alias-single", "MyString");
+        assertSchema("type-aliases", "MyObject", {
+            aliasRef: true
+        });
+        assertSchema("type-aliases-fixed-size-array", "MyFixedSizeArray");
+        assertSchema("type-aliases-multitype-array", "MyArray");
+        assertSchema("type-aliases-local-namsepace", "MyObject", {
+            aliasRef: true
+        });
 
-    assertSchema("interface-recursion", "main.ts", "MyObject", {
-        useRootRef: true
+        assertSchema("type-aliases-alias-ref", "MyAlias", {
+            aliasRef: true,
+            topRef: false
+        });
+        // disabled beacuse of #80
+        // assertSchema("type-aliases-alias-ref-topref", "MyAlias", {
+        //     useTypeAliasRef: true,
+        //     useRootRef: true
+        // });
+        assertSchema("type-aliases-recursive-object-topref", "MyObject", {
+            aliasRef: true,
+            topRef: true
+        });
+        // disabled beacuse of #80
+        // assertSchema("type-aliases-recursive-alias-topref", "MyAlias", {
+        //     useTypeAliasRef: true,
+        //     useRootRef: true
+        // });
+        assertSchema("type-no-aliases-recursive-topref", "MyAlias", {
+            aliasRef: false,
+            topRef: true
+        });
     });
 
-    assertSchema("module-interface-single", "main.ts", "MyObject");
-
-    // not supported right now
-    // assertSchema("module-interface-deep", "main.ts", "Def");
-
-    assertSchema("enums-string", "main.ts", "MyObject");
-    assertSchema("enums-number", "main.ts", "MyObject");
-    assertSchema("enums-number-initialized", "main.ts", "Enum");
-    assertSchema("enums-compiled-compute", "main.ts", "Enum");
-    assertSchema("enums-mixed", "main.ts", "MyObject");
-    assertSchema("string-literals", "main.ts", "MyObject");
-    assertSchema("string-literals-inline", "main.ts", "MyObject");
-
-    assertSchema("array-readonly", "main.ts", "MyReadOnlyArray");
-    assertSchema("array-types", "main.ts", "MyArray");
-    assertSchema("map-types", "main.ts", "MyObject");
-
-    assertSchema("namespace", "main.ts", "Type");
-
-    assertSchema("type-anonymous", "main.ts", "MyObject");
-    assertSchema("type-primitives", "main.ts", "MyObject");
-    assertSchema("type-nullable", "main.ts", "MyObject");
-
-    assertSchema("optionals", "main.ts", "MyObject");
-
-    assertSchema("comments", "main.ts", "MyObject");
-    assertSchema("comments-override", "main.ts", "MyObject");
-
-    assertSchema("force-type", "main.ts", "MyObject");
-    assertSchema("force-type-imported", "main.ts", "MyObject");
-
-    /**
-     * Type aliases
-     */
-
-    assertSchema("type-alias-single", "main.ts", "MyString");
-    assertSchema("type-aliases", "main.ts", "MyObject", {
-        useTypeAliasRef: true
-    });
-    assertSchema("type-aliases-fixed-size-array", "main.ts", "MyFixedSizeArray");
-    assertSchema("type-aliases-multitype-array", "main.ts", "MyArray");
-    assertSchema("type-aliases-local-namsepace", "main.ts", "MyObject", {
-        useTypeAliasRef: true
+    describe("enums", () => {
+        assertSchema("enums-string", "MyObject");
+        assertSchema("enums-number", "MyObject");
+        assertSchema("enums-number-initialized", "Enum");
+        assertSchema("enums-compiled-compute", "Enum");
+        assertSchema("enums-mixed", "MyObject");
     });
 
-    assertSchema("type-aliases-alias-ref", "main.ts", "MyAlias", {
-        useTypeAliasRef: true,
-        useRootRef: false
-    });
-    // disabled beacuse of #80
-    // assertSchema("type-aliases-alias-ref-topref", "main.ts", "MyAlias", {
-    //     useTypeAliasRef: true,
-    //     useRootRef: true
-    // });
-    assertSchema("type-aliases-recursive-object-topref", "main.ts", "MyObject", {
-        useTypeAliasRef: true,
-        useRootRef: true
-    });
-    // disabled beacuse of #80
-    // assertSchema("type-aliases-recursive-alias-topref", "main.ts", "MyAlias", {
-    //     useTypeAliasRef: true,
-    //     useRootRef: true
-    // });
-    assertSchema("type-no-aliases-recursive-topref", "main.ts", "MyAlias", {
-        useTypeAliasRef: false,
-        useRootRef: true
+    describe("unions and intersections", () => {
+        assertSchema("type-union", "MyObject");
+        assertSchema("type-intersection", "MyObject", {
+            noExtraProps: true
+        });
+        assertSchema("type-union-tagged", "Shape");
+        assertSchema("type-aliases-union-namespace", "MyModel");
     });
 
-    /**
-     *  unions and intersections
-     */
+    describe("annotations", () => {
+        assertSchema("annotation-default", "MyObject");
 
-    assertSchema("type-union", "main.ts", "MyObject");
-    assertSchema("type-intersection", "main.ts", "MyObject", {
-        disableExtraProperties: true
-    });
-    assertSchema("type-union-tagged", "main.ts", "Shape");
-    assertSchema("type-aliases-union-namespace", "main.ts", "MyModel");
+        assertSchema("typeof-keyword", "MyObject", {typeOfKeyword: true});
 
-    assertSchema("strict-null-checks", "main.ts", "MyObject", undefined, {
-        strictNullChecks: true
+        assertSchema("user-validation-keywords", "MyObject", {
+            validationKeywords: [ "chance", "important" ]
+        });
     });
 
-    /**
-     * annotations
-     */
+    describe("other", () => {
+        assertSchema("array-and-description", "MyObject");
+        assertSchema("class-single", "MyObject");
+        assertSchema("class-extends", "MyObject");
 
-    assertSchema("annotation-default", "main.ts", "MyObject");
+        assertSchema("interface-single", "MyObject");
+        assertSchema("interface-multi", "MyObject");
+        assertSchema("interface-extends", "MyObject");
 
-    assertSchema("typeof-keyword", "main.ts", "MyObject", {useTypeOfKeyword: true});
+        assertSchema("interface-recursion", "MyObject", {
+            topRef: true
+        });
 
-    const userValidationOpts = { validationKeywords: [ "chance", "important" ] };
-    assertSchema("user-validation-keywords", "main.ts", "MyObject", userValidationOpts);
+        assertSchema("module-interface-single", "MyObject");
+
+        // not supported right now
+        // assertSchema("module-interface-deep", "Def");
+
+        assertSchema("string-literals", "MyObject");
+        assertSchema("string-literals-inline", "MyObject");
+
+        assertSchema("array-readonly", "MyReadOnlyArray");
+        assertSchema("array-types", "MyArray");
+        assertSchema("map-types", "MyObject");
+
+        assertSchema("namespace", "Type");
+
+        assertSchema("type-anonymous", "MyObject");
+        assertSchema("type-primitives", "MyObject");
+        assertSchema("type-nullable", "MyObject");
+
+        assertSchema("optionals", "MyObject");
+
+        assertSchema("comments", "MyObject");
+        assertSchema("comments-override", "MyObject");
+
+        assertSchema("force-type", "MyObject");
+        assertSchema("force-type-imported", "MyObject");
+
+        assertSchema("strict-null-checks", "MyObject", undefined, {
+            strictNullChecks: true
+        });
+    });
 });

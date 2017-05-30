@@ -7,7 +7,10 @@ import * as Ajv from "ajv";
 
 const ajv = new Ajv();
 
-const base = "test/programs/";
+const metaSchema = require("ajv/lib/refs/json-schema-draft-04.json");
+ajv.addMetaSchema(metaSchema, "http://json-schema.org/draft-04/schema#");
+
+const BASE = "test/programs/";
 
 export function assertSchema(group: string, name: string, type: string, settings: TJS.PartialArgs = {}, compilerOptions?: CompilerOptions) {
     it(group + " should create correct schema", () => {
@@ -15,9 +18,9 @@ export function assertSchema(group: string, name: string, type: string, settings
             settings.generateRequired = true;
         }
 
-        const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(base + group + "/" + name)], compilerOptions), type, settings);
+        const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(BASE + group + "/" + name)], compilerOptions), type, settings);
 
-        const file = readFileSync(base + group + "/schema.json", "utf8");
+        const file = readFileSync(BASE + group + "/schema.json", "utf8");
         const expected = JSON.parse(file);
 
         assert.isObject(actual);
@@ -33,7 +36,7 @@ export function assertSchema(group: string, name: string, type: string, settings
 
 describe("interfaces", () => {
     it("should return an instance of JsonSchemaGenerator", () => {
-        const program = TJS.getProgramFromFiles([resolve(base + "comments/main.ts")]);
+        const program = TJS.getProgramFromFiles([resolve(BASE + "comments/main.ts")]);
         const generator = TJS.buildGenerator(program);
 
         assert.instanceOf(generator, TJS.JsonSchemaGenerator);
@@ -47,7 +50,7 @@ describe("interfaces", () => {
         }
     });
     it("should output the schemas set by setSchemaOverride", () => {
-        const program = TJS.getProgramFromFiles([resolve(base + "interface-multi/main.ts")]);
+        const program = TJS.getProgramFromFiles([resolve(BASE + "interface-multi/main.ts")]);
         const generator = TJS.buildGenerator(program);
         assert(generator !== null);
         if (generator !== null) {

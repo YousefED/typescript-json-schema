@@ -247,7 +247,7 @@ export class JsonSchemaGenerator {
             definition.items = fixedTypes;
             definition.minItems = fixedTypes.length;
             definition.additionalItems = {
-                "anyOf": fixedTypes
+                anyOf: fixedTypes
             };
         } else {
             const propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
@@ -676,7 +676,7 @@ export class JsonSchemaGenerator {
 
         if (asRef) {
             returnedDefinition = {
-                "$ref":  "#/definitions/" + fullTypeName
+                $ref:  "#/definitions/" + fullTypeName
             };
         }
 
@@ -760,7 +760,7 @@ export class JsonSchemaGenerator {
 
     public getSchemaForSymbols(symbols: string[]): Definition {
         const root = {
-            "$schema": "http://json-schema.org/draft-04/schema#",
+            $schema: "http://json-schema.org/draft-04/schema#",
             definitions: {}
         };
         for (let i = 0; i < symbols.length; i++) {

@@ -122,6 +122,15 @@ describe("schema", () => {
         });
     });
 
+    describe("generics", () => {
+        assertSchema("generic-simple", "MyObject");
+        assertSchema("generic-arrays", "MyObject");
+        assertSchema("generic-multiple", "MyObject");
+        assertSchema("generic-multiargs", "MyObject");
+        assertSchema("generic-anonymous", "MyObject");
+        assertSchema("generic-recursive", "MyObject");
+        assertSchema("generic-hell", "MyObject");
+    });
 
     describe("comments", () => {
         assertSchema("comments", "MyObject");

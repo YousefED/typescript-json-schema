@@ -158,6 +158,8 @@ describe("schema", () => {
 
         assertSchema("module-interface-single", "MyObject");
 
+        assertSchema("interface-extra-props", "MyObject");
+
         // not supported right now
         // assertSchema("module-interface-deep", "Def");
     });

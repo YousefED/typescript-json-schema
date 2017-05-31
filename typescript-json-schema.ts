@@ -844,7 +844,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
                         inheritingTypes[baseName].push(fullName);
                     });
                 } else {
-                    ts.forEachChild(node, (n) => inspect(n, tc));
+                    ts.forEachChild(node, n => inspect(n, tc));
                 }
             }
             inspect(sourceFile, typeChecker);

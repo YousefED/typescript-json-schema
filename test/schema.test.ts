@@ -95,6 +95,18 @@ describe("schema", () => {
         assertSchema("type-no-aliases-recursive-topref", "MyAlias", {
             aliasRef: false
         });
+
+        /*
+        assertSchema("type-aliases-primitive", "MyString");
+        assertSchema("type-aliases-object", "MyAlias");
+        assertSchema("type-aliases-mixed", "MyObject");
+        assertSchema("type-aliases-union", "MyUnion");
+        assertSchema("type-aliases-tuple", "MyTuple");
+        assertSchema("type-aliases-anonymous", "MyObject");
+        assertSchema("type-aliases-local-namespace", "MyObject");
+        assertSchema("type-aliases-recursive-anonymous", "MyAlias");
+        assertSchema("type-aliases-recursive-export", "MyObject");
+        */
     });
 
     describe("enums", () => {
@@ -158,7 +170,8 @@ describe("schema", () => {
 
         assertSchema("module-interface-single", "MyObject");
 
-        assertSchema("interface-extra-props", "MyObject");
+        // not supported yet #116
+        // assertSchema("interface-extra-props", "MyObject");
 
         // not supported right now
         // assertSchema("module-interface-deep", "Def");

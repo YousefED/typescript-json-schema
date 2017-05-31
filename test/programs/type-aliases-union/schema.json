@@ -1,0 +1,37 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "MyUnion": {
+            "type": "array",
+            "items": {
+                "anyOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "$ref": "#/definitions/MyObject"
+                    }
+                ]
+            }
+        },
+        "MyObject": {
+            "type": "object",
+            "properties": {
+                "array": {
+                    "type": "array",
+                    "items": {
+                        "type": [
+                            "string",
+                            "number"
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "array"
+            ],
+            "additionalProperties": false
+        }
+    },
+    "$ref": "#/definitions/MyUnion"
+}

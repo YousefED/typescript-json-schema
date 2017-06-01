@@ -60,6 +60,7 @@
   "scripts": {
     "test": "npm run build && mocha -t 5000 --require source-map-support/register test",
     "debug": "ts-node --inspect=19248 --debug-brk typescript-json-schema.ts",
+    "run": "ts-node typescript-json-schema.ts",
     "build": "tsc -p .",
     "lint": "tslint --project tsconfig.json -c tslint.json --type-check --exclude '**/*.d.ts'"
   }

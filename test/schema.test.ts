@@ -108,6 +108,8 @@ describe("schema", () => {
     assertSchema("force-type", "main.ts", "MyObject");
     assertSchema("force-type-imported", "main.ts", "MyObject");
 
+    assertSchema("extra-properties", "main.ts", "MyObject");
+  
     assertSchema("generate-all-types", "main.ts", "*");
 
     /**

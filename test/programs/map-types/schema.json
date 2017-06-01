@@ -17,8 +17,7 @@
             }
         },
         "MyType": {
-            "type": "object",
-            "properties": {}
+            "type": "object"
         },
         "MyMap2": {
             "description": "The additionalProperties annotation should be ignored",

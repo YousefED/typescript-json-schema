@@ -511,36 +511,39 @@ export class JsonSchemaGenerator {
 
         const modifierFlags = ts.getCombinedModifierFlags(node);
 
-        if (props.length === 0 && clazz.members && clazz.members.length === 1 && clazz.members[0].kind === ts.SyntaxKind.IndexSignature) {
-            // for case "array-types"
-            const indexSignature = <ts.IndexSignatureDeclaration>clazz.members[0];
-            if (indexSignature.parameters.length !== 1) {
-                throw "Not supported: IndexSignatureDeclaration parameters.length != 1";
-            }
-            const indexSymbol: ts.Symbol = (<any>indexSignature.parameters[0]).symbol;
-            const indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
-            const isStringIndexed = (indexType.flags === ts.TypeFlags.String);
-            if (indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
-                throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
-            }
-
-            const typ = tc.getTypeAtLocation(indexSignature.type!);
-            const def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
-
-            if (isStringIndexed) {
-                definition.type = "object";
-                definition.additionalProperties = def;
-            } else {
-                definition.type = "array";
-                definition.items = def;
-            }
-        } else if (modifierFlags & ts.ModifierFlags.Abstract) {
+        if (modifierFlags & ts.ModifierFlags.Abstract) {
             const oneOf = this.inheritingTypes[fullName].map((typename) => {
                 return this.getTypeDefinition(this.allSymbols[typename], tc);
             });
 
             definition.oneOf = oneOf;
         } else {
+            const indexSignatures = clazz.members.filter(x => x.kind === ts.SyntaxKind.IndexSignature);
+            if (indexSignatures.length === 1) {
+                // for case "array-types"
+                const indexSignature = indexSignatures[0] as ts.IndexSignatureDeclaration;
+                if (indexSignature.parameters.length !== 1) {
+                    throw "Not supported: IndexSignatureDeclaration parameters.length != 1";
+                }
+                const indexSymbol: ts.Symbol = (<any>indexSignature.parameters[0]).symbol;
+                const indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
+                const isStringIndexed = (indexType.flags === ts.TypeFlags.String);
+                if (indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
+                    throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
+                }
+
+                const typ = tc.getTypeAtLocation(indexSignature.type!);
+                const def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
+
+                if (isStringIndexed) {
+                    definition.type = "object";
+                    definition.additionalProperties = def;
+                } else {
+                    definition.type = "array";
+                    definition.items = def;
+                }
+            }
+
             const propertyDefinitions = props.reduce((all, prop) => {
                 const propertyName = prop.getName();
                 const propDef = this.getDefinitionForProperty(prop, tc, node);
@@ -550,8 +553,13 @@ export class JsonSchemaGenerator {
                 return all;
             }, {});
 
-            definition.type = "object";
-            definition.properties = propertyDefinitions;
+            if (definition.type === undefined) {
+                definition.type = "object";
+            }
+
+            if (definition.type === "object" && Object.keys(propertyDefinitions).length > 0) {
+                definition.properties = propertyDefinitions;
+            }
 
             if (this.args.useDefaultProperties) {
                 definition.defaultProperties = [];

@@ -146,6 +146,9 @@ export class JsonSchemaGenerator {
     private reffedDefinitions: { [key: string]: Definition } = {};
     private userValidationKeywords: ValidationKeywords;
 
+    private typeNamesById: { [id: number]: string } = {};
+    private typeNamesUsed: { [name: string]: boolean } = {};
+
     constructor(
       allSymbols: { [name: string]: ts.Type },
       userSymbols: { [name: string]: ts.Type },
@@ -638,6 +641,32 @@ export class JsonSchemaGenerator {
         return def;
     }
 
+
+    /**
+     * Gets/generates a globally unique type name for the given type
+     */
+    private getTypeName(typ: ts.Type, tc: ts.TypeChecker) {
+        const id = (typ as any).id as number;
+        if (this.typeNamesById[id]) { // Name already assigned?
+            return this.typeNamesById[id];
+        }
+
+        const baseName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+        let name = baseName;
+        if (this.typeNamesUsed[name]) { // If a type with same name exists
+            for (let i = 1; true; ++i) { // Try appending "_1", "_2", etc.
+                name = baseName + "_" + i;
+                if (!this.typeNamesUsed[name]) {
+                    break;
+                }
+            }
+        }
+
+        this.typeNamesById[id] = name;
+        this.typeNamesUsed[name] = true;
+        return name;
+    }
+
     private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker, asRef = this.args.useRef, unionModifier: string = "anyOf", prop?: ts.Symbol, reffedType?: ts.Symbol): Definition {
         const definition: Definition = {}; // real definition
         let returnedDefinition = definition; // returned definition, may be a $ref
@@ -671,7 +700,7 @@ export class JsonSchemaGenerator {
                     reffedType!
             ).replace(REGEX_FILE_NAME, "");
         } else if (asRef) {
-            fullTypeName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+            fullTypeName = this.getTypeName(typ, tc);
         }
 
         if (asRef) {

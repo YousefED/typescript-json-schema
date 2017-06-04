@@ -8,13 +8,9 @@
             "type": "number"
         },
         "MyInterface": {
-            "properties": {
-            },
             "type": "object"
         },
         "MyObject": {
-            "properties": {
-            },
             "type": "object"
         }
     }

@@ -4,15 +4,15 @@ export declare type ValidationKeywords = {
     [prop: string]: boolean;
 };
 export declare type Args = {
-    useRef: boolean;
-    useTypeAliasRef: boolean;
-    useRootRef: boolean;
-    useTitle: boolean;
-    useDefaultProperties: boolean;
-    disableExtraProperties: boolean;
-    usePropertyOrder: boolean;
-    useTypeOfKeyword: boolean;
-    generateRequired: boolean;
+    ref: boolean;
+    aliasRef: boolean;
+    topRef: boolean;
+    titles: boolean;
+    defaultProps: boolean;
+    noExtraProps: boolean;
+    propOrder: boolean;
+    typeOfKeyword: boolean;
+    required: boolean;
     strictNullChecks: boolean;
     ignoreErrors: boolean;
     out: string;
@@ -55,6 +55,8 @@ export declare class JsonSchemaGenerator {
     private tc;
     private reffedDefinitions;
     private userValidationKeywords;
+    private typeNamesById;
+    private typeNamesUsed;
     constructor(allSymbols: {
         [name: string]: ts.Type;
     }, userSymbols: {
@@ -78,11 +80,13 @@ export declare class JsonSchemaGenerator {
     private simpleTypesAllowedProperties;
     private addSimpleType(def, type);
     private makeNullable(def);
+    private getTypeName(typ, tc);
     private getTypeDefinition(typ, tc, asRef?, unionModifier?, prop?, reffedType?);
     setSchemaOverride(symbolName: string, schema: Definition): void;
     getSchemaForSymbol(symbolName: string, includeReffedDefinitions?: boolean): Definition;
     getSchemaForSymbols(symbols: string[]): Definition;
     getUserSymbols(): string[];
+    getMainFileSymbols(program: ts.Program): string[];
 }
 export declare function getProgramFromFiles(files: string[], compilerOptions?: ts.CompilerOptions): ts.Program;
 export declare function buildGenerator(program: ts.Program, args?: PartialArgs): JsonSchemaGenerator | null;

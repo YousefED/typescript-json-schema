@@ -7,24 +7,24 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-var ts = require("typescript");
 var glob = require("glob");
-var path = require("path");
 var stringify = require("json-stable-stringify");
+var path = require("path");
+var ts = require("typescript");
 var vm = require("vm");
 var REGEX_FILE_NAME = /".*"\./;
 var REGEX_TJS_JSDOC = /^-([\w]+)\s([\w-]+)/g;
 function getDefaultArgs() {
     return {
-        useRef: true,
-        useTypeAliasRef: false,
-        useRootRef: false,
-        useTitle: false,
-        useDefaultProperties: false,
-        disableExtraProperties: false,
-        usePropertyOrder: false,
-        useTypeOfKeyword: false,
-        generateRequired: false,
+        ref: true,
+        aliasRef: false,
+        topRef: false,
+        titles: false,
+        defaultProps: false,
+        noExtraProps: false,
+        propOrder: false,
+        typeOfKeyword: false,
+        required: false,
         strictNullChecks: false,
         ignoreErrors: false,
         out: "",
@@ -61,7 +61,7 @@ function unique(arr) {
     }
     var r = [];
     for (var k in temp) {
-        if (temp.hasOwnProperty(k)) {
+        if (Object.prototype.hasOwnProperty.call(temp, k)) {
             r.push(k);
         }
     }
@@ -72,6 +72,8 @@ var JsonSchemaGenerator = (function () {
         if (args === void 0) { args = getDefaultArgs(); }
         this.args = args;
         this.reffedDefinitions = {};
+        this.typeNamesById = {};
+        this.typeNamesUsed = {};
         this.simpleTypesAllowedProperties = {
             type: true,
             description: true
@@ -157,7 +159,7 @@ var JsonSchemaGenerator = (function () {
             definition.items = fixedTypes;
             definition.minItems = fixedTypes.length;
             definition.additionalItems = {
-                "anyOf": fixedTypes
+                anyOf: fixedTypes
             };
         }
         else {
@@ -223,14 +225,15 @@ var JsonSchemaGenerator = (function () {
         var propertyType = tc.getTypeOfSymbolAtLocation(prop, node);
         var reffedType = this.getReferencedTypeSymbol(prop, tc);
         var definition = this.getTypeDefinition(propertyType, tc, undefined, undefined, prop, reffedType);
-        if (this.args.useTitle) {
+        if (this.args.titles) {
             definition.title = propertyName;
         }
         if (definition.hasOwnProperty("ignore")) {
             return null;
         }
-        var initial = prop.valueDeclaration.initializer;
-        if (initial) {
+        var valDecl = prop.valueDeclaration;
+        if (valDecl && valDecl.initializer) {
+            var initial = valDecl.initializer;
             if (initial.expression) {
                 console.warn("initializer is expression for property " + propertyName);
             }
@@ -394,7 +397,7 @@ var JsonSchemaGenerator = (function () {
     JsonSchemaGenerator.prototype.getClassDefinition = function (clazzType, tc, definition) {
         var _this = this;
         var node = clazzType.getSymbol().getDeclarations()[0];
-        if (this.args.useTypeOfKeyword && node.kind === ts.SyntaxKind.FunctionType) {
+        if (this.args.typeOfKeyword && node.kind === ts.SyntaxKind.FunctionType) {
             definition.typeof = "function";
             return definition;
         }
@@ -402,35 +405,36 @@ var JsonSchemaGenerator = (function () {
         var props = tc.getPropertiesOfType(clazzType);
         var fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
         var modifierFlags = ts.getCombinedModifierFlags(node);
-        if (props.length === 0 && clazz.members && clazz.members.length === 1 && clazz.members[0].kind === ts.SyntaxKind.IndexSignature) {
-            var indexSignature = clazz.members[0];
-            if (indexSignature.parameters.length !== 1) {
-                throw "Not supported: IndexSignatureDeclaration parameters.length != 1";
-            }
-            var indexSymbol = indexSignature.parameters[0].symbol;
-            var indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
-            var isStringIndexed = (indexType.flags === ts.TypeFlags.String);
-            if (indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
-                throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
-            }
-            var typ = tc.getTypeAtLocation(indexSignature.type);
-            var def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
-            if (isStringIndexed) {
-                definition.type = "object";
-                definition.additionalProperties = def;
-            }
-            else {
-                definition.type = "array";
-                definition.items = def;
-            }
-        }
-        else if (modifierFlags & ts.ModifierFlags.Abstract) {
+        if (modifierFlags & ts.ModifierFlags.Abstract) {
             var oneOf = this.inheritingTypes[fullName].map(function (typename) {
                 return _this.getTypeDefinition(_this.allSymbols[typename], tc);
             });
             definition.oneOf = oneOf;
         }
         else {
+            var indexSignatures = clazz.members.filter(function (x) { return x.kind === ts.SyntaxKind.IndexSignature; });
+            if (indexSignatures.length === 1) {
+                var indexSignature = indexSignatures[0];
+                if (indexSignature.parameters.length !== 1) {
+                    throw "Not supported: IndexSignatureDeclaration parameters.length != 1";
+                }
+                var indexSymbol = indexSignature.parameters[0].symbol;
+                var indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
+                var isStringIndexed = (indexType.flags === ts.TypeFlags.String);
+                if (indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
+                    throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
+                }
+                var typ = tc.getTypeAtLocation(indexSignature.type);
+                var def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
+                if (isStringIndexed) {
+                    definition.type = "object";
+                    definition.additionalProperties = def;
+                }
+                else {
+                    definition.type = "array";
+                    definition.items = def;
+                }
+            }
             var propertyDefinitions = props.reduce(function (all, prop) {
                 var propertyName = prop.getName();
                 var propDef = _this.getDefinitionForProperty(prop, tc, node);
@@ -439,22 +443,26 @@ var JsonSchemaGenerator = (function () {
                 }
                 return all;
             }, {});
-            definition.type = "object";
-            definition.properties = propertyDefinitions;
-            if (this.args.useDefaultProperties) {
+            if (definition.type === undefined) {
+                definition.type = "object";
+            }
+            if (definition.type === "object" && Object.keys(propertyDefinitions).length > 0) {
+                definition.properties = propertyDefinitions;
+            }
+            if (this.args.defaultProps) {
                 definition.defaultProperties = [];
             }
-            if (this.args.disableExtraProperties && definition.additionalProperties === undefined) {
+            if (this.args.noExtraProps && definition.additionalProperties === undefined) {
                 definition.additionalProperties = false;
             }
-            if (this.args.usePropertyOrder) {
+            if (this.args.propOrder) {
                 var propertyOrder = props.reduce(function (order, prop) {
                     order.push(prop.getName());
                     return order;
                 }, []);
                 definition.propertyOrder = propertyOrder;
             }
-            if (this.args.generateRequired) {
+            if (this.args.required) {
                 var requiredProps = props.reduce(function (required, prop) {
                     if (!(prop.flags & ts.SymbolFlags.Optional) && !prop.mayBeUndefined) {
                         required.push(prop.getName());
@@ -514,8 +522,27 @@ var JsonSchemaGenerator = (function () {
         }
         return def;
     };
+    JsonSchemaGenerator.prototype.getTypeName = function (typ, tc) {
+        var id = typ.id;
+        if (this.typeNamesById[id]) {
+            return this.typeNamesById[id];
+        }
+        var baseName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+        var name = baseName;
+        if (this.typeNamesUsed[name]) {
+            for (var i = 1; true; ++i) {
+                name = baseName + "_" + i;
+                if (!this.typeNamesUsed[name]) {
+                    break;
+                }
+            }
+        }
+        this.typeNamesById[id] = name;
+        this.typeNamesUsed[name] = true;
+        return name;
+    };
     JsonSchemaGenerator.prototype.getTypeDefinition = function (typ, tc, asRef, unionModifier, prop, reffedType) {
-        if (asRef === void 0) { asRef = this.args.useRef; }
+        if (asRef === void 0) { asRef = this.args.ref; }
         if (unionModifier === void 0) { unionModifier = "anyOf"; }
         var definition = {};
         var returnedDefinition = definition;
@@ -528,7 +555,7 @@ var JsonSchemaGenerator = (function () {
                 return (propType.getFlags() & ts.TypeFlags.StringLiteral) !== 0;
             }));
         }
-        var asTypeAliasRef = asRef && reffedType && (this.args.useTypeAliasRef || isStringEnum);
+        var asTypeAliasRef = asRef && reffedType && (this.args.aliasRef || isStringEnum);
         if (!asTypeAliasRef) {
             if (isRawType || typ.getFlags() & ts.TypeFlags.Object && typ.objectFlags & ts.ObjectFlags.Anonymous) {
                 asRef = false;
@@ -541,11 +568,11 @@ var JsonSchemaGenerator = (function () {
                 reffedType).replace(REGEX_FILE_NAME, "");
         }
         else if (asRef) {
-            fullTypeName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+            fullTypeName = this.getTypeName(typ, tc);
         }
         if (asRef) {
             returnedDefinition = {
-                "$ref": "#/definitions/" + fullTypeName
+                $ref: "#/definitions/" + fullTypeName
             };
         }
         var otherAnnotations = {};
@@ -557,7 +584,7 @@ var JsonSchemaGenerator = (function () {
         if (!asRef || !this.reffedDefinitions[fullTypeName]) {
             if (asRef) {
                 this.reffedDefinitions[fullTypeName] = asTypeAliasRef && reffedType.getFlags() & ts.TypeFlags.IndexedAccess && symbol ? this.getTypeDefinition(typ, tc, true, undefined, symbol, symbol) : definition;
-                if (this.args.useTitle && fullTypeName) {
+                if (this.args.titles && fullTypeName) {
                     definition.title = fullTypeName;
                 }
             }
@@ -567,7 +594,7 @@ var JsonSchemaGenerator = (function () {
                     this.getUnionDefinition(typ, prop, tc, unionModifier, definition);
                 }
                 else if (typ.flags & ts.TypeFlags.Intersection) {
-                    if (this.args.disableExtraProperties) {
+                    if (this.args.noExtraProps) {
                         definition.additionalProperties = false;
                     }
                     var types = typ.types;
@@ -611,8 +638,8 @@ var JsonSchemaGenerator = (function () {
         if (!this.allSymbols[symbolName]) {
             throw "type " + symbolName + " not found";
         }
-        var def = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.useRootRef);
-        if (this.args.useRef && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
+        var def = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.topRef);
+        if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
             def.definitions = this.reffedDefinitions;
         }
         def["$schema"] = "http://json-schema.org/draft-04/schema#";
@@ -620,17 +647,36 @@ var JsonSchemaGenerator = (function () {
     };
     JsonSchemaGenerator.prototype.getSchemaForSymbols = function (symbols) {
         var root = {
-            "$schema": "http://json-schema.org/draft-04/schema#",
+            $schema: "http://json-schema.org/draft-04/schema#",
             definitions: {}
         };
         for (var i = 0; i < symbols.length; i++) {
             var symbol = symbols[i];
-            root.definitions[symbol] = this.getTypeDefinition(this.userSymbols[symbol], this.tc, this.args.useRootRef);
+            root.definitions[symbol] = this.getTypeDefinition(this.userSymbols[symbol], this.tc, this.args.topRef);
         }
         return root;
     };
     JsonSchemaGenerator.prototype.getUserSymbols = function () {
         return Object.keys(this.userSymbols);
+    };
+    JsonSchemaGenerator.prototype.getMainFileSymbols = function (program) {
+        var _this = this;
+        var files = program.getSourceFiles().filter(function (file) { return !file.isDeclarationFile; });
+        if (files.length) {
+            var mainFile_1 = files[0];
+            return Object.keys(this.userSymbols).filter(function (key) {
+                var symbol = _this.userSymbols[key].getSymbol();
+                if (!symbol || !symbol.declarations || !symbol.declarations.length) {
+                    return false;
+                }
+                var node = symbol.declarations[0];
+                while (node && node.parent) {
+                    node = node.parent;
+                }
+                return node === mainFile_1;
+            });
+        }
+        return [];
     };
     return JsonSchemaGenerator;
 }());
@@ -736,7 +782,7 @@ function generateSchema(program, fullTypeName, args) {
     }
     var definition;
     if (fullTypeName === "*") {
-        definition = generator.getSchemaForSymbols(generator.getUserSymbols());
+        definition = generator.getSchemaForSymbols(generator.getMainFileSymbols(program));
     }
     else {
         definition = generator.getSchemaForSymbol(fullTypeName);
@@ -792,23 +838,23 @@ function run() {
     var args = require("yargs")
         .usage(helpText)
         .demand(2)
-        .boolean("refs").default("refs", defaultArgs.useRef)
+        .boolean("refs").default("refs", defaultArgs.ref)
         .describe("refs", "Create shared ref definitions.")
-        .boolean("aliasRefs").default("aliasRefs", defaultArgs.useTypeAliasRef)
+        .boolean("aliasRefs").default("aliasRefs", defaultArgs.aliasRef)
         .describe("aliasRefs", "Create shared ref definitions for the type aliases.")
-        .boolean("topRef").default("topRef", defaultArgs.useRootRef)
+        .boolean("topRef").default("topRef", defaultArgs.topRef)
         .describe("topRef", "Create a top-level ref definition.")
-        .boolean("titles").default("titles", defaultArgs.useTitle)
+        .boolean("titles").default("titles", defaultArgs.titles)
         .describe("titles", "Creates titles in the output schema.")
-        .boolean("defaultProps").default("defaultProps", defaultArgs.useDefaultProperties)
+        .boolean("defaultProps").default("defaultProps", defaultArgs.defaultProps)
         .describe("defaultProps", "Create default properties definitions.")
-        .boolean("noExtraProps").default("noExtraProps", defaultArgs.disableExtraProperties)
+        .boolean("noExtraProps").default("noExtraProps", defaultArgs.noExtraProps)
         .describe("noExtraProps", "Disable additional properties in objects by default.")
-        .boolean("propOrder").default("propOrder", defaultArgs.usePropertyOrder)
+        .boolean("propOrder").default("propOrder", defaultArgs.propOrder)
         .describe("propOrder", "Create property order definitions.")
-        .boolean("useTypeOfKeyword").default("useTypeOfKeyword", defaultArgs.usePropertyOrder)
-        .describe("useTypeOfKeyword", "Use typeOf keyword (https://goo.gl/DC6sni) for functions.")
-        .boolean("required").default("required", defaultArgs.generateRequired)
+        .boolean("typeOfKeyword").default("typeOfKeyword", defaultArgs.typeOfKeyword)
+        .describe("typeOfKeyword", "Use typeOf keyword (https://goo.gl/DC6sni) for functions.")
+        .boolean("required").default("required", defaultArgs.required)
         .describe("required", "Create required array for non-optional properties.")
         .boolean("strictNullChecks").default("strictNullChecks", defaultArgs.strictNullChecks)
         .describe("strictNullChecks", "Make values non-nullable by default.")
@@ -820,15 +866,15 @@ function run() {
         .describe("validationKeywords", "Provide additional validation keywords to include.")
         .argv;
     exec(args._[0], args._[1], {
-        useRef: args.refs,
-        useTypeAliasRef: args.aliasRefs,
-        useRootRef: args.topRef,
-        useTitle: args.titles,
-        useDefaultProperties: args.defaultProps,
-        disableExtraProperties: args.noExtraProps,
-        usePropertyOrder: args.propOrder,
-        useTypeOfKeyword: args.useTypeOfKeyword,
-        generateRequired: args.required,
+        ref: args.refs,
+        aliasRef: args.aliasRefs,
+        topRef: args.topRef,
+        titles: args.titles,
+        defaultProps: args.defaultProps,
+        noExtraProps: args.noExtraProps,
+        propOrder: args.propOrder,
+        typeOfKeyword: args.useTypeOfKeyword,
+        required: args.required,
         strictNullChecks: args.strictNullChecks,
         ignoreErrors: args.ignoreErrors,
         out: args.out,

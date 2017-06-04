@@ -1,9 +1,10 @@
 import * as TJS from "../typescript-json-schema";
 import * as Ajv from "ajv";
 import { assert } from "chai";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";
 import { CompilerOptions } from "typescript";
+import * as stringify from "json-stable-stringify";
 
 const ajv = new Ajv();
 
@@ -20,7 +21,7 @@ export function assertSchema(group: string, type: string, settings: TJS.PartialA
 
         const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(BASE + group + "/main.ts")], compilerOptions), type, settings);
 
-        // writeFileSync(BASE + group + "/schema.json", stringify(actual, {space: 4}) + "\n\n");
+        writeFileSync(BASE + group + "/schema.json", stringify(actual, {space: 4}) + "\n\n");
 
         const file = readFileSync(BASE + group + "/schema.json", "utf8");
         const expected = JSON.parse(file);

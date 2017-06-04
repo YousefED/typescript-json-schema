@@ -21,7 +21,16 @@
         "rotation": {
             "description": "Description of rotation, a field with an anonymous type",
             "properties": {
+                "yaw": {
+                    "description": "Description of the value yaw inside an anonymous type, with min/max annotations",
+                    "maximum": 90,
+                    "minimum": -90,
+                    "type": "number"
+                }
             },
+            "required": [
+                "yaw"
+            ],
             "type": "object"
         }
     },

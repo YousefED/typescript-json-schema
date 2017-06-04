@@ -52,7 +52,13 @@
             "anyOf": [
                 {
                     "properties": {
+                        "foo": {
+                            "type": "number"
+                        }
                     },
+                    "required": [
+                        "foo"
+                    ],
                     "type": "object"
                 },
                 {

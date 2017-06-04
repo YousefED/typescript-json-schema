@@ -110,6 +110,8 @@ describe("schema", () => {
 
     assertSchema("imports", "main.ts", "MyObject");
 
+    assertSchema("extra-properties", "main.ts", "MyObject");
+
     /**
      * Type aliases
      */

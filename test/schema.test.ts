@@ -111,6 +111,8 @@ describe("schema", () => {
     assertSchema("imports", "main.ts", "MyObject");
 
     assertSchema("extra-properties", "main.ts", "MyObject");
+  
+    assertSchema("generate-all-types", "main.ts", "*");
 
     /**
      * Type aliases

@@ -106,7 +106,8 @@ function unique(arr: string[]): string[] {
     }
     const r: string[] = [];
     for (const k in temp) {
-      if (temp.hasOwnProperty(k)) {
+      // Avoid bugs when hasOwnProperty is shadowed
+      if (Object.prototype.hasOwnProperty.call(temp, k)) {
         r.push(k);
       }
     }
@@ -330,9 +331,9 @@ export class JsonSchemaGenerator {
         }
 
         // try to get default value
-        let initial = (<ts.VariableDeclaration>prop.valueDeclaration).initializer;
-
-        if (initial) {
+        let valDecl = prop.valueDeclaration as ts.VariableDeclaration;
+        if (valDecl && valDecl.initializer) {
+            const initial = valDecl.initializer;
             if ((<any>initial).expression) { // node
                 console.warn("initializer is expression for property " + propertyName);
             } else if ((<any>initial).kind && (<any>initial).kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
@@ -807,8 +808,27 @@ export class JsonSchemaGenerator {
         return root;
     }
 
-    public getUserSymbols() {
+    public getUserSymbols(): string[] {
         return Object.keys(this.userSymbols);
+    }
+
+    public getMainFileSymbols(program: ts.Program): string[] {
+        const files = program.getSourceFiles().filter(file => !file.isDeclarationFile);
+        if (files.length) {
+            const mainFile = files[0];
+            return Object.keys(this.userSymbols).filter((key) => {
+                const symbol = this.userSymbols[key].getSymbol();
+                if (!symbol || !symbol.declarations || !symbol.declarations.length) {
+                    return false;
+                }
+                let node: ts.Node = symbol.declarations[0];
+                while (node && node.parent) {
+                    node = node.parent;
+                }
+                return node === mainFile;
+            });
+        }
+        return [];
     }
 }
 
@@ -866,7 +886,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
 
                     allSymbols[fullName] = nodeType;
 
-                    // if (sourceFileIdx == 0)
+                    // if (sourceFileIdx === 1) {
                     if (!sourceFile.hasNoDefaultLib) {
                         userSymbols[fullName] = nodeType;
                     }
@@ -911,7 +931,7 @@ export function generateSchema(program: ts.Program, fullTypeName: string, args: 
 
     let definition: Definition;
     if (fullTypeName === "*") { // All types in file(s)
-        definition = generator.getSchemaForSymbols(generator.getUserSymbols());
+        definition = generator.getSchemaForSymbols(generator.getMainFileSymbols(program));
     } else { // Use specific type as root object
         definition = generator.getSchemaForSymbol(fullTypeName);
     }

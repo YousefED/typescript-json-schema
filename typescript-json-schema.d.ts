@@ -54,6 +54,8 @@ export declare type Definition = {
     properties?: {};
     defaultProperties?: string[];
     parameters?: Parameter[];
+    returnType?: string;
+    returnTypeArguments?: TypeArgument[];
     typeof?: "function";
 };
 export declare class JsonSchemaGenerator {

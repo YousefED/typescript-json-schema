@@ -399,7 +399,9 @@ var JsonSchemaGenerator = (function () {
     };
     JsonSchemaGenerator.prototype.getTypeDescription = function (type) {
         var _this = this;
-        var typeObject = {};
+        var typeObject = {
+            type: "undefined"
+        };
         if (!type) {
             return typeObject;
         }
@@ -411,8 +413,14 @@ var JsonSchemaGenerator = (function () {
                 });
             }
         }
-        if (type.kind === ts.SyntaxKind.StringKeyword) {
+        else if (type.kind === ts.SyntaxKind.StringKeyword) {
             typeObject.type = "string";
+        }
+        else if (type.kind === ts.SyntaxKind.NumberKeyword) {
+            typeObject.type = "number";
+        }
+        else if (type.kind === ts.SyntaxKind.BooleanKeyword) {
+            typeObject.type = "boolean";
         }
         return typeObject;
     };
@@ -432,8 +440,9 @@ var JsonSchemaGenerator = (function () {
             };
         });
         var returnType = this.getTypeDescription(declaration.type);
-        definition.type = returnType.type;
-        definition.typeArguments = returnType.typeArguments;
+        definition.type = "function";
+        definition.returnType = returnType.type;
+        definition.returnTypeArguments = returnType.typeArguments;
         delete definition.description;
         return definition;
     };

@@ -85,6 +85,8 @@ export type Definition = {
     properties?: {},
     defaultProperties?: string[],
     parameters?: Parameter[]
+    returnType?: string,
+    returnTypeArguments?: TypeArgument[],
 
     typeof?: "function"
 };
@@ -519,7 +521,10 @@ export class JsonSchemaGenerator {
     }
 
     private getTypeDescription(type?: ts.TypeNode): TypeArgument {
-        const typeObject: TypeArgument = {};
+        const typeObject: TypeArgument = {
+            type: "undefined"
+        };
+
         if (!type) {
             return typeObject;
         }
@@ -532,10 +537,12 @@ export class JsonSchemaGenerator {
                     return this.getTypeDescription(typeArgument);
                 });
             }
-        }
-
-        if (type.kind === ts.SyntaxKind.StringKeyword) {
+        } else if (type.kind === ts.SyntaxKind.StringKeyword) {
             typeObject.type = "string";
+        } else if (type.kind === ts.SyntaxKind.NumberKeyword) {
+            typeObject.type = "number";
+        } else if (type.kind === ts.SyntaxKind.BooleanKeyword) {
+            typeObject.type = "boolean";
         }
 
         return typeObject;
@@ -558,8 +565,9 @@ export class JsonSchemaGenerator {
         });
 
         const returnType = this.getTypeDescription(declaration.type);
-        definition.type = returnType.type;
-        definition.typeArguments = returnType.typeArguments;
+        definition.type = "function";
+        definition.returnType = returnType.type;
+        definition.returnTypeArguments = returnType.typeArguments;
 
         // The description describes the return-type, which is misleading, because one would expect it to describe the method itsef
         delete definition.description;

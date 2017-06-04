@@ -193,6 +193,7 @@ describe("schema", () => {
         assertSchema("array-readonly", "MyReadOnlyArray");
         assertSchema("array-types", "MyArray");
         assertSchema("map-types", "MyObject");
+        assertSchema("extra-properties", "main.ts", "MyObject");
     });
 
     describe("string literals", () => {

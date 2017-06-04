@@ -14,7 +14,7 @@ const BASE = "test/programs/";
 
 export function assertSchema(group: string, type: string, settings: TJS.PartialArgs = {}, compilerOptions?: CompilerOptions) {
     it(group + " should create correct schema", () => {
-        if (!("generateRequired" in settings)) {
+        if (!("required" in settings)) {
             settings.required = true;
         }
 
@@ -193,7 +193,7 @@ describe("schema", () => {
         assertSchema("array-readonly", "MyReadOnlyArray");
         assertSchema("array-types", "MyArray");
         assertSchema("map-types", "MyObject");
-        assertSchema("extra-properties", "main.ts", "MyObject");
+        assertSchema("extra-properties", "MyObject");
     });
 
     describe("string literals", () => {

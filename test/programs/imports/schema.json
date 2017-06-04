@@ -1,0 +1,56 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "MyInterface": {
+            "properties": {
+                "fieldInMain": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "fieldInMain"
+            ],
+            "type": "object"
+        },
+        "MyInterface_1": {
+            "properties": {
+                "fieldInModule1": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "fieldInModule1"
+            ],
+            "type": "object"
+        },
+        "MyInterface_2": {
+            "properties": {
+                "fieldInModule2": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "fieldInModule2"
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "a": {
+            "$ref": "#/definitions/MyInterface"
+        },
+        "b": {
+            "$ref": "#/definitions/MyInterface_1"
+        },
+        "c": {
+            "$ref": "#/definitions/MyInterface_2"
+        }
+    },
+    "required": [
+        "a",
+        "b",
+        "c"
+    ],
+    "type": "object"
+}
+

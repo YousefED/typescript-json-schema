@@ -215,5 +215,9 @@ describe("schema", () => {
         assertSchema("strict-null-checks", "MyObject", undefined, {
             strictNullChecks: true
         });
+
+        assertSchema("imports", "MyObject");
+
+        assertSchema("generate-all-types", "*");
     });
 });

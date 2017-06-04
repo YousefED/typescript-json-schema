@@ -51,6 +51,16 @@ export type PartialArgs = Partial<Args>;
 
 export type PrimitiveType = number | boolean | string | null;
 
+export type TypeArgument = {
+    type?: string,
+    typeArguments?: TypeArgument[]
+};
+
+export type Parameter = TypeArgument & {
+    name: string,
+    optional: boolean
+};
+
 export type Definition = {
     $ref?: string,
     description?: string,
@@ -59,6 +69,7 @@ export type Definition = {
     anyOf?: Definition[],
     title?: string,
     type?: string | string[],
+    typeArguments?: TypeArgument[],
     definitions?: {[key: string]: any},
     format?: string,
     items?: Definition,
@@ -73,6 +84,7 @@ export type Definition = {
     propertyOrder?: string[],
     properties?: {},
     defaultProperties?: string[],
+    parameters?: Parameter[]
 
     typeof?: "function"
 };
@@ -502,6 +514,58 @@ export class JsonSchemaGenerator {
         return definition;
     }
 
+    private typeIsTypeReference(type: ts.TypeNode): type is ts.TypeReferenceNode {
+        return type.kind === ts.SyntaxKind.TypeReference;
+    }
+
+    private getTypeDescription(type?: ts.TypeNode): TypeArgument {
+        const typeObject: TypeArgument = {};
+        if (!type) {
+            return typeObject;
+        }
+
+        if (this.typeIsTypeReference(type)) {
+            typeObject.type = type.typeName.getText();
+
+            if (type.typeArguments) {
+                typeObject.typeArguments = type.typeArguments.map((typeArgument) => {
+                    return this.getTypeDescription(typeArgument);
+                });
+            }
+        }
+
+        if (type.kind === ts.SyntaxKind.StringKeyword) {
+            typeObject.type = "string";
+        }
+
+        return typeObject;
+    }
+
+    private getMethodDefinition(methodType: ts.Type, definition: Definition): Definition {
+        const declaration: ts.MethodDeclaration = <ts.MethodDeclaration> methodType.getSymbol().getDeclarations()[0];
+
+        definition.parameters = declaration.parameters.sort((param1, param2) => {
+            return param1.pos - param2.pos;
+        })
+        .map((parameter: ts.ParameterDeclaration) => {
+            const typeObject = this.getTypeDescription(parameter.type);
+            return {
+                name: parameter.name.getText(),
+                type: typeObject.type,
+                typeArguments: typeObject.typeArguments,
+                optional: (parameter.questionToken && parameter.questionToken.kind === ts.SyntaxKind.QuestionToken) ? true :  false,
+            };
+        });
+
+        const returnType = this.getTypeDescription(declaration.type);
+        definition.type = returnType.type;
+        definition.typeArguments = returnType.typeArguments;
+
+        // The description describes the return-type, which is misleading, because one would expect it to describe the method itsef
+        delete definition.description;
+        return definition;
+    }
+
     private getClassDefinition(clazzType: ts.Type, tc: ts.TypeChecker, definition: Definition): Definition {
         const node = clazzType.getSymbol().getDeclarations()[0];
         if (this.args.useTypeOfKeyword && node.kind === ts.SyntaxKind.FunctionType) {
@@ -766,6 +830,8 @@ export class JsonSchemaGenerator {
                     // {} is TypeLiteral with no members. Need special case because it doesn't have declarations.
                     definition.type = "object";
                     definition.properties = {};
+                } else if (symbol && symbol.getDeclarations()[0].kind === ts.SyntaxKind.MethodSignature) {
+                    this.getMethodDefinition(typ, definition);
                 } else {
                     this.getClassDefinition(typ, tc, definition);
                 }

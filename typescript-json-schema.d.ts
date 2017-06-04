@@ -20,6 +20,14 @@ export declare type Args = {
 };
 export declare type PartialArgs = Partial<Args>;
 export declare type PrimitiveType = number | boolean | string | null;
+export declare type TypeArgument = {
+    type?: string;
+    typeArguments?: TypeArgument[];
+};
+export declare type Parameter = TypeArgument & {
+    name: string;
+    optional: boolean;
+};
 export declare type Definition = {
     $ref?: string;
     description?: string;
@@ -28,6 +36,7 @@ export declare type Definition = {
     anyOf?: Definition[];
     title?: string;
     type?: string | string[];
+    typeArguments?: TypeArgument[];
     definitions?: {
         [key: string]: any;
     };
@@ -44,6 +53,7 @@ export declare type Definition = {
     propertyOrder?: string[];
     properties?: {};
     defaultProperties?: string[];
+    parameters?: Parameter[];
     typeof?: "function";
 };
 export declare class JsonSchemaGenerator {
@@ -55,6 +65,8 @@ export declare class JsonSchemaGenerator {
     private tc;
     private reffedDefinitions;
     private userValidationKeywords;
+    private typeNamesById;
+    private typeNamesUsed;
     constructor(allSymbols: {
         [name: string]: ts.Type;
     }, userSymbols: {
@@ -74,15 +86,20 @@ export declare class JsonSchemaGenerator {
     private getDefinitionForProperty(prop, tc, node);
     private getEnumDefinition(clazzType, tc, definition);
     private getUnionDefinition(unionType, prop, tc, unionModifier, definition);
+    private typeIsTypeReference(type);
+    private getTypeDescription(type?);
+    private getMethodDefinition(methodType, definition);
     private getClassDefinition(clazzType, tc, definition);
     private simpleTypesAllowedProperties;
     private addSimpleType(def, type);
     private makeNullable(def);
+    private getTypeName(typ, tc);
     private getTypeDefinition(typ, tc, asRef?, unionModifier?, prop?, reffedType?);
     setSchemaOverride(symbolName: string, schema: Definition): void;
     getSchemaForSymbol(symbolName: string, includeReffedDefinitions?: boolean): Definition;
     getSchemaForSymbols(symbols: string[]): Definition;
     getUserSymbols(): string[];
+    getMainFileSymbols(program: ts.Program): string[];
 }
 export declare function getProgramFromFiles(files: string[], compilerOptions?: ts.CompilerOptions): ts.Program;
 export declare function buildGenerator(program: ts.Program, args?: PartialArgs): JsonSchemaGenerator | null;

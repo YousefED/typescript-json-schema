@@ -2,7 +2,6 @@
     "$schema": "http://json-schema.org/draft-04/schema#",
     "definitions": {
         "RootNamespace.Def": {
-            "type": "object",
             "properties": {
                 "nest": {
                     "$ref": "#/definitions/RootNamespace.Def"
@@ -23,10 +22,9 @@
                 "propA",
                 "propB"
             ],
-            "additionalProperties": false
+            "type": "object"
         },
         "RootNamespace.SubNamespace.HelperA": {
-            "type": "object",
             "properties": {
                 "propA": {
                     "type": "number"
@@ -39,10 +37,9 @@
                 "propA",
                 "propB"
             ],
-            "additionalProperties": false
+            "type": "object"
         },
         "RootNamespace.SubNamespace.HelperB": {
-            "type": "object",
             "properties": {
                 "propA": {
                     "$ref": "#/definitions/RootNamespace.SubNamespace.HelperA"
@@ -55,8 +52,21 @@
                 "propA",
                 "propB"
             ],
-            "additionalProperties": false
+            "type": "object"
         }
     },
-    "$ref": "#/definitions/RootNamespace.SubNamespace.HelperA"
+    "properties": {
+        "propA": {
+            "type": "number"
+        },
+        "propB": {
+            "$ref": "#/definitions/RootNamespace.SubNamespace.HelperB"
+        }
+    },
+    "required": [
+        "propA",
+        "propB"
+    ],
+    "type": "object"
 }
+

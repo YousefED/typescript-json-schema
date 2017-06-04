@@ -1,23 +1,17 @@
 {
-    "$ref": "#/definitions/MyObject",
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "definitions": {
-        "MyObject": {
-            "additionalProperties": false,
-            "properties": {
-                "propA": {
-                    "type": "number"
-                },
-                "propB": {
-                    "type": "number"
-                }
-            },
-            "required": [
-                "propA",
-                "propB"
-            ],
-            "type": "object"
+    "properties": {
+        "propA": {
+            "type": "number"
+        },
+        "propB": {
+            "type": "number"
         }
-    }
+    },
+    "required": [
+        "propA",
+        "propB"
+    ],
+    "type": "object"
 }
 

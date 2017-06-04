@@ -1,51 +1,15 @@
 {
-    "$ref": "#/definitions/MyObject",
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "definitions": {
-        "MyObject": {
-            "additionalProperties": false,
+    "properties": {
+        "FieldWithAnonType": {
             "properties": {
-                "FieldWithAnonType": {
-                    "additionalProperties": false,
-                    "properties": {
-                        "SubfieldA": {
-                            "type": "number"
-                        },
-                        "SubfieldB": {
-                            "type": [
-                                "string",
-                                "number"
-                            ]
-                        },
-                        "SubfieldC": {
-                            "additionalProperties": false,
-                            "properties": {
-                                "SubsubfieldA": {
-                                    "items": {
-                                        "type": "number"
-                                    },
-                                    "type": "array"
-                                }
-                            },
-                            "required": [
-                                "SubsubfieldA"
-                            ],
-                            "type": "object"
-                        }
-                    },
-                    "required": [
-                        "SubfieldA",
-                        "SubfieldB",
-                        "SubfieldC"
-                    ],
-                    "type": "object"
-                }
             },
-            "required": [
-                "FieldWithAnonType"
-            ],
             "type": "object"
         }
-    }
+    },
+    "required": [
+        "FieldWithAnonType"
+    ],
+    "type": "object"
 }
 

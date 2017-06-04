@@ -1,28 +1,22 @@
 {
-    "$ref": "#/definitions/MyObject",
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "definitions": {
-        "MyObject": {
-            "additionalProperties": false,
-            "properties": {
-                "bar": {
-                    "type": "string"
-                },
-                "foo": {
-                    "enum": [
-                        "abort",
-                        "fail",
-                        "ok"
-                    ],
-                    "type": "string"
-                }
-            },
-            "required": [
-                "bar",
-                "foo"
+    "properties": {
+        "bar": {
+            "type": "string"
+        },
+        "foo": {
+            "enum": [
+                "abort",
+                "fail",
+                "ok"
             ],
-            "type": "object"
+            "type": "string"
         }
-    }
+    },
+    "required": [
+        "bar",
+        "foo"
+    ],
+    "type": "object"
 }
 

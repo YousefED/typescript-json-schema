@@ -1,28 +1,22 @@
 {
-    "$ref": "#/definitions/MyObject",
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "definitions": {
-        "MyObject": {
-            "additionalProperties": false,
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "name": {
-                    "description": "A name",
-                    "type": "string"
-                },
-                "test": {
-                    "items": {
-                    },
-                    "type": "array"
-                }
+    "properties": {
+        "description": {
+            "type": "string"
+        },
+        "name": {
+            "description": "A name",
+            "type": "string"
+        },
+        "test": {
+            "items": {
             },
-            "required": [
-                "test"
-            ],
-            "type": "object"
+            "type": "array"
         }
-    }
+    },
+    "required": [
+        "test"
+    ],
+    "type": "object"
 }
 

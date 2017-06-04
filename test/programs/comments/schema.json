@@ -1,50 +1,35 @@
 {
-    "$ref": "#/definitions/MyObject",
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "definitions": {
-        "MyObject": {
-            "additionalProperties": false,
-            "description": "Description of MyObject, a top level object,\nwhich also has a comment that spans\nmultiple lines",
-            "properties": {
-                "opacity": {
-                    "description": "Description of opacity, a field with min/max values",
-                    "maximum": 100,
-                    "minimum": 0,
-                    "type": "number"
-                },
-                "position": {
-                    "description": "Description of field position, of aliased type Vector3D, which should inherit its annotations",
-                    "items": {
-                        "type": "number"
-                    },
-                    "maxItems": 3,
-                    "minItems": 3,
-                    "type": "array"
-                },
-                "rotation": {
-                    "additionalProperties": false,
-                    "description": "Description of rotation, a field with an anonymous type",
-                    "properties": {
-                        "yaw": {
-                            "description": "Description of the value yaw inside an anonymous type, with min/max annotations",
-                            "maximum": 90,
-                            "minimum": -90,
-                            "type": "number"
-                        }
-                    },
-                    "required": [
-                        "yaw"
-                    ],
-                    "type": "object"
-                }
+    "additionalProperties": false,
+    "description": "Description of MyObject, a top level object,\nwhich also has a comment that spans\nmultiple lines",
+    "properties": {
+        "opacity": {
+            "description": "Description of opacity, a field with min/max values",
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number"
+        },
+        "position": {
+            "description": "Description of field position, of aliased type Vector3D, which should inherit its annotations",
+            "items": {
+                "type": "number"
             },
-            "required": [
-                "opacity",
-                "position",
-                "rotation"
-            ],
+            "maxItems": 3,
+            "minItems": 3,
+            "type": "array"
+        },
+        "rotation": {
+            "description": "Description of rotation, a field with an anonymous type",
+            "properties": {
+            },
             "type": "object"
         }
-    }
+    },
+    "required": [
+        "opacity",
+        "position",
+        "rotation"
+    ],
+    "type": "object"
 }
 

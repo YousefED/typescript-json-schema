@@ -1,5 +1,4 @@
 {
-    "$ref": "#/definitions/MyObject",
     "$schema": "http://json-schema.org/draft-04/schema#",
     "definitions": {
         "MyMap1": {
@@ -18,28 +17,24 @@
             "description": "The additionalProperties annotation should be ignored",
             "type": "object"
         },
-        "MyObject": {
-            "additionalProperties": false,
-            "properties": {
-                "map1": {
-                    "$ref": "#/definitions/MyMap1"
-                },
-                "map2": {
-                    "$ref": "#/definitions/MyMap2"
-                }
-            },
-            "required": [
-                "map1",
-                "map2"
-            ],
-            "type": "object"
-        },
         "MyType": {
-            "additionalProperties": false,
             "properties": {
             },
             "type": "object"
         }
-    }
+    },
+    "properties": {
+        "map1": {
+            "$ref": "#/definitions/MyMap1"
+        },
+        "map2": {
+            "$ref": "#/definitions/MyMap2"
+        }
+    },
+    "required": [
+        "map1",
+        "map2"
+    ],
+    "type": "object"
 }
 

@@ -1,19 +1,15 @@
 {
-    "$ref": "#/definitions/MyObject",
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "definitions": {
-        "MyObject": {
-            "additionalProperties": false,
+    "properties": {
+        "foo": {
             "properties": {
-                "foo": {
-                    "typeof": "function"
-                }
             },
-            "required": [
-                "foo"
-            ],
             "type": "object"
         }
-    }
+    },
+    "required": [
+        "foo"
+    ],
+    "type": "object"
 }
 

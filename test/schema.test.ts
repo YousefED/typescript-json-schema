@@ -14,6 +14,10 @@ const BASE = "test/programs/";
 
 export function assertSchema(group: string, type: string, settings: TJS.PartialArgs = {}, compilerOptions?: CompilerOptions) {
     it(group + " should create correct schema", () => {
+        if (!("generateRequired" in settings)) {
+            settings.required = true;
+        }
+
         const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(BASE + group + "/main.ts")], compilerOptions), type, settings);
 
         // writeFileSync(BASE + group + "/schema.json", stringify(actual, {space: 4}) + "\n\n");
@@ -85,7 +89,8 @@ describe("schema", () => {
         //     useRootRef: true
         // });
         assertSchema("type-aliases-recursive-object-topref", "MyObject", {
-            aliasRef: true
+            aliasRef: true,
+            topRef: true
         });
         // disabled beacuse of #80
         // assertSchema("type-aliases-recursive-alias-topref", "MyAlias", {
@@ -93,7 +98,8 @@ describe("schema", () => {
         //     useRootRef: true
         // });
         assertSchema("type-no-aliases-recursive-topref", "MyAlias", {
-            aliasRef: false
+            aliasRef: false,
+            topRef: true
         });
 
         /*
@@ -119,7 +125,9 @@ describe("schema", () => {
 
     describe("unions and intersections", () => {
         assertSchema("type-union", "MyObject");
-        assertSchema("type-intersection", "MyObject");
+        assertSchema("type-intersection", "MyObject", {
+            noExtraProps: true
+        });
         assertSchema("type-union-tagged", "Shape");
         assertSchema("type-aliases-union-namespace", "MyModel");
     });
@@ -140,7 +148,9 @@ describe("schema", () => {
         assertSchema("generic-multiple", "MyObject");
         assertSchema("generic-multiargs", "MyObject");
         assertSchema("generic-anonymous", "MyObject");
-        assertSchema("generic-recursive", "MyObject");
+        assertSchema("generic-recursive", "MyObject", {
+            topRef: true
+        });
         assertSchema("generic-hell", "MyObject");
     });
 
@@ -166,7 +176,9 @@ describe("schema", () => {
         assertSchema("interface-multi", "MyObject");
         assertSchema("interface-extends", "MyObject");
 
-        assertSchema("interface-recursion", "MyObject");
+        assertSchema("interface-recursion", "MyObject", {
+            topRef: true
+        });
 
         assertSchema("module-interface-single", "MyObject");
 

@@ -1,23 +1,6 @@
 {
-    "$ref": "#/definitions/MyObject",
     "$schema": "http://json-schema.org/draft-04/schema#",
     "definitions": {
-        "MyObject": {
-            "additionalProperties": false,
-            "properties": {
-                "bar": {
-                    "type": "string"
-                },
-                "foo": {
-                    "$ref": "#/definitions/result"
-                }
-            },
-            "required": [
-                "bar",
-                "foo"
-            ],
-            "type": "object"
-        },
         "result": {
             "enum": [
                 "abort",
@@ -26,6 +9,19 @@
             ],
             "type": "string"
         }
-    }
+    },
+    "properties": {
+        "bar": {
+            "type": "string"
+        },
+        "foo": {
+            "$ref": "#/definitions/result"
+        }
+    },
+    "required": [
+        "bar",
+        "foo"
+    ],
+    "type": "object"
 }
 

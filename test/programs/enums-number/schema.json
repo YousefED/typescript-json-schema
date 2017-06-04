@@ -1,5 +1,4 @@
 {
-    "$ref": "#/definitions/MyObject",
     "$schema": "http://json-schema.org/draft-04/schema#",
     "definitions": {
         "Enum": {
@@ -8,19 +7,16 @@
                 2
             ],
             "type": "number"
-        },
-        "MyObject": {
-            "additionalProperties": false,
-            "properties": {
-                "foo": {
-                    "$ref": "#/definitions/Enum"
-                }
-            },
-            "required": [
-                "foo"
-            ],
-            "type": "object"
         }
-    }
+    },
+    "properties": {
+        "foo": {
+            "$ref": "#/definitions/Enum"
+        }
+    },
+    "required": [
+        "foo"
+    ],
+    "type": "object"
 }
 

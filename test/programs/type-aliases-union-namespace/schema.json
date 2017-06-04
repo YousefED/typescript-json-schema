@@ -1,5 +1,4 @@
 {
-    "$ref": "#/definitions/MyModel",
     "$schema": "http://json-schema.org/draft-04/schema#",
     "definitions": {
         "Cardinal": {
@@ -10,19 +9,16 @@
                 "west"
             ],
             "type": "string"
-        },
-        "MyModel": {
-            "additionalProperties": false,
-            "properties": {
-                "direction": {
-                    "$ref": "#/definitions/Cardinal"
-                }
-            },
-            "required": [
-                "direction"
-            ],
-            "type": "object"
         }
-    }
+    },
+    "properties": {
+        "direction": {
+            "$ref": "#/definitions/Cardinal"
+        }
+    },
+    "required": [
+        "direction"
+    ],
+    "type": "object"
 }
 

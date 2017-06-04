@@ -1,16 +1,11 @@
 {
-    "$ref": "#/definitions/MyArray",
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "definitions": {
-        "MyArray": {
-            "items": {
-                "type": [
-                    "string",
-                    "number"
-                ]
-            },
-            "type": "array"
-        }
-    }
+    "items": {
+        "type": [
+            "string",
+            "number"
+        ]
+    },
+    "type": "array"
 }
 

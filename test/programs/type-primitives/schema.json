@@ -1,66 +1,60 @@
 {
-    "$ref": "#/definitions/MyObject",
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "definitions": {
-        "MyObject": {
-            "additionalProperties": false,
-            "properties": {
-                "array1": {
-                    "default": null,
-                    "items": {
-                    },
-                    "type": "array"
-                },
-                "array2": {
-                    "default": null,
-                    "items": {
-                        "type": "number"
-                    },
-                    "type": "array"
-                },
-                "boolean1": {
-                    "default": true,
-                    "type": "boolean"
-                },
-                "integer1": {
-                    "default": 1,
-                    "type": "integer"
-                },
-                "integer2": {
-                    "default": 1,
-                    "type": "integer"
-                },
-                "number1": {
-                    "default": 1,
-                    "type": "number"
-                },
-                "object1": {
-                    "default": null
-                },
-                "object2": {
-                    "default": null,
-                    "properties": {
-                    },
-                    "type": "object"
-                },
-                "string1": {
-                    "default": "defaultValue",
-                    "type": "string"
-                }
+    "properties": {
+        "array1": {
+            "default": null,
+            "items": {
             },
-            "required": [
-                "array1",
-                "array2",
-                "boolean1",
-                "integer1",
-                "integer2",
-                "number1",
-                "object1",
-                "object2",
-                "string1"
-            ],
+            "type": "array"
+        },
+        "array2": {
+            "default": null,
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "boolean1": {
+            "default": true,
+            "type": "boolean"
+        },
+        "integer1": {
+            "default": 1,
+            "type": "integer"
+        },
+        "integer2": {
+            "default": 1,
+            "type": "integer"
+        },
+        "number1": {
+            "default": 1,
+            "type": "number"
+        },
+        "object1": {
+            "default": null
+        },
+        "object2": {
+            "default": null,
+            "properties": {
+            },
             "type": "object"
+        },
+        "string1": {
+            "default": "defaultValue",
+            "type": "string"
         }
-    }
+    },
+    "required": [
+        "array1",
+        "array2",
+        "boolean1",
+        "integer1",
+        "integer2",
+        "number1",
+        "object1",
+        "object2",
+        "string1"
+    ],
+    "type": "object"
 }
 

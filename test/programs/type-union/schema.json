@@ -1,36 +1,30 @@
 {
-    "$ref": "#/definitions/MyObject",
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "definitions": {
-        "MyObject": {
-            "additionalProperties": false,
-            "properties": {
-                "var1": {
-                    "type": [
-                        "string",
-                        "number"
-                    ]
+    "properties": {
+        "var1": {
+            "type": [
+                "string",
+                "number"
+            ]
+        },
+        "var2": {
+            "anyOf": [
+                {
+                    "items": {
+                        "type": "number"
+                    },
+                    "type": "array"
                 },
-                "var2": {
-                    "anyOf": [
-                        {
-                            "items": {
-                                "type": "number"
-                            },
-                            "type": "array"
-                        },
-                        {
-                            "type": "string"
-                        }
-                    ]
+                {
+                    "type": "string"
                 }
-            },
-            "required": [
-                "var1",
-                "var2"
-            ],
-            "type": "object"
+            ]
         }
-    }
+    },
+    "required": [
+        "var1",
+        "var2"
+    ],
+    "type": "object"
 }
 

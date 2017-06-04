@@ -1,38 +1,15 @@
 {
-    "$ref": "#/definitions/MyObject",
     "$schema": "http://json-schema.org/draft-04/schema#",
     "definitions": {
         "MyAlias": {
             "$ref": "#/definitions/MySubObject",
             "description": "My sub object"
         },
-        "MyObject": {
-            "additionalProperties": false,
-            "description": "My Object",
-            "properties": {
-                "alias": {
-                    "$ref": "#/definitions/MyAlias"
-                },
-                "object": {
-                    "$ref": "#/definitions/MySubObject"
-                },
-                "primitive": {
-                    "$ref": "#/definitions/MyString"
-                }
-            },
-            "required": [
-                "alias",
-                "object",
-                "primitive"
-            ],
-            "type": "object"
-        },
         "MyString": {
             "description": "My string",
             "type": "string"
         },
         "MySubObject": {
-            "additionalProperties": false,
             "description": "My sub object",
             "properties": {
                 "propA": {
@@ -48,6 +25,24 @@
             ],
             "type": "object"
         }
-    }
+    },
+    "description": "My Object",
+    "properties": {
+        "alias": {
+            "$ref": "#/definitions/MyAlias"
+        },
+        "object": {
+            "$ref": "#/definitions/MySubObject"
+        },
+        "primitive": {
+            "$ref": "#/definitions/MyString"
+        }
+    },
+    "required": [
+        "alias",
+        "object",
+        "primitive"
+    ],
+    "type": "object"
 }
 

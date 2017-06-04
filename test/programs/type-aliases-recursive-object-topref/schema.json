@@ -6,7 +6,6 @@
             "$ref": "#/definitions/MyObject"
         },
         "MyObject": {
-            "additionalProperties": false,
             "properties": {
                 "alias": {
                     "$ref": "#/definitions/MyAlias"

@@ -1,102 +1,90 @@
 {
-    "$ref": "#/definitions/MyObject",
     "$schema": "http://json-schema.org/draft-04/schema#",
     "definitions": {
-        "MyObject": {
-            "additionalProperties": false,
-            "properties": {
-                "var1": {
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "var2": {
-                    "type": [
-                        "string",
-                        "number",
-                        "null"
-                    ]
-                },
-                "var3": {
-                    "anyOf": [
-                        {
-                            "items": {
-                                "type": "number"
-                            },
-                            "type": "array"
-                        },
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "var4": {
-                    "anyOf": [
-                        {
-                            "items": {
-                                "type": "number"
-                            },
-                            "type": "array"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "var5": {
-                    "anyOf": [
-                        {
-                            "additionalProperties": false,
-                            "properties": {
-                                "foo": {
-                                    "type": "number"
-                                }
-                            },
-                            "required": [
-                                "foo"
-                            ],
-                            "type": "object"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "var6": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/definitions/MyType6"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "var7": {
-                    "$ref": "#/definitions/MyType6"
-                }
-            },
-            "required": [
-                "var1",
-                "var2",
-                "var3",
-                "var4",
-                "var5",
-                "var6",
-                "var7"
-            ],
-            "type": "object"
-        },
         "MyType6": {
-            "additionalProperties": false,
             "properties": {
             },
             "type": "object"
         }
-    }
+    },
+    "properties": {
+        "var1": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "var2": {
+            "type": [
+                "string",
+                "number",
+                "null"
+            ]
+        },
+        "var3": {
+            "anyOf": [
+                {
+                    "items": {
+                        "type": "number"
+                    },
+                    "type": "array"
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "var4": {
+            "anyOf": [
+                {
+                    "items": {
+                        "type": "number"
+                    },
+                    "type": "array"
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "var5": {
+            "anyOf": [
+                {
+                    "properties": {
+                    },
+                    "type": "object"
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "var6": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/MyType6"
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "var7": {
+            "$ref": "#/definitions/MyType6"
+        }
+    },
+    "required": [
+        "var1",
+        "var2",
+        "var3",
+        "var4",
+        "var5",
+        "var6",
+        "var7"
+    ],
+    "type": "object"
 }
 

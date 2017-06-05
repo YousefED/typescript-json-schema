@@ -1,0 +1,17 @@
+{
+  "type": "object",
+  "properties": {
+    "setTime": {
+      "parameters": [
+        {
+          "name": "d",
+          "type": "Date",
+          "optional": false
+        }
+      ],
+      "type": "object",
+      "returnType": "boolean"
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema#"
+}

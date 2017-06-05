@@ -521,9 +521,7 @@ export class JsonSchemaGenerator {
     }
 
     private getTypeDescription(type?: ts.TypeNode): TypeArgument {
-        const typeObject: TypeArgument = {
-            type: "undefined"
-        };
+        const typeObject: TypeArgument = {};
 
         if (!type) {
             return typeObject;
@@ -532,7 +530,7 @@ export class JsonSchemaGenerator {
         if (this.typeIsTypeReference(type)) {
             typeObject.type = type.typeName.getText();
 
-            if (type.typeArguments) {
+            if (type.typeArguments && type.typeArguments.length > 0) {
                 typeObject.typeArguments = type.typeArguments.map((typeArgument) => {
                     return this.getTypeDescription(typeArgument);
                 });
@@ -555,19 +553,25 @@ export class JsonSchemaGenerator {
             return param1.pos - param2.pos;
         })
         .map((parameter: ts.ParameterDeclaration) => {
-            const typeObject = this.getTypeDescription(parameter.type);
-            return {
+            const typeObject: TypeArgument = this.getTypeDescription(parameter.type);
+            const parameterObject: Parameter = {
                 name: parameter.name.getText(),
                 type: typeObject.type,
-                typeArguments: typeObject.typeArguments,
                 optional: (parameter.questionToken && parameter.questionToken.kind === ts.SyntaxKind.QuestionToken) ? true :  false,
             };
+            if (typeObject.typeArguments) {
+                parameterObject.typeArguments = typeObject.typeArguments;
+            }
+            return parameterObject;
         });
 
-        const returnType = this.getTypeDescription(declaration.type);
-        definition.type = "Function";
+        const returnType: TypeArgument = this.getTypeDescription(declaration.type);
+        definition.type = "object";
         definition.returnType = returnType.type;
-        definition.returnTypeArguments = returnType.typeArguments;
+
+        if (returnType.typeArguments) {
+            definition.returnTypeArguments = returnType.typeArguments;
+        }
 
         // The description describes the return-type, which is misleading, because one would expect it to describe the method itsef
         delete definition.description;

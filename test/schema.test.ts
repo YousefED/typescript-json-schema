@@ -87,6 +87,7 @@ describe("schema", () => {
     assertSchema("enums-number-initialized", "main.ts", "Enum");
     assertSchema("enums-compiled-compute", "main.ts", "Enum");
     assertSchema("enums-mixed", "main.ts", "MyObject");
+    assertSchema("enums-value-in-interface", "main.ts", "MyObject");
     assertSchema("string-literals", "main.ts", "MyObject");
     assertSchema("string-literals-inline", "main.ts", "MyObject");
 
@@ -111,7 +112,7 @@ describe("schema", () => {
     assertSchema("imports", "main.ts", "MyObject");
 
     assertSchema("extra-properties", "main.ts", "MyObject");
-  
+
     assertSchema("generate-all-types", "main.ts", "*");
 
     /**

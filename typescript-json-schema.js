@@ -440,7 +440,7 @@ var JsonSchemaGenerator = (function () {
             };
         });
         var returnType = this.getTypeDescription(declaration.type);
-        definition.type = "function";
+        definition.type = "Function";
         definition.returnType = returnType.type;
         definition.returnTypeArguments = returnType.typeArguments;
         delete definition.description;

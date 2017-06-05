@@ -5,13 +5,14 @@
       "parameters": [
         {
           "name": "d",
-          "type": "Date",
-          "optional": false
+          "type": "string"
         }
       ],
-      "type": "object",
-      "returnType": "boolean"
+      "type": "object"
     }
   },
+  "required": [
+    "setTime"
+  ],
   "$schema": "http://json-schema.org/draft-04/schema#"
 }

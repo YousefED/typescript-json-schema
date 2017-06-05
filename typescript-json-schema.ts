@@ -53,12 +53,14 @@ export type PrimitiveType = number | boolean | string | null;
 
 export type TypeArgument = {
     type?: string,
-    typeArguments?: TypeArgument[]
+    typeArguments?: TypeArgument[],
+    properties?: {},
+    constraint?: TypeArgument
 };
 
 export type Parameter = TypeArgument & {
     name: string,
-    optional: boolean
+    optional?: boolean
 };
 
 export type Definition = {
@@ -87,8 +89,10 @@ export type Definition = {
     parameters?: Parameter[]
     returnType?: string,
     returnTypeArguments?: TypeArgument[],
+    typeParameters?: TypeArgument[],
+    optional?: boolean,
 
-    typeof?: "function"
+    typeof?: "function";
 };
 
 function extend(target: any, ..._: any[]) {
@@ -516,22 +520,74 @@ export class JsonSchemaGenerator {
         return definition;
     }
 
-    private typeIsTypeReference(type: ts.TypeNode): type is ts.TypeReferenceNode {
+    private typeIsTypeReference(type: ts.Node): type is ts.TypeReferenceNode {
         return type.kind === ts.SyntaxKind.TypeReference;
     }
 
-    private getTypeDescription(type?: ts.TypeNode): TypeArgument {
+    private typeIsUnionType(type: ts.Node): type is ts.UnionTypeNode {
+        return type.kind === ts.SyntaxKind.UnionType;
+    }
+
+    private typeIsIntersectionType(type: ts.Node): type is ts.IntersectionTypeNode {
+        return type.kind === ts.SyntaxKind.IntersectionType;
+    }
+
+    private typeIsTypeLiteral(type: ts.Node): type is ts.TypeLiteralNode {
+        return type.kind === ts.SyntaxKind.TypeLiteral;
+    }
+
+    private typeElementIsPropertySignature(type: ts.Node): type is ts.PropertySignature {
+        return type.kind === ts.SyntaxKind.PropertySignature;
+    }
+
+    private declarationIsPrameterDeclaration(declaration: ts.Declaration): declaration is ts.ParameterDeclaration {
+        return declaration.kind === ts.SyntaxKind.Parameter;
+    }
+
+    private declarationIsTypeParameterDeclaration(declaration: ts.Declaration): declaration is ts.TypeParameterDeclaration {
+        return declaration.kind === ts.SyntaxKind.TypeParameter;
+    }
+
+    private getLiteralType(typeMembers: Array<ts.TypeElement>): any {
+        const literalType = {};
+        if (!typeMembers || typeMembers.length === 0) {
+            return literalType;
+        }
+
+        for (let i = 0; i < typeMembers.length; i++) {
+            const typeMember: ts.TypeElement = typeMembers[i];
+            if (this.typeElementIsPropertySignature(typeMember)) {
+                literalType[typeMember.name.getText()] = this.getTypeDescription(typeMember.type);
+            }
+        }
+
+        return literalType;
+    }
+
+    private getTypeDescription(type?: ts.Node): TypeArgument {
         const typeObject: TypeArgument = {};
 
         if (!type) {
             return typeObject;
         }
 
+        if (this.typeIsUnionType(type)) {
+            typeObject.type = "union";
+            typeObject.typeArguments = type.types.map((subType: ts.TypeNode) => {
+                return this.getTypeDescription(subType);
+            });
+        }
+        if (this.typeIsIntersectionType(type)) {
+            typeObject.type = "intersection";
+            typeObject.typeArguments = type.types.map((subType: ts.TypeNode) => {
+                return this.getTypeDescription(subType);
+            });
+        }
         if (this.typeIsTypeReference(type)) {
             typeObject.type = type.typeName.getText();
 
             if (type.typeArguments && type.typeArguments.length > 0) {
-                typeObject.typeArguments = type.typeArguments.map((typeArgument) => {
+                typeObject.typeArguments = type.typeArguments.map((typeArgument: ts.TypeNode) => {
                     return this.getTypeDescription(typeArgument);
                 });
             }
@@ -541,38 +597,71 @@ export class JsonSchemaGenerator {
             typeObject.type = "number";
         } else if (type.kind === ts.SyntaxKind.BooleanKeyword) {
             typeObject.type = "boolean";
+        } else if (this.typeIsTypeLiteral(type)) {
+            typeObject.type = "object";
+            typeObject.properties = this.getLiteralType(type.members);
         }
 
         return typeObject;
     }
 
-    private getMethodDefinition(methodType: ts.Type, definition: Definition): Definition {
-        const declaration: ts.MethodDeclaration = <ts.MethodDeclaration> methodType.getSymbol().getDeclarations()[0];
-
-        definition.parameters = declaration.parameters.sort((param1, param2) => {
+    private getMethodParameters(parameters: ts.NodeArray<ts.Declaration>): Array<Parameter> {
+        return parameters.sort((param1, param2) => {
             return param1.pos - param2.pos;
         })
-        .map((parameter: ts.ParameterDeclaration) => {
-            const typeObject: TypeArgument = this.getTypeDescription(parameter.type);
+        .map((parameter: ts.Declaration) => {
+            let typeObject: TypeArgument = {};
+            if (this.declarationIsPrameterDeclaration(parameter)) {
+                typeObject = this.getTypeDescription(parameter.type);
+            } else if (this.declarationIsTypeParameterDeclaration(parameter)) {
+                typeObject = this.getTypeDescription(parameter);
+            } else {
+                return {name: "__name_not_found__"};
+            }
+
             const parameterObject: Parameter = {
                 name: parameter.name.getText(),
-                type: typeObject.type,
-                optional: (parameter.questionToken && parameter.questionToken.kind === ts.SyntaxKind.QuestionToken) ? true :  false,
             };
+
+            if (this.declarationIsPrameterDeclaration(parameter) && parameter.questionToken && parameter.questionToken.kind === ts.SyntaxKind.QuestionToken) {
+                parameterObject.optional = true;
+            }
+
+            if (this.declarationIsTypeParameterDeclaration(parameter) && parameter.constraint) {
+                parameterObject.constraint = this.getTypeDescription(parameter.constraint);
+            }
+
+            if (typeObject.type) {
+                parameterObject.type = typeObject.type;
+            }
             if (typeObject.typeArguments) {
                 parameterObject.typeArguments = typeObject.typeArguments;
             }
             return parameterObject;
         });
+    }
+
+    private getMethodDefinition(methodType: ts.Type, definition: Definition): Definition {
+        const declaration: ts.MethodDeclaration = <ts.MethodDeclaration> methodType.getSymbol().getDeclarations()[0];
+
+        definition.parameters = this.getMethodParameters(declaration.parameters);
+        if (declaration.typeParameters) {
+            definition.typeParameters = this.getMethodParameters(declaration.typeParameters);
+        }
 
         const returnType: TypeArgument = this.getTypeDescription(declaration.type);
         definition.type = "object";
-        definition.returnType = returnType.type;
+        if (returnType.type) {
+            definition.returnType = returnType.type;
+        }
 
         if (returnType.typeArguments) {
             definition.returnTypeArguments = returnType.typeArguments;
         }
 
+        if (declaration.questionToken && declaration.questionToken.kind === ts.SyntaxKind.QuestionToken) {
+            definition.optional = true;
+        }
         // The description describes the return-type, which is misleading, because one would expect it to describe the method itsef
         delete definition.description;
         return definition;

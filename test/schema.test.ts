@@ -82,7 +82,8 @@ describe("schema", () => {
     // not supported right now
     // assertSchema("module-interface-deep", "main.ts", "Def");
 
-    assertSchema("method", "main.ts", "MyObject");
+    assertSchema("method-extreme", "main.ts", "MyObject");
+    assertSchema("method-simple", "main.ts", "MyObject");
 
     assertSchema("enums-string", "main.ts", "MyObject");
     assertSchema("enums-number", "main.ts", "MyObject");

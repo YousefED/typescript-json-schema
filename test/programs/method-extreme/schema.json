@@ -1,0 +1,93 @@
+{
+  "type": "object",
+  "properties": {
+    "setTime": {
+      "parameters": [
+        {
+          "name": "d",
+          "type": "union",
+          "typeArguments": [
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "test": {
+                  "type": "number"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "object",
+                  "properties": {
+                    "first": {
+                      "type": "string"
+                    },
+                    "last": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "someParam",
+          "optional": true,
+          "type": "T2"
+        }
+      ],
+      "typeParameters": [
+        {
+          "name": "T",
+          "constraint": {
+            "type": "intersection",
+            "typeArguments": [
+              {
+                "type": "Array",
+                "typeArguments": [
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "object",
+                    "properties": {
+                      "first": {
+                        "type": "string"
+                      },
+                      "last": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "T2"
+        }
+      ],
+      "type": "object",
+      "returnType": "Array",
+      "returnTypeArguments": [
+        {
+          "type": "T"
+        }
+      ],
+      "optional": true
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema#"
+}

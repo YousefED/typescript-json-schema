@@ -92,7 +92,7 @@ export type Definition = {
     typeParameters?: TypeArgument[],
     optional?: boolean,
 
-    typeof?: "function";
+    typeof?: "function"
 };
 
 function extend(target: any, ..._: any[]) {
@@ -548,22 +548,6 @@ export class JsonSchemaGenerator {
         return declaration.kind === ts.SyntaxKind.TypeParameter;
     }
 
-    private getLiteralType(typeMembers: Array<ts.TypeElement>): any {
-        const literalType = {};
-        if (!typeMembers || typeMembers.length === 0) {
-            return literalType;
-        }
-
-        for (let i = 0; i < typeMembers.length; i++) {
-            const typeMember: ts.TypeElement = typeMembers[i];
-            if (this.typeElementIsPropertySignature(typeMember)) {
-                literalType[typeMember.name.getText()] = this.getTypeDescription(typeMember.type);
-            }
-        }
-
-        return literalType;
-    }
-
     private getTypeDescription(type?: ts.Node): TypeArgument {
         const typeObject: TypeArgument = {};
 
@@ -576,16 +560,13 @@ export class JsonSchemaGenerator {
             typeObject.typeArguments = type.types.map((subType: ts.TypeNode) => {
                 return this.getTypeDescription(subType);
             });
-        }
-        if (this.typeIsIntersectionType(type)) {
+        } else if (this.typeIsIntersectionType(type)) {
             typeObject.type = "intersection";
             typeObject.typeArguments = type.types.map((subType: ts.TypeNode) => {
                 return this.getTypeDescription(subType);
             });
-        }
-        if (this.typeIsTypeReference(type)) {
+        } else if (this.typeIsTypeReference(type)) {
             typeObject.type = type.typeName.getText();
-
             if (type.typeArguments && type.typeArguments.length > 0) {
                 typeObject.typeArguments = type.typeArguments.map((typeArgument: ts.TypeNode) => {
                     return this.getTypeDescription(typeArgument);
@@ -599,7 +580,13 @@ export class JsonSchemaGenerator {
             typeObject.type = "boolean";
         } else if (this.typeIsTypeLiteral(type)) {
             typeObject.type = "object";
-            typeObject.properties = this.getLiteralType(type.members);
+            typeObject.properties = {};
+            for (let i = 0; i < type.members.length; i++) {
+                const typeMember: ts.TypeElement = type.members[i];
+                if (this.typeElementIsPropertySignature(typeMember)) {
+                    typeObject.properties[typeMember.name.getText()] = this.getTypeDescription(typeMember.type);
+                }
+            }
         }
 
         return typeObject;
@@ -610,47 +597,53 @@ export class JsonSchemaGenerator {
             return param1.pos - param2.pos;
         })
         .map((parameter: ts.Declaration) => {
-            let typeObject: TypeArgument = {};
-            if (this.declarationIsPrameterDeclaration(parameter)) {
-                typeObject = this.getTypeDescription(parameter.type);
-            } else if (this.declarationIsTypeParameterDeclaration(parameter)) {
-                typeObject = this.getTypeDescription(parameter);
-            } else {
-                return {name: "__name_not_found__"};
-            }
-
-            const parameterObject: Parameter = {
-                name: parameter.name.getText(),
-            };
-
-            if (this.declarationIsPrameterDeclaration(parameter) && parameter.questionToken && parameter.questionToken.kind === ts.SyntaxKind.QuestionToken) {
-                parameterObject.optional = true;
-            }
-
-            if (this.declarationIsTypeParameterDeclaration(parameter) && parameter.constraint) {
-                parameterObject.constraint = this.getTypeDescription(parameter.constraint);
-            }
-
-            if (typeObject.type) {
-                parameterObject.type = typeObject.type;
-            }
-            if (typeObject.typeArguments) {
-                parameterObject.typeArguments = typeObject.typeArguments;
-            }
-            return parameterObject;
+            return this.getMethodParameter(parameter);
         });
     }
 
-    private getMethodDefinition(methodType: ts.Type, definition: Definition): Definition {
-        const declaration: ts.MethodDeclaration = <ts.MethodDeclaration> methodType.getSymbol().getDeclarations()[0];
+    private getMethodParameter(parameter: ts.Declaration) {
+        let typeObject: TypeArgument = {};
+        if (this.declarationIsPrameterDeclaration(parameter)) {
+            typeObject = this.getTypeDescription(parameter.type);
+        } else if (this.declarationIsTypeParameterDeclaration(parameter)) {
+            typeObject = this.getTypeDescription(parameter);
+        } else {
+            return {name: "__name_not_found__"};
+        }
 
+        const parameterObject: Parameter = {
+            name: parameter.name.getText(),
+        };
+
+        if (this.declarationIsPrameterDeclaration(parameter) && parameter.questionToken && parameter.questionToken.kind === ts.SyntaxKind.QuestionToken) {
+            parameterObject.optional = true;
+        }
+
+        if (this.declarationIsTypeParameterDeclaration(parameter) && parameter.constraint) {
+            parameterObject.constraint = this.getTypeDescription(parameter.constraint);
+        }
+
+        if (typeObject.type) {
+            parameterObject.type = typeObject.type;
+        }
+
+        if (typeObject.typeArguments) {
+            parameterObject.typeArguments = typeObject.typeArguments;
+        }
+
+        return parameterObject;
+    }
+
+    private getMethodDefinition(methodType: ts.Type, definition: Definition): Definition {
+        definition.type = "object";
+
+        const declaration: ts.MethodDeclaration = <ts.MethodDeclaration> methodType.getSymbol().getDeclarations()[0];
         definition.parameters = this.getMethodParameters(declaration.parameters);
         if (declaration.typeParameters) {
             definition.typeParameters = this.getMethodParameters(declaration.typeParameters);
         }
 
         const returnType: TypeArgument = this.getTypeDescription(declaration.type);
-        definition.type = "object";
         if (returnType.type) {
             definition.returnType = returnType.type;
         }

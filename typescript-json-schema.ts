@@ -361,8 +361,9 @@ export class JsonSchemaGenerator {
     private getEnumDefinition(clazzType: ts.Type, tc: ts.TypeChecker, definition: Definition): Definition {
         const node = clazzType.getSymbol().getDeclarations()[0];
         const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-        const enm = <ts.EnumDeclaration>node;
-
+        const members: ts.EnumMember[] = node.kind === ts.SyntaxKind.EnumDeclaration ?
+            (node as ts.EnumDeclaration).members :
+            [node as ts.EnumMember];
         var enumValues: (number|boolean|string|null)[] = [];
         let enumTypes: string[] = [];
 
@@ -372,7 +373,7 @@ export class JsonSchemaGenerator {
             }
         };
 
-        enm.members.forEach(member => {
+        members.forEach(member => {
             const caseLabel = (<ts.Identifier>member.name).text;
             const constantValue = tc.getConstantValue(member);
             if (constantValue !== undefined) {

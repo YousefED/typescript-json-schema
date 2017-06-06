@@ -1,0 +1,20 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "A.B": {
+            "enum": [
+                0
+            ],
+            "type": "number"
+        }
+    },
+    "properties": {
+        "code": {
+            "$ref": "#/definitions/A.B"
+        }
+    },
+    "required": [
+        "code"
+    ],
+    "type": "object"
+}

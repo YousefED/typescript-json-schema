@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "properties": {
+    "setTime": {
+      "parameters": [
+        {
+          "name": "d",
+          "type": "string"
+        }
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "setTime"
+  ],
+  "$schema": "http://json-schema.org/draft-04/schema#"
+}

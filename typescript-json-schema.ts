@@ -7,6 +7,7 @@ import * as stringify from "json-stable-stringify";
 const vm = require("vm");
 
 const REGEX_FILE_NAME = /".*"\./;
+const REGEX_TSCONFIG_NAME = /^.*\.json$/;
 const REGEX_TJS_JSDOC = /^-([\w]+)\s([\w-]+)/g;
 
 export function getDefaultArgs(): Args {
@@ -958,7 +959,7 @@ export function programFromConfig(configFileName: string): ts.Program {
 
 export function exec(filePattern: string, fullTypeName: string, args = getDefaultArgs()) {
     let program: ts.Program;
-    if (path.basename(filePattern) === "tsconfig.json") {
+    if (REGEX_TSCONFIG_NAME.test(path.basename(filePattern))) {
         program = programFromConfig(filePattern);
     } else {
         program = getProgramFromFiles(glob.sync(filePattern), {

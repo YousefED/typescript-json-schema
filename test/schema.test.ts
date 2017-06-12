@@ -69,6 +69,8 @@ describe("schema", () => {
     assertSchema("class-single", "main.ts", "MyObject");
     assertSchema("class-extends", "main.ts", "MyObject");
 
+    assertSchema("ignored-required", "main.ts", "MyObject");
+
     assertSchema("interface-single", "main.ts", "MyObject");
     assertSchema("interface-multi", "main.ts", "MyObject");
     assertSchema("interface-extends", "main.ts", "MyObject");

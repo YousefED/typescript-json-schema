@@ -585,7 +585,9 @@ export class JsonSchemaGenerator {
             }
             if (this.args.generateRequired) {
                 const requiredProps = props.reduce((required: string[], prop: ts.Symbol) => {
-                    if (!(prop.flags & ts.SymbolFlags.Optional) && !(<any>prop).mayBeUndefined) {
+                    let def = {};
+                    this.parseCommentsIntoDefinition(prop, def, {});
+                    if (!(prop.flags & ts.SymbolFlags.Optional) && !(<any>prop).mayBeUndefined && !def.hasOwnProperty("ignore")) {
                         required.push(prop.getName());
                     }
                     return required;

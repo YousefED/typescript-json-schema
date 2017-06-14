@@ -210,7 +210,6 @@ var JsonSchemaGenerator = (function () {
         var reffedType = this.getReferencedTypeSymbol(prop, tc);
         var definition = this.getTypeDefinition(propertyType, tc, undefined, undefined, prop, reffedType);
         if (this.args.useTitle) {
-            definition.title = propertyName;
         }
         if (definition.hasOwnProperty("ignore")) {
             return null;

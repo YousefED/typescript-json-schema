@@ -305,7 +305,7 @@ export class JsonSchemaGenerator {
 
         let definition = this.getTypeDefinition(propertyType, tc, undefined, undefined, prop, reffedType);
         if (this.args.useTitle) {
-            definition.title = propertyName;
+            // definition.title = propertyName;
         }
 
         if (definition.hasOwnProperty("ignore")) {

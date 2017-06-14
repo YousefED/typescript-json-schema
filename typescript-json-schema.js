@@ -13,7 +13,7 @@ var path = require("path");
 var stringify = require("json-stable-stringify");
 var vm = require("vm");
 var REGEX_FILE_NAME = /".*"\./;
-var REGEX_TJS_JSDOC = /^-([\w]+)\s([\w]+)/g;
+var REGEX_TJS_JSDOC = /^-([\w]+)\s([\w-]+)/g;
 function getDefaultArgs() {
     return {
         useRef: true,
@@ -53,11 +53,27 @@ function extend(target) {
     }
     return to;
 }
+function unique(arr) {
+    var temp = {};
+    for (var _i = 0, arr_1 = arr; _i < arr_1.length; _i++) {
+        var e = arr_1[_i];
+        temp[e] = true;
+    }
+    var r = [];
+    for (var k in temp) {
+        if (Object.prototype.hasOwnProperty.call(temp, k)) {
+            r.push(k);
+        }
+    }
+    return r;
+}
 var JsonSchemaGenerator = (function () {
     function JsonSchemaGenerator(allSymbols, userSymbols, inheritingTypes, tc, args) {
         if (args === void 0) { args = getDefaultArgs(); }
         this.args = args;
         this.reffedDefinitions = {};
+        this.typeNamesById = {};
+        this.typeNamesUsed = {};
         this.simpleTypesAllowedProperties = {
             type: true,
             description: true
@@ -143,7 +159,7 @@ var JsonSchemaGenerator = (function () {
             definition.items = fixedTypes;
             definition.minItems = fixedTypes.length;
             definition.additionalItems = {
-                "anyOf": fixedTypes
+                anyOf: fixedTypes
             };
         }
         else {
@@ -214,8 +230,9 @@ var JsonSchemaGenerator = (function () {
         if (definition.hasOwnProperty("ignore")) {
             return null;
         }
-        var initial = prop.valueDeclaration.initializer;
-        if (initial) {
+        var valDecl = prop.valueDeclaration;
+        if (valDecl && valDecl.initializer) {
+            var initial = valDecl.initializer;
             if (initial.expression) {
                 console.warn("initializer is expression for property " + propertyName);
             }
@@ -244,7 +261,9 @@ var JsonSchemaGenerator = (function () {
     JsonSchemaGenerator.prototype.getEnumDefinition = function (clazzType, tc, definition) {
         var node = clazzType.getSymbol().getDeclarations()[0];
         var fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-        var enm = node;
+        var members = node.kind === ts.SyntaxKind.EnumDeclaration ?
+            node.members :
+            [node];
         var enumValues = [];
         var enumTypes = [];
         var addType = function (type) {
@@ -252,7 +271,7 @@ var JsonSchemaGenerator = (function () {
                 enumTypes.push(type);
             }
         };
-        enm.members.forEach(function (member) {
+        members.forEach(function (member) {
             var caseLabel = member.name.text;
             var constantValue = tc.getConstantValue(member);
             if (constantValue !== undefined) {
@@ -387,35 +406,36 @@ var JsonSchemaGenerator = (function () {
         var props = tc.getPropertiesOfType(clazzType);
         var fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
         var modifierFlags = ts.getCombinedModifierFlags(node);
-        if (props.length === 0 && clazz.members && clazz.members.length === 1 && clazz.members[0].kind === ts.SyntaxKind.IndexSignature) {
-            var indexSignature = clazz.members[0];
-            if (indexSignature.parameters.length !== 1) {
-                throw "Not supported: IndexSignatureDeclaration parameters.length != 1";
-            }
-            var indexSymbol = indexSignature.parameters[0].symbol;
-            var indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
-            var isStringIndexed = (indexType.flags === ts.TypeFlags.String);
-            if (indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
-                throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
-            }
-            var typ = tc.getTypeAtLocation(indexSignature.type);
-            var def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
-            if (isStringIndexed) {
-                definition.type = "object";
-                definition.additionalProperties = def;
-            }
-            else {
-                definition.type = "array";
-                definition.items = def;
-            }
-        }
-        else if (modifierFlags & ts.ModifierFlags.Abstract) {
+        if (modifierFlags & ts.ModifierFlags.Abstract) {
             var oneOf = this.inheritingTypes[fullName].map(function (typename) {
                 return _this.getTypeDefinition(_this.allSymbols[typename], tc);
             });
             definition.oneOf = oneOf;
         }
         else {
+            var indexSignatures = clazz.members.filter(function (x) { return x.kind === ts.SyntaxKind.IndexSignature; });
+            if (indexSignatures.length === 1) {
+                var indexSignature = indexSignatures[0];
+                if (indexSignature.parameters.length !== 1) {
+                    throw "Not supported: IndexSignatureDeclaration parameters.length != 1";
+                }
+                var indexSymbol = indexSignature.parameters[0].symbol;
+                var indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
+                var isStringIndexed = (indexType.flags === ts.TypeFlags.String);
+                if (indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
+                    throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
+                }
+                var typ = tc.getTypeAtLocation(indexSignature.type);
+                var def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
+                if (isStringIndexed) {
+                    definition.type = "object";
+                    definition.additionalProperties = def;
+                }
+                else {
+                    definition.type = "array";
+                    definition.items = def;
+                }
+            }
             var propertyDefinitions = props.reduce(function (all, prop) {
                 var propertyName = prop.getName();
                 var propDef = _this.getDefinitionForProperty(prop, tc, node);
@@ -424,8 +444,12 @@ var JsonSchemaGenerator = (function () {
                 }
                 return all;
             }, {});
-            definition.type = "object";
-            definition.properties = propertyDefinitions;
+            if (definition.type === undefined) {
+                definition.type = "object";
+            }
+            if (definition.type === "object" && Object.keys(propertyDefinitions).length > 0) {
+                definition.properties = propertyDefinitions;
+            }
             if (this.args.useDefaultProperties) {
                 definition.defaultProperties = [];
             }
@@ -447,7 +471,7 @@ var JsonSchemaGenerator = (function () {
                     return required;
                 }, []);
                 if (requiredProps.length > 0) {
-                    definition.required = requiredProps.sort();
+                    definition.required = unique(requiredProps).sort();
                 }
             }
         }
@@ -499,6 +523,25 @@ var JsonSchemaGenerator = (function () {
         }
         return def;
     };
+    JsonSchemaGenerator.prototype.getTypeName = function (typ, tc) {
+        var id = typ.id;
+        if (this.typeNamesById[id]) {
+            return this.typeNamesById[id];
+        }
+        var baseName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+        var name = baseName;
+        if (this.typeNamesUsed[name]) {
+            for (var i = 1; true; ++i) {
+                name = baseName + "_" + i;
+                if (!this.typeNamesUsed[name]) {
+                    break;
+                }
+            }
+        }
+        this.typeNamesById[id] = name;
+        this.typeNamesUsed[name] = true;
+        return name;
+    };
     JsonSchemaGenerator.prototype.getTypeDefinition = function (typ, tc, asRef, unionModifier, prop, reffedType) {
         if (asRef === void 0) { asRef = this.args.useRef; }
         if (unionModifier === void 0) { unionModifier = "anyOf"; }
@@ -526,11 +569,11 @@ var JsonSchemaGenerator = (function () {
                 reffedType).replace(REGEX_FILE_NAME, "");
         }
         else if (asRef) {
-            fullTypeName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+            fullTypeName = this.getTypeName(typ, tc);
         }
         if (asRef) {
             returnedDefinition = {
-                "$ref": "#/definitions/" + fullTypeName
+                $ref: "#/definitions/" + fullTypeName
             };
         }
         var otherAnnotations = {};
@@ -564,7 +607,7 @@ var JsonSchemaGenerator = (function () {
                             definition.default = extend(definition.default || {}, other.default);
                         }
                         if (other.required) {
-                            definition.required = (definition.required || []).concat(other.required);
+                            definition.required = unique((definition.required || []).concat(other.required)).sort();
                         }
                     }
                 }
@@ -605,7 +648,7 @@ var JsonSchemaGenerator = (function () {
     };
     JsonSchemaGenerator.prototype.getSchemaForSymbols = function (symbols) {
         var root = {
-            "$schema": "http://json-schema.org/draft-04/schema#",
+            $schema: "http://json-schema.org/draft-04/schema#",
             definitions: {}
         };
         for (var i = 0; i < symbols.length; i++) {
@@ -616,6 +659,25 @@ var JsonSchemaGenerator = (function () {
     };
     JsonSchemaGenerator.prototype.getUserSymbols = function () {
         return Object.keys(this.userSymbols);
+    };
+    JsonSchemaGenerator.prototype.getMainFileSymbols = function (program) {
+        var _this = this;
+        var files = program.getSourceFiles().filter(function (file) { return !file.isDeclarationFile; });
+        if (files.length) {
+            var mainFile_1 = files[0];
+            return Object.keys(this.userSymbols).filter(function (key) {
+                var symbol = _this.userSymbols[key].getSymbol();
+                if (!symbol || !symbol.declarations || !symbol.declarations.length) {
+                    return false;
+                }
+                var node = symbol.declarations[0];
+                while (node && node.parent) {
+                    node = node.parent;
+                }
+                return node === mainFile_1;
+            });
+        }
+        return [];
     };
     return JsonSchemaGenerator;
 }());
@@ -721,7 +783,7 @@ function generateSchema(program, fullTypeName, args) {
     }
     var definition;
     if (fullTypeName === "*") {
-        definition = generator.getSchemaForSymbols(generator.getUserSymbols());
+        definition = generator.getSchemaForSymbols(generator.getMainFileSymbols(program));
     }
     else {
         definition = generator.getSchemaForSymbol(fullTypeName);

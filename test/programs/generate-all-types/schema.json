@@ -1,0 +1,18 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "MyEnum": {
+            "enum": [
+                0
+            ],
+            "type": "number"
+        },
+        "MyInterface": {
+            "type": "object"
+        },
+        "MyObject": {
+            "type": "object"
+        }
+    }
+}
+

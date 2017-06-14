@@ -2,8 +2,6 @@
     "$schema": "http://json-schema.org/draft-04/schema#",
     "definitions": {
         "MyType6": {
-            "properties": {
-            },
             "type": "object"
         }
     },

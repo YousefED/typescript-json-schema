@@ -104,6 +104,7 @@ describe("schema", () => {
     assertSchema("type-nullable", "main.ts", "MyObject");
 
     assertSchema("optionals", "main.ts", "MyObject");
+    assertSchema("optionals-derived", "main.ts", "MyDerived");
 
     assertSchema("comments", "main.ts", "MyObject");
     assertSchema("comments-override", "main.ts", "MyObject");

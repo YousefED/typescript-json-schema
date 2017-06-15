@@ -1,0 +1,19 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "required": [ "baseRequired", "derivedRequired"  ],
+    "properties": {
+        "baseRequired": {
+            "type": "number"
+        },
+        "baseOptional": {
+            "type": "number"
+        },
+        "derivedRequired": {
+            "type": "number"
+        },
+        "derivedOptional": {
+            "type": "number"
+        }
+    }
+}

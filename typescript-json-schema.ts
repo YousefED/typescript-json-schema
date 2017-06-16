@@ -118,26 +118,44 @@ function unique(arr: string[]): string[] {
 export class JsonSchemaGenerator {
     /**
      * JSDoc keywords that should be used to annotate the JSON schema.
+     *
+     * Many of these validation keywords are defined here: http://json-schema.org/latest/json-schema-validation.html
      */
     private static validationKeywords = {
+        multipleOf: true,               // 6.1.
+        maximum: true,                  // 6.2.
+        exclusiveMaximum: true,         // 6.3.
+        minimum: true,                  // 6.4.
+        exclusiveMinimum: true,         // 6.5.
+        maxLength: true,                // 6.6.
+        minLength: true,                // 6.7.
+        pattern: true,                  // 6.8.
+        // items: true,                    // 6.9.
+        // additionalItems: true,          // 6.10.
+        maxItems: true,                 // 6.11.
+        minItems: true,                 // 6.12.
+        uniqueItems: true,              // 6.13.
+        // contains: true,                 // 6.14.
+        maxProperties: true,            // 6.15.
+        minProperties: true,            // 6.16.
+        // required: true,                 // 6.17.  This is not required. It is auto-generated.
+        // properties: true,               // 6.18.  This is not required. It is auto-generated.
+        // patternProperties: true,        // 6.19.
+        additionalProperties: true,     // 6.20.
+        // dependencies: true,             // 6.21.
+        // propertyNames: true,            // 6.22.
+        enum: true,                     // 6.23.
+        // const: true,                    // 6.24.
+        type: true,                     // 6.25.
+        // allOf: true,                    // 6.26.
+        // anyOf: true,                    // 6.27.
+        // oneOf: true,                    // 6.28.
+        // not: true,                      // 6.29.
+
         ignore: true,
         description: true,
-        type: true,
-        minimum: true,
-        exclusiveMinimum: true,
-        maximum: true,
-        exclusiveMaximum: true,
-        multipleOf: true,
-        minLength: true,
-        maxLength: true,
         format: true,
-        pattern: true,
-        minItems: true,
-        maxItems: true,
-        uniqueItems: true,
-        default: true,
-        additionalProperties: true,
-        enum: true
+        default: true
     };
 
     private allSymbols: { [name: string]: ts.Type };

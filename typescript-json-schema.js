@@ -13,6 +13,7 @@ var path = require("path");
 var stringify = require("json-stable-stringify");
 var vm = require("vm");
 var REGEX_FILE_NAME = /".*"\./;
+var REGEX_TSCONFIG_NAME = /^.*\.json$/;
 var REGEX_TJS_JSDOC = /^-([\w]+)\s([\w-]+)/g;
 function getDefaultArgs() {
     return {
@@ -466,7 +467,9 @@ var JsonSchemaGenerator = (function () {
             }
             if (this.args.generateRequired) {
                 var requiredProps = props.reduce(function (required, prop) {
-                    if (!(prop.flags & ts.SymbolFlags.Optional) && !prop.mayBeUndefined) {
+                    var def = {};
+                    _this.parseCommentsIntoDefinition(prop, def, {});
+                    if (!(prop.flags & ts.SymbolFlags.Optional) && !prop.mayBeUndefined && !def.hasOwnProperty("ignore")) {
                         required.push(prop.getName());
                     }
                     return required;
@@ -683,24 +686,26 @@ var JsonSchemaGenerator = (function () {
     return JsonSchemaGenerator;
 }());
 JsonSchemaGenerator.validationKeywords = {
-    ignore: true,
-    description: true,
-    type: true,
-    minimum: true,
-    exclusiveMinimum: true,
+    multipleOf: true,
     maximum: true,
     exclusiveMaximum: true,
-    multipleOf: true,
-    minLength: true,
+    minimum: true,
+    exclusiveMinimum: true,
     maxLength: true,
-    format: true,
+    minLength: true,
     pattern: true,
-    minItems: true,
     maxItems: true,
+    minItems: true,
     uniqueItems: true,
-    default: true,
+    maxProperties: true,
+    minProperties: true,
     additionalProperties: true,
-    enum: true
+    enum: true,
+    type: true,
+    ignore: true,
+    description: true,
+    format: true,
+    default: true
 };
 exports.JsonSchemaGenerator = JsonSchemaGenerator;
 function getProgramFromFiles(files, compilerOptions) {
@@ -809,7 +814,7 @@ exports.programFromConfig = programFromConfig;
 function exec(filePattern, fullTypeName, args) {
     if (args === void 0) { args = getDefaultArgs(); }
     var program;
-    if (path.basename(filePattern) === "tsconfig.json") {
+    if (REGEX_TSCONFIG_NAME.test(path.basename(filePattern))) {
         program = programFromConfig(filePattern);
     }
     else {

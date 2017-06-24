@@ -668,7 +668,6 @@ var JsonSchemaGenerator = (function () {
         var _this = this;
         var files = program.getSourceFiles().filter(function (file) { return !file.isDeclarationFile; });
         if (files.length) {
-            var mainFile_1 = files[0];
             return Object.keys(this.userSymbols).filter(function (key) {
                 var symbol = _this.userSymbols[key].getSymbol();
                 if (!symbol || !symbol.declarations || !symbol.declarations.length) {
@@ -678,7 +677,7 @@ var JsonSchemaGenerator = (function () {
                 while (node && node.parent) {
                     node = node.parent;
                 }
-                return node === mainFile_1;
+                return files.indexOf(node) > -1;
             });
         }
         return [];

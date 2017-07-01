@@ -8,7 +8,7 @@ interface MyObject {
      * @ignore
      */
     ignoredOptional?: boolean;
-    
+
     required: boolean;
     optional?: boolean;
 }

@@ -21,7 +21,7 @@ export function assertSchema(group: string, type: string, settings: TJS.PartialA
 
         const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(BASE + group + "/main.ts")], compilerOptions), type, settings);
 
-        writeFileSync(BASE + group + "/schema.json", stringify(actual, {space: 4}) + "\n\n");
+        // writeFileSync(BASE + group + "/schema.json", stringify(actual, {space: 4}) + "\n\n");
 
         const file = readFileSync(BASE + group + "/schema.json", "utf8");
         const expected = JSON.parse(file);
@@ -186,7 +186,7 @@ describe("schema", () => {
 
         assertSchema("module-interface-single", "MyObject");
 
-        assertSchema("ignored-required", "main.ts", "MyObject");
+        assertSchema("ignored-required", "MyObject");
 
         // not supported yet #116
         // assertSchema("interface-extra-props", "MyObject");
@@ -217,7 +217,7 @@ describe("schema", () => {
         assertSchema("array-and-description", "MyObject");
 
         assertSchema("optionals", "MyObject");
-        assertSchema("optionals-derived", "main.ts", "MyDerived");
+        assertSchema("optionals-derived", "MyDerived");
 
         assertSchema("strict-null-checks", "MyObject", undefined, {
             strictNullChecks: true

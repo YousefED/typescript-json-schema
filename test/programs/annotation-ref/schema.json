@@ -1,21 +1,22 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "definitions": {
-    "MySubObject": {
-      "type": "object"
-    }
-  },
-  "properties": {
-    "externalRef": {
-      "$ref": "http://my-schema.org"
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "MySubObject": {
+            "type": "object"
+        }
     },
-    "externalRefOverride": {
-      "$ref": "http://my-schema.org"
-    }
-  },
-  "required": [
-    "externalRef",
-    "externalRefOverride"
-  ]
+    "properties": {
+        "externalRef": {
+            "$ref": "http://my-schema.org"
+        },
+        "externalRefOverride": {
+            "$ref": "http://my-schema.org"
+        }
+    },
+    "required": [
+        "externalRef",
+        "externalRefOverride"
+    ],
+    "type": "object"
 }
+

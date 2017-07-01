@@ -7,6 +7,7 @@ import * as ts from "typescript";
 const vm = require("vm");
 
 const REGEX_FILE_NAME = /".*"\./;
+const REGEX_TSCONFIG_NAME = /^.*\.json$/;
 const REGEX_TJS_JSDOC = /^-([\w]+)\s([\w-]+)/g;
 
 export function getDefaultArgs(): Args {
@@ -117,26 +118,45 @@ function unique(arr: string[]): string[] {
 export class JsonSchemaGenerator {
     /**
      * JSDoc keywords that should be used to annotate the JSON schema.
+     *
+     * Many of these validation keywords are defined here: http://json-schema.org/latest/json-schema-validation.html
      */
     private static validationKeywords = {
+        multipleOf: true,               // 6.1.
+        maximum: true,                  // 6.2.
+        exclusiveMaximum: true,         // 6.3.
+        minimum: true,                  // 6.4.
+        exclusiveMinimum: true,         // 6.5.
+        maxLength: true,                // 6.6.
+        minLength: true,                // 6.7.
+        pattern: true,                  // 6.8.
+        // items: true,                    // 6.9.
+        // additionalItems: true,          // 6.10.
+        maxItems: true,                 // 6.11.
+        minItems: true,                 // 6.12.
+        uniqueItems: true,              // 6.13.
+        // contains: true,                 // 6.14.
+        maxProperties: true,            // 6.15.
+        minProperties: true,            // 6.16.
+        // required: true,                 // 6.17.  This is not required. It is auto-generated.
+        // properties: true,               // 6.18.  This is not required. It is auto-generated.
+        // patternProperties: true,        // 6.19.
+        additionalProperties: true,     // 6.20.
+        // dependencies: true,             // 6.21.
+        // propertyNames: true,            // 6.22.
+        enum: true,                     // 6.23.
+        // const: true,                    // 6.24.
+        type: true,                     // 6.25.
+        // allOf: true,                    // 6.26.
+        // anyOf: true,                    // 6.27.
+        // oneOf: true,                    // 6.28.
+        // not: true,                      // 6.29.
+
         ignore: true,
         description: true,
-        type: true,
-        minimum: true,
-        exclusiveMinimum: true,
-        maximum: true,
-        exclusiveMaximum: true,
-        multipleOf: true,
-        minLength: true,
-        maxLength: true,
         format: true,
-        pattern: true,
-        minItems: true,
-        maxItems: true,
-        uniqueItems: true,
         default: true,
-        additionalProperties: true,
-        enum: true
+        $ref: true
     };
 
     private allSymbols: { [name: string]: ts.Type };
@@ -361,8 +381,9 @@ export class JsonSchemaGenerator {
     private getEnumDefinition(clazzType: ts.Type, tc: ts.TypeChecker, definition: Definition): Definition {
         const node = clazzType.getSymbol().getDeclarations()[0];
         const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-        const enm = <ts.EnumDeclaration>node;
-
+        const members: ts.EnumMember[] = node.kind === ts.SyntaxKind.EnumDeclaration ?
+            (node as ts.EnumDeclaration).members :
+            [node as ts.EnumMember];
         var enumValues: (number|boolean|string|null)[] = [];
         let enumTypes: string[] = [];
 
@@ -372,7 +393,7 @@ export class JsonSchemaGenerator {
             }
         };
 
-        enm.members.forEach(member => {
+        members.forEach(member => {
             const caseLabel = (<ts.Identifier>member.name).text;
             const constantValue = tc.getConstantValue(member);
             if (constantValue !== undefined) {
@@ -583,7 +604,9 @@ export class JsonSchemaGenerator {
             }
             if (this.args.required) {
                 const requiredProps = props.reduce((required: string[], prop: ts.Symbol) => {
-                    if (!(prop.flags & ts.SymbolFlags.Optional) && !(<any>prop).mayBeUndefined) {
+                    let def = {};
+                    this.parseCommentsIntoDefinition(prop, def, {});
+                    if (!(prop.flags & ts.SymbolFlags.Optional) && !(<any>prop).mayBeUndefined && !def.hasOwnProperty("ignore")) {
                         required.push(prop.getName());
                     }
                     return required;
@@ -956,7 +979,7 @@ export function programFromConfig(configFileName: string): ts.Program {
 
 export function exec(filePattern: string, fullTypeName: string, args = getDefaultArgs()) {
     let program: ts.Program;
-    if (path.basename(filePattern) === "tsconfig.json") {
+    if (REGEX_TSCONFIG_NAME.test(path.basename(filePattern))) {
         program = programFromConfig(filePattern);
     } else {
         program = getProgramFromFiles(glob.sync(filePattern), {

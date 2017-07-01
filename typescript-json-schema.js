@@ -13,6 +13,7 @@ var path = require("path");
 var ts = require("typescript");
 var vm = require("vm");
 var REGEX_FILE_NAME = /".*"\./;
+var REGEX_TSCONFIG_NAME = /^.*\.json$/;
 var REGEX_TJS_JSDOC = /^-([\w]+)\s([\w-]+)/g;
 function getDefaultArgs() {
     return {
@@ -262,7 +263,9 @@ var JsonSchemaGenerator = (function () {
     JsonSchemaGenerator.prototype.getEnumDefinition = function (clazzType, tc, definition) {
         var node = clazzType.getSymbol().getDeclarations()[0];
         var fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-        var enm = node;
+        var members = node.kind === ts.SyntaxKind.EnumDeclaration ?
+            node.members :
+            [node];
         var enumValues = [];
         var enumTypes = [];
         var addType = function (type) {
@@ -270,7 +273,7 @@ var JsonSchemaGenerator = (function () {
                 enumTypes.push(type);
             }
         };
-        enm.members.forEach(function (member) {
+        members.forEach(function (member) {
             var caseLabel = member.name.text;
             var constantValue = tc.getConstantValue(member);
             if (constantValue !== undefined) {
@@ -464,7 +467,9 @@ var JsonSchemaGenerator = (function () {
             }
             if (this.args.required) {
                 var requiredProps = props.reduce(function (required, prop) {
-                    if (!(prop.flags & ts.SymbolFlags.Optional) && !prop.mayBeUndefined) {
+                    var def = {};
+                    _this.parseCommentsIntoDefinition(prop, def, {});
+                    if (!(prop.flags & ts.SymbolFlags.Optional) && !prop.mayBeUndefined && !def.hasOwnProperty("ignore")) {
                         required.push(prop.getName());
                     }
                     return required;
@@ -681,24 +686,27 @@ var JsonSchemaGenerator = (function () {
     return JsonSchemaGenerator;
 }());
 JsonSchemaGenerator.validationKeywords = {
-    ignore: true,
-    description: true,
-    type: true,
-    minimum: true,
-    exclusiveMinimum: true,
+    multipleOf: true,
     maximum: true,
     exclusiveMaximum: true,
-    multipleOf: true,
-    minLength: true,
+    minimum: true,
+    exclusiveMinimum: true,
     maxLength: true,
-    format: true,
+    minLength: true,
     pattern: true,
-    minItems: true,
     maxItems: true,
+    minItems: true,
     uniqueItems: true,
-    default: true,
+    maxProperties: true,
+    minProperties: true,
     additionalProperties: true,
-    enum: true
+    enum: true,
+    type: true,
+    ignore: true,
+    description: true,
+    format: true,
+    default: true,
+    $ref: true
 };
 exports.JsonSchemaGenerator = JsonSchemaGenerator;
 function getProgramFromFiles(files, compilerOptions) {
@@ -807,7 +815,7 @@ exports.programFromConfig = programFromConfig;
 function exec(filePattern, fullTypeName, args) {
     if (args === void 0) { args = getDefaultArgs(); }
     var program;
-    if (path.basename(filePattern) === "tsconfig.json") {
+    if (REGEX_TSCONFIG_NAME.test(path.basename(filePattern))) {
         program = programFromConfig(filePattern);
     }
     else {

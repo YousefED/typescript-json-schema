@@ -122,6 +122,7 @@ describe("schema", () => {
         assertSchema("enums-number-initialized", "Enum");
         assertSchema("enums-compiled-compute", "Enum");
         assertSchema("enums-mixed", "MyObject");
+        assertSchema("enums-value-in-interface", "MyObject");
     });
 
     describe("unions and intersections", () => {
@@ -135,6 +136,8 @@ describe("schema", () => {
 
     describe("annotations", () => {
         assertSchema("annotation-default", "MyObject");
+        assertSchema("annotation-ref", "MyObject");
+        assertSchema("annotation-tjs", "MyObject");
 
         assertSchema("typeof-keyword", "MyObject", {typeOfKeyword: true});
 
@@ -183,6 +186,8 @@ describe("schema", () => {
 
         assertSchema("module-interface-single", "MyObject");
 
+        assertSchema("ignored-required", "main.ts", "MyObject");
+
         // not supported yet #116
         // assertSchema("interface-extra-props", "MyObject");
 
@@ -212,6 +217,7 @@ describe("schema", () => {
         assertSchema("array-and-description", "MyObject");
 
         assertSchema("optionals", "MyObject");
+        assertSchema("optionals-derived", "main.ts", "MyDerived");
 
         assertSchema("strict-null-checks", "MyObject", undefined, {
             strictNullChecks: true

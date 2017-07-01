@@ -1,10 +1,10 @@
-import * as TJS from "../typescript-json-schema";
 import * as Ajv from "ajv";
 import { assert } from "chai";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync } from "fs";
 import { resolve } from "path";
 import { CompilerOptions } from "typescript";
-import * as stringify from "json-stable-stringify";
+
+import * as TJS from "../typescript-json-schema";
 
 const ajv = new Ajv();
 

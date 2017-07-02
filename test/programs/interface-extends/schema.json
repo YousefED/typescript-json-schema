@@ -1,6 +1,5 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "type": "object",
     "properties": {
         "propA": {
             "type": "number"
@@ -9,5 +8,10 @@
             "type": "number"
         }
     },
-    "required": [ "propA", "propB" ]
+    "required": [
+        "propA",
+        "propB"
+    ],
+    "type": "object"
 }
+

@@ -4,15 +4,15 @@ export declare type ValidationKeywords = {
     [prop: string]: boolean;
 };
 export declare type Args = {
-    useRef: boolean;
-    useTypeAliasRef: boolean;
-    useRootRef: boolean;
-    useTitle: boolean;
-    useDefaultProperties: boolean;
-    disableExtraProperties: boolean;
-    usePropertyOrder: boolean;
-    useTypeOfKeyword: boolean;
-    generateRequired: boolean;
+    ref: boolean;
+    aliasRef: boolean;
+    topRef: boolean;
+    titles: boolean;
+    defaultProps: boolean;
+    noExtraProps: boolean;
+    propOrder: boolean;
+    typeOfKeyword: boolean;
+    required: boolean;
     strictNullChecks: boolean;
     ignoreErrors: boolean;
     out: string;

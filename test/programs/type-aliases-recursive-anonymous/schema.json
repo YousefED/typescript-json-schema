@@ -1,0 +1,25 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "MyAlias": {
+            "$ref": "#/definitions/interface-0"
+        },
+        "interface-0": {
+            "type": "object",
+            "properties": {
+                "alias": {
+                    "$ref": "#/definitions/MyAlias"
+                },
+                "self": {
+                    "$ref": "#/definitions/interface-0"
+                }
+            },
+            "required": [
+                "alias",
+                "self"
+            ],
+            "additionalProperties": false
+        }
+    },
+    "$ref": "#/definitions/MyAlias"
+}

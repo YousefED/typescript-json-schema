@@ -1,34 +1,43 @@
 {
-    "type": "object",
-    "required": [ "FieldWithAnonType" ],
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "properties": {
         "FieldWithAnonType": {
-            "type": "object",
-            "required": [ "SubfieldA", "SubfieldB", "SubfieldC"],
             "properties": {
                 "SubfieldA": {
                     "type": "number"
                 },
                 "SubfieldB": {
                     "type": [
-                         "string",
-                         "number"
+                        "string",
+                        "number"
                     ]
                 },
                 "SubfieldC": {
-                    "type": "object",
-                    "required": [ "SubsubfieldA"],
                     "properties": {
                         "SubsubfieldA": {
-                            "type": "array",
                             "items": {
                                 "type": "number"
-                            }
+                            },
+                            "type": "array"
                         }
-                    }
+                    },
+                    "required": [
+                        "SubsubfieldA"
+                    ],
+                    "type": "object"
                 }
-            }
+            },
+            "required": [
+                "SubfieldA",
+                "SubfieldB",
+                "SubfieldC"
+            ],
+            "type": "object"
         }
     },
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    "required": [
+        "FieldWithAnonType"
+    ],
+    "type": "object"
 }
+

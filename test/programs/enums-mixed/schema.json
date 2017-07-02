@@ -1,5 +1,22 @@
 {
-    "type": "object",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "Enum": {
+            "enum": [
+                0,
+                1,
+                null,
+                "str",
+                true
+            ],
+            "type": [
+                "number",
+                "boolean",
+                "string",
+                "null"
+            ]
+        }
+    },
     "properties": {
         "foo": {
             "$ref": "#/definitions/Enum"
@@ -8,22 +25,6 @@
     "required": [
         "foo"
     ],
-    "definitions": {
-        "Enum": {
-            "type": [
-                "number",
-                "boolean",
-                "string",
-                "null"
-            ],
-            "enum": [
-                0,
-                1,
-                null,
-                "str",
-                true
-            ]
-        }
-    },
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    "type": "object"
 }
+

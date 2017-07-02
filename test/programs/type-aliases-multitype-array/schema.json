@@ -1,5 +1,24 @@
 {
-    "type": "array",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "MyObject": {
+            "properties": {
+                "array": {
+                    "items": {
+                        "type": [
+                            "string",
+                            "number"
+                        ]
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "array"
+            ],
+            "type": "object"
+        }
+    },
     "items": {
         "anyOf": [
             {
@@ -10,24 +29,6 @@
             }
         ]
     },
-    "definitions": {
-        "MyObject": {
-            "type": "object",
-            "properties": {
-                "array": {
-                    "type": "array",
-                    "items": {
-                        "type": [
-                            "string",
-                            "number"
-                        ]
-                    }
-                }
-            },
-            "required": [
-                "array"
-            ]
-        }
-    },
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    "type": "array"
 }
+

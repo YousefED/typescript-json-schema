@@ -1,37 +1,44 @@
 {
-    "description": "Description of MyObject, a top level object,\nwhich also has a comment that spans\nmultiple lines",
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "additionalProperties": false,
-    "type": "object",
+    "description": "Description of MyObject, a top level object,\nwhich also has a comment that spans\nmultiple lines",
     "properties": {
         "opacity": {
-            "type": "number",
             "description": "Description of opacity, a field with min/max values",
+            "maximum": 100,
             "minimum": 0,
-            "maximum": 100
+            "type": "number"
         },
         "position": {
             "description": "Description of field position, of aliased type Vector3D, which should inherit its annotations",
-            "minItems": 3,
-            "maxItems": 3,
-            "type": "array",
             "items": {
                 "type": "number"
-            }
+            },
+            "maxItems": 3,
+            "minItems": 3,
+            "type": "array"
         },
         "rotation": {
-            "type": "object",
+            "description": "Description of rotation, a field with an anonymous type",
             "properties": {
                 "yaw": {
-                    "type": "number",
                     "description": "Description of the value yaw inside an anonymous type, with min/max annotations",
+                    "maximum": 90,
                     "minimum": -90,
-                    "maximum": 90
+                    "type": "number"
                 }
             },
-            "required": [ "yaw" ],
-            "description": "Description of rotation, a field with an anonymous type"
+            "required": [
+                "yaw"
+            ],
+            "type": "object"
         }
     },
-    "required": [ "opacity", "position", "rotation" ],
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    "required": [
+        "opacity",
+        "position",
+        "rotation"
+    ],
+    "type": "object"
 }
+

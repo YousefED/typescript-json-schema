@@ -1,0 +1,174 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "GenericA<\"alias\">": {
+            "properties": {
+                "a": {
+                    "enum": [
+                        "alias"
+                    ],
+                    "type": "string"
+                }
+            },
+            "required": [
+                "a"
+            ],
+            "type": "object"
+        },
+        "GenericA<1>": {
+            "properties": {
+                "a": {
+                    "enum": [
+                        1
+                    ],
+                    "type": "number"
+                }
+            },
+            "required": [
+                "a"
+            ],
+            "type": "object"
+        },
+        "GenericA<string>": {
+            "properties": {
+                "a": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "a"
+            ],
+            "type": "object"
+        },
+        "GenericC<\"alias\">": {
+            "properties": {
+                "c": {
+                    "enum": [
+                        "alias"
+                    ],
+                    "type": "string"
+                }
+            },
+            "required": [
+                "c"
+            ],
+            "type": "object"
+        },
+        "GenericC<2>": {
+            "properties": {
+                "c": {
+                    "enum": [
+                        2
+                    ],
+                    "type": "number"
+                }
+            },
+            "required": [
+                "c"
+            ],
+            "type": "object"
+        },
+        "GenericC<GenericA<string>>": {
+            "properties": {
+                "c": {
+                    "$ref": "#/definitions/GenericA<string>"
+                }
+            },
+            "required": [
+                "c"
+            ],
+            "type": "object"
+        },
+        "GenericC<GenericC<GenericA<string>>>": {
+            "properties": {
+                "c": {
+                    "$ref": "#/definitions/GenericC<GenericA<string>>"
+                }
+            },
+            "required": [
+                "c"
+            ],
+            "type": "object"
+        },
+        "SomeGeneric<\"alias\", \"alias\">": {
+            "properties": {
+                "a": {
+                    "enum": [
+                        "alias"
+                    ],
+                    "type": "string"
+                },
+                "b": {
+                    "enum": [
+                        "alias"
+                    ],
+                    "type": "string"
+                },
+                "c": {
+                    "$ref": "#/definitions/GenericA<\"alias\">"
+                },
+                "d": {
+                    "$ref": "#/definitions/GenericC<\"alias\">"
+                }
+            },
+            "required": [
+                "a",
+                "b",
+                "c",
+                "d"
+            ],
+            "type": "object"
+        },
+        "SomeGeneric<1, 2>": {
+            "properties": {
+                "a": {
+                    "enum": [
+                        1
+                    ],
+                    "type": "number"
+                },
+                "b": {
+                    "enum": [
+                        2
+                    ],
+                    "type": "number"
+                },
+                "c": {
+                    "$ref": "#/definitions/GenericA<1>"
+                },
+                "d": {
+                    "$ref": "#/definitions/GenericC<2>"
+                }
+            },
+            "required": [
+                "a",
+                "b",
+                "c",
+                "d"
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "b": {
+            "type": "number"
+        },
+        "c": {
+            "$ref": "#/definitions/GenericC<GenericC<GenericA<string>>>"
+        },
+        "someAlias": {
+            "$ref": "#/definitions/SomeGeneric<\"alias\", \"alias\">"
+        },
+        "someGeneric": {
+            "$ref": "#/definitions/SomeGeneric<1, 2>"
+        }
+    },
+    "required": [
+        "b",
+        "c",
+        "someAlias",
+        "someGeneric"
+    ],
+    "type": "object"
+}
+

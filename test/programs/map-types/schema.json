@@ -1,5 +1,26 @@
 {
-    "type": "object",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "MyMap1": {
+            "additionalProperties": {
+                "$ref": "#/definitions/MyType"
+            },
+            "type": "object"
+        },
+        "MyMap2": {
+            "additionalProperties": {
+                "type": [
+                    "string",
+                    "number"
+                ]
+            },
+            "description": "The additionalProperties annotation should be ignored",
+            "type": "object"
+        },
+        "MyType": {
+            "type": "object"
+        }
+    },
     "properties": {
         "map1": {
             "$ref": "#/definitions/MyMap1"
@@ -8,27 +29,10 @@
             "$ref": "#/definitions/MyMap2"
         }
     },
-    "required": [ "map1", "map2" ],
-    "definitions": {
-        "MyMap1": {
-            "type": "object",
-            "additionalProperties": {
-                "$ref": "#/definitions/MyType"
-            }
-        },
-        "MyType": {
-            "type": "object"
-        },
-        "MyMap2": {
-            "description": "The additionalProperties annotation should be ignored",
-            "additionalProperties": {
-                "type": [
-                    "string",
-                    "number"
-                ]
-            },
-            "type": "object"
-        }
-    },
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    "required": [
+        "map1",
+        "map2"
+    ],
+    "type": "object"
 }
+

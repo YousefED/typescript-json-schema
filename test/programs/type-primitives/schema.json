@@ -1,45 +1,47 @@
 {
-    "type": "object",
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "properties": {
-        "boolean1": {
-            "type": "boolean",
-            "default": true
-        },
-        "number1": {
-            "type": "number",
-            "default": 1
-        },
-        "integer1": {
-            "type": "integer",
-            "default": 1
-        },
-        "integer2": {
-            "type": "integer",
-            "default": 1
-        },
-        "string1": {
-            "type": "string",
-            "default": "defaultValue"
-        },
         "array1": {
-            "type": "array",
-            "items": {},
-            "default": null
+            "default": null,
+            "items": {
+            },
+            "type": "array"
         },
         "array2": {
-            "type": "array",
+            "default": null,
             "items": {
                 "type": "number"
             },
-            "default": null
+            "type": "array"
+        },
+        "boolean1": {
+            "default": true,
+            "type": "boolean"
+        },
+        "integer1": {
+            "default": 1,
+            "type": "integer"
+        },
+        "integer2": {
+            "default": 1,
+            "type": "integer"
+        },
+        "number1": {
+            "default": 1,
+            "type": "number"
         },
         "object1": {
             "default": null
         },
         "object2": {
-            "type": "object",
-            "properties": {},
-            "default": null
+            "default": null,
+            "properties": {
+            },
+            "type": "object"
+        },
+        "string1": {
+            "default": "defaultValue",
+            "type": "string"
         }
     },
     "required": [
@@ -53,5 +55,6 @@
         "object2",
         "string1"
     ],
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    "type": "object"
 }
+

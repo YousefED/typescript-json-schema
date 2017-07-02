@@ -1,26 +1,27 @@
 {
-    "type": "object",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "result": {
+            "enum": [
+                "abort",
+                "fail",
+                "ok"
+            ],
+            "type": "string"
+        }
+    },
     "properties": {
-        "foo": {
-            "$ref": "#/definitions/result"
-        },
         "bar": {
             "type": "string"
+        },
+        "foo": {
+            "$ref": "#/definitions/result"
         }
     },
     "required": [
         "bar",
         "foo"
     ],
-    "definitions": {
-        "result": {
-            "type": "string",
-            "enum": [
-                "abort",
-                "fail",
-                "ok"
-            ]
-        }
-    },
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    "type": "object"
 }
+

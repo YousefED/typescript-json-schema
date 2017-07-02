@@ -1,5 +1,5 @@
 {
-    "type": "object",
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "properties": {
         "foo": {
             "typeof": "function"
@@ -8,5 +8,6 @@
     "required": [
         "foo"
     ],
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    "type": "object"
 }
+

@@ -1,0 +1,19 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "MyString": {
+            "description": "My string",
+            "format": "pattern [a-z]",
+            "type": "string"
+        }
+    },
+    "properties": {
+        "s": {
+            "$ref": "#/definitions/MyString"
+        }
+    },
+    "required": [
+        "s"
+    ],
+    "type": "object"
+}

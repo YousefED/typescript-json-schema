@@ -212,6 +212,10 @@ describe("schema", () => {
         assertSchema("namespace-deep-1", "RootNamespace.Def");
         assertSchema("namespace-deep-2", "RootNamespace.SubNamespace.HelperA");
     });
+    assertSchema("type-aliases-annotated-unref", "main.ts", "MyString");
+    assertSchema("type-aliases-annotated-import", "main.ts", "MyObject", {
+        useTypeAliasRef: true
+    });
 
     describe("other", () => {
         assertSchema("array-and-description", "MyObject");

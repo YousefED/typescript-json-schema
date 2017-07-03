@@ -415,27 +415,29 @@ var JsonSchemaGenerator = (function () {
             definition.oneOf = oneOf;
         }
         else {
-            var indexSignatures = clazz.members.filter(function (x) { return x.kind === ts.SyntaxKind.IndexSignature; });
-            if (indexSignatures.length === 1) {
-                var indexSignature = indexSignatures[0];
-                if (indexSignature.parameters.length !== 1) {
-                    throw "Not supported: IndexSignatureDeclaration parameters.length != 1";
-                }
-                var indexSymbol = indexSignature.parameters[0].symbol;
-                var indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
-                var isStringIndexed = (indexType.flags === ts.TypeFlags.String);
-                if (indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
-                    throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
-                }
-                var typ = tc.getTypeAtLocation(indexSignature.type);
-                var def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
-                if (isStringIndexed) {
-                    definition.type = "object";
-                    definition.additionalProperties = def;
-                }
-                else {
-                    definition.type = "array";
-                    definition.items = def;
+            if (clazz.members) {
+                var indexSignatures = clazz.members.filter(function (x) { return x.kind === ts.SyntaxKind.IndexSignature; });
+                if (indexSignatures.length === 1) {
+                    var indexSignature = indexSignatures[0];
+                    if (indexSignature.parameters.length !== 1) {
+                        throw "Not supported: IndexSignatureDeclaration parameters.length != 1";
+                    }
+                    var indexSymbol = indexSignature.parameters[0].symbol;
+                    var indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
+                    var isStringIndexed = (indexType.flags === ts.TypeFlags.String);
+                    if (indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
+                        throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
+                    }
+                    var typ = tc.getTypeAtLocation(indexSignature.type);
+                    var def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
+                    if (isStringIndexed) {
+                        definition.type = "object";
+                        definition.additionalProperties = def;
+                    }
+                    else {
+                        definition.type = "array";
+                        definition.items = def;
+                    }
                 }
             }
             var propertyDefinitions = props.reduce(function (all, prop) {
@@ -668,7 +670,6 @@ var JsonSchemaGenerator = (function () {
         var _this = this;
         var files = program.getSourceFiles().filter(function (file) { return !file.isDeclarationFile; });
         if (files.length) {
-            var mainFile_1 = files[0];
             return Object.keys(this.userSymbols).filter(function (key) {
                 var symbol = _this.userSymbols[key].getSymbol();
                 if (!symbol || !symbol.declarations || !symbol.declarations.length) {
@@ -678,7 +679,7 @@ var JsonSchemaGenerator = (function () {
                 while (node && node.parent) {
                     node = node.parent;
                 }
-                return node === mainFile_1;
+                return files.indexOf(node.getSourceFile()) > -1;
             });
         }
         return [];

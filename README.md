@@ -76,7 +76,7 @@ generator.getSchemaForSymbol("AnotherType");
 
 ### Annotations
 
-The schema generator converts annotations to JSON schema properties. 
+The schema generator converts annotations to JSON schema properties.
 
 For example
 
@@ -92,7 +92,8 @@ export interface Shape {
 }
 ```
 
-will be translated to 
+will be translated to
+
 ```json
 {
     "$ref": "#/definitions/Shape",
@@ -112,7 +113,7 @@ will be translated to
 }
 ```
 
-Note that we needed to use `@TJS-type` instead of just `@type` because of an [issue with the typescript compiler](https://github.com/Microsoft/TypeScript/issues/13498). 
+Note that we needed to use `@TJS-type` instead of just `@type` because of an [issue with the typescript compiler](https://github.com/Microsoft/TypeScript/issues/13498).
 
 ## Background
 

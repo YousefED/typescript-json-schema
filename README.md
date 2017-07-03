@@ -48,11 +48,11 @@ import * as TJS from "typescript-json-schema";
 
 // optionally pass argument to schema generator
 const settings: TJS.PartialArgs = {
-    generateRequired: true
+    required: true
 };
 
 // optionally pass ts compiler options
-compilerOptions: CompilerOptions = {
+const compilerOptions: CompilerOptions = {
     strictNullChecks: true
 }
 

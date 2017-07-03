@@ -36,6 +36,7 @@ Options:
   --useTypeOfKeyword    Use `typeOf` keyword (https://goo.gl/DC6sni) for functions.  [boolean] [default: false]
   --out, -o             The output file, defaults to using stdout
   --validationKeywords  Provide additional validation keywords to include            [array]   [default: []]
+  --ignoreErrors        Generate even if the program has errors.                     [boolean] [default: false]
 ```
 
 ### Programmatic use

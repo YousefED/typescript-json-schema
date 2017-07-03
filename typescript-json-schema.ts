@@ -847,7 +847,7 @@ export class JsonSchemaGenerator {
                 while (node && node.parent) {
                     node = node.parent;
                 }
-                return files.indexOf(node) > -1;
+                return files.indexOf(node.getSourceFile()) > -1;
                 // return node === mainFile;
             });
         }

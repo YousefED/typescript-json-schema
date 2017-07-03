@@ -543,29 +543,31 @@ export class JsonSchemaGenerator {
 
             definition.oneOf = oneOf;
         } else {
-            const indexSignatures = clazz.members.filter(x => x.kind === ts.SyntaxKind.IndexSignature);
-            if (indexSignatures.length === 1) {
-                // for case "array-types"
-                const indexSignature = indexSignatures[0] as ts.IndexSignatureDeclaration;
-                if (indexSignature.parameters.length !== 1) {
-                    throw "Not supported: IndexSignatureDeclaration parameters.length != 1";
-                }
-                const indexSymbol: ts.Symbol = (<any>indexSignature.parameters[0]).symbol;
-                const indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
-                const isStringIndexed = (indexType.flags === ts.TypeFlags.String);
-                if (indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
-                    throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
-                }
+            if (clazz.members) {
+                const indexSignatures = clazz.members.filter(x => x.kind === ts.SyntaxKind.IndexSignature);
+                if (indexSignatures.length === 1) {
+                    // for case "array-types"
+                    const indexSignature = indexSignatures[0] as ts.IndexSignatureDeclaration;
+                    if (indexSignature.parameters.length !== 1) {
+                        throw "Not supported: IndexSignatureDeclaration parameters.length != 1";
+                    }
+                    const indexSymbol: ts.Symbol = (<any>indexSignature.parameters[0]).symbol;
+                    const indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
+                    const isStringIndexed = (indexType.flags === ts.TypeFlags.String);
+                    if (indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
+                        throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
+                    }
 
-                const typ = tc.getTypeAtLocation(indexSignature.type!);
-                const def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
+                    const typ = tc.getTypeAtLocation(indexSignature.type!);
+                    const def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
 
-                if (isStringIndexed) {
-                    definition.type = "object";
-                    definition.additionalProperties = def;
-                } else {
-                    definition.type = "array";
-                    definition.items = def;
+                    if (isStringIndexed) {
+                        definition.type = "object";
+                        definition.additionalProperties = def;
+                    } else {
+                        definition.type = "array";
+                        definition.items = def;
+                    }
                 }
             }
 

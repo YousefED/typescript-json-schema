@@ -170,6 +170,7 @@ describe("schema", () => {
         assertSchema("type-anonymous", "MyObject");
         assertSchema("type-primitives", "MyObject");
         assertSchema("type-nullable", "MyObject");
+        assertSchema("type-function", "MyObject");
     });
 
     describe("class and interface", () => {
@@ -207,7 +208,7 @@ describe("schema", () => {
         assertSchema("string-literals-inline", "MyObject");
     });
 
-    describe("namspeaces", () => {
+    describe("namespaces", () => {
         assertSchema("namespace", "Type");
         assertSchema("namespace-deep-1", "RootNamespace.Def");
         assertSchema("namespace-deep-2", "RootNamespace.SubNamespace.HelperA");

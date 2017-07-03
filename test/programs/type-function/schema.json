@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "Function": {
+      "description": "Creates a new function.",
+      "properties": {
+        "apply": {
+          "description": "Calls the function, substituting the specified object for the this value of the function, and the specified array for the arguments of the function.",
+          "type": "object"
+        },
+        "arguments": {},
+        "bind": {
+          "description": "For a given function, creates a bound function that has the same body as the original function.\nThe this object of the bound function is associated with the specified object, and has the specified initial parameters.",
+          "type": "object"
+        },
+        "call": {
+          "description": "Calls a method of an object, substituting another object for the current object.",
+          "type": "object"
+        },
+        "caller": {
+          "$ref": "#/definitions/Function"
+        },
+        "length": {
+          "type": "number"
+        },
+        "prototype": {},
+        "toString": {
+          "description": "Returns a string representation of a function.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "apply",
+        "arguments",
+        "bind",
+        "call",
+        "caller",
+        "length",
+        "prototype",
+        "toString"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "myFunction": {
+      "$ref": "#/definitions/Function"
+    }
+  },
+  "required": [
+    "myFunction"
+  ],
+  "type": "object"
+}

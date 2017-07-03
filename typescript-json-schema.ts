@@ -837,7 +837,6 @@ export class JsonSchemaGenerator {
     public getMainFileSymbols(program: ts.Program): string[] {
         const files = program.getSourceFiles().filter(file => !file.isDeclarationFile);
         if (files.length) {
-            const mainFile = files[0];
             return Object.keys(this.userSymbols).filter((key) => {
                 const symbol = this.userSymbols[key].getSymbol();
                 if (!symbol || !symbol.declarations || !symbol.declarations.length) {
@@ -847,7 +846,7 @@ export class JsonSchemaGenerator {
                 while (node && node.parent) {
                     node = node.parent;
                 }
-                return node === mainFile;
+                return files.indexOf(node.getSourceFile()) > -1;
             });
         }
         return [];

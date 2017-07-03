@@ -4,3 +4,4 @@ test/*.d.ts
 test/*.map
 .vscode/*.*
 npm-debug.log
+.idea

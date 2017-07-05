@@ -1,5 +1,0 @@
-node_modules
-.vscode/*.*
-typings/
-typescript-json-schema.ts
-test/schema.test.ts

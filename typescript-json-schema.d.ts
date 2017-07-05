@@ -32,14 +32,14 @@ export declare type Definition = {
         [key: string]: any;
     };
     format?: string;
-    items?: Definition;
+    items?: Definition | Array<Definition>;
     minItems?: number;
     additionalItems?: {
-        anyOf: Definition;
+        anyOf: Array<Definition>;
     };
     enum?: PrimitiveType[] | Definition[];
     default?: PrimitiveType | Object;
-    additionalProperties?: Definition;
+    additionalProperties?: Definition | boolean;
     required?: string[];
     propertyOrder?: string[];
     properties?: {};

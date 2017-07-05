@@ -62,14 +62,14 @@ export type Definition = {
     type?: string | string[],
     definitions?: {[key: string]: any},
     format?: string,
-    items?: Definition,
+    items?: Definition | Array<Definition>,
     minItems?: number,
     additionalItems?: {
-        anyOf: Definition
+        anyOf: Array<Definition>
     },
     enum?: PrimitiveType[] | Definition[],
     default?: PrimitiveType | Object,
-    additionalProperties?: Definition,
+    additionalProperties?: Definition | boolean,
     required?: string[],
     propertyOrder?: string[],
     properties?: {},
@@ -233,13 +233,14 @@ export class JsonSchemaGenerator {
 
     private extractLiteralValue(typ: ts.Type): PrimitiveType | undefined {
         if (typ.flags & ts.TypeFlags.EnumLiteral) {
-            let str = (<ts.LiteralType>typ).text;
+            // or .text for old TS
+            let str = (<ts.LiteralType>typ).value || (typ as any).text;
             let num = parseFloat(str);
             return isNaN(num) ? str : num;
         } else if (typ.flags & ts.TypeFlags.StringLiteral) {
-            return (<ts.LiteralType>typ).text;
+            return (<ts.LiteralType>typ).value || (typ as any).text;
         } else if (typ.flags & ts.TypeFlags.NumberLiteral) {
-            return parseFloat((<ts.LiteralType>typ).text);
+            return parseFloat((<ts.LiteralType>typ).value || (typ as any).text);
         } else if (typ.flags & ts.TypeFlags.BooleanLiteral) {
             return (typ as any).intrinsicName === "true";
         }
@@ -306,7 +307,7 @@ export class JsonSchemaGenerator {
                         definition.type = typeof value;
                         definition.enum = [ value ];
                     } else if (symbol && (symbol.getName() === "Array" || symbol.getName() === "ReadonlyArray")) {
-                        const arrayType = (<ts.TypeReference>propertyType).typeArguments[0];
+                        const arrayType = (<ts.TypeReference>propertyType).typeArguments![0];
                         definition.type = "array";
                         definition.items = this.getTypeDefinition(arrayType, tc);
                     } else {
@@ -379,7 +380,7 @@ export class JsonSchemaGenerator {
     }
 
     private getEnumDefinition(clazzType: ts.Type, tc: ts.TypeChecker, definition: Definition): Definition {
-        const node = clazzType.getSymbol().getDeclarations()[0];
+        const node = clazzType.getSymbol()!.getDeclarations()![0];
         const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
         const members: ts.EnumMember[] = node.kind === ts.SyntaxKind.EnumDeclaration ?
             (node as ts.EnumDeclaration).members :
@@ -524,7 +525,7 @@ export class JsonSchemaGenerator {
     }
 
     private getClassDefinition(clazzType: ts.Type, tc: ts.TypeChecker, definition: Definition): Definition {
-        const node = clazzType.getSymbol().getDeclarations()[0];
+        const node = clazzType.getSymbol()!.getDeclarations()![0];
         if (this.args.typeOfKeyword && node.kind === ts.SyntaxKind.FunctionType) {
             definition.typeof = "function";
             return definition;
@@ -703,7 +704,7 @@ export class JsonSchemaGenerator {
     private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker, asRef = this.args.ref, unionModifier: string = "anyOf", prop?: ts.Symbol, reffedType?: ts.Symbol): Definition {
         const definition: Definition = {}; // real definition
 
-        if (this.args.useTypeOfKeyword && (typ.flags & ts.TypeFlags.Object) && ((<ts.ObjectType>typ).objectFlags & ts.ObjectFlags.Anonymous)) {
+        if (this.args.typeOfKeyword && (typ.flags & ts.TypeFlags.Object) && ((<ts.ObjectType>typ).objectFlags & ts.ObjectFlags.Anonymous)) {
             definition.typeof = "function";
             return definition;
         }
@@ -754,7 +755,7 @@ export class JsonSchemaGenerator {
         if (prop) {
             this.parseCommentsIntoDefinition(prop, returnedDefinition, otherAnnotations);
         }
-        this.parseCommentsIntoDefinition(symbol, definition, otherAnnotations);
+        this.parseCommentsIntoDefinition(symbol!, definition, otherAnnotations);
 
         // Create the actual definition only if is an inline definition, or
         // if it will be a $ref and it is not yet created
@@ -765,7 +766,7 @@ export class JsonSchemaGenerator {
                     definition.title = fullTypeName;
                 }
             }
-            const node = symbol && symbol.getDeclarations() !== undefined ? symbol.getDeclarations()[0] : null;
+            const node = symbol && symbol.getDeclarations() !== undefined ? symbol.getDeclarations()![0] : null;
 
             if (definition.type === undefined) {  // if users override the type, do not try to infer it
                 if (typ.flags & ts.TypeFlags.Union) {
@@ -941,7 +942,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
         diagnostics.forEach((diagnostic) => {
             let message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
             if(diagnostic.file) {
-                let { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+                let { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
                 console.error(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
             } else {
                 console.error(message);

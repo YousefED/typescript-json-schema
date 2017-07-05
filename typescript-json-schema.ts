@@ -323,9 +323,9 @@ export class JsonSchemaGenerator {
         const reffedType = this.getReferencedTypeSymbol(prop, tc);
 
         let definition = this.getTypeDefinition(propertyType, tc, undefined, undefined, prop, reffedType);
-        if (this.args.useTitle) {
-            // definition.title = propertyName;
-        }
+        // if (this.args.useTitle) {
+        //     definition.title = propertyName;
+        // }
 
         if (definition.hasOwnProperty("ignore")) {
             return null;
@@ -524,7 +524,7 @@ export class JsonSchemaGenerator {
 
             definition.oneOf = oneOf;
         } else {
-            const indexSignatures = clazz.members.filter(x => x.kind === ts.SyntaxKind.IndexSignature);
+            const indexSignatures = clazz.members == null ? [] : clazz.members.filter(x => x.kind === ts.SyntaxKind.IndexSignature);
             if (indexSignatures.length === 1) {
                 // for case "array-types"
                 const indexSignature = indexSignatures[0] as ts.IndexSignatureDeclaration;
@@ -682,6 +682,12 @@ export class JsonSchemaGenerator {
 
     private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker, asRef = this.args.useRef, unionModifier: string = "anyOf", prop?: ts.Symbol, reffedType?: ts.Symbol): Definition {
         const definition: Definition = {}; // real definition
+
+        if (this.args.useTypeOfKeyword && (typ.flags & ts.TypeFlags.Object) && ((<ts.ObjectType>typ).objectFlags & ts.ObjectFlags.Anonymous)) {
+            definition.typeof = "function";
+            return definition;
+        }
+
         let returnedDefinition = definition; // returned definition, may be a $ref
 
         const symbol = typ.getSymbol();

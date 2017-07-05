@@ -7,12 +7,14 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
+Object.defineProperty(exports, "__esModule", { value: true });
 var ts = require("typescript");
 var glob = require("glob");
 var path = require("path");
 var stringify = require("json-stable-stringify");
 var vm = require("vm");
 var REGEX_FILE_NAME = /".*"\./;
+var REGEX_TSCONFIG_NAME = /^.*\.json$/;
 var REGEX_TJS_JSDOC = /^-([\w]+)\s([\w-]+)/g;
 function getDefaultArgs() {
     return {
@@ -225,8 +227,6 @@ var JsonSchemaGenerator = (function () {
         var propertyType = tc.getTypeOfSymbolAtLocation(prop, node);
         var reffedType = this.getReferencedTypeSymbol(prop, tc);
         var definition = this.getTypeDefinition(propertyType, tc, undefined, undefined, prop, reffedType);
-        if (this.args.useTitle) {
-        }
         if (definition.hasOwnProperty("ignore")) {
             return null;
         }
@@ -413,7 +413,7 @@ var JsonSchemaGenerator = (function () {
             definition.oneOf = oneOf;
         }
         else {
-            var indexSignatures = clazz.members.filter(function (x) { return x.kind === ts.SyntaxKind.IndexSignature; });
+            var indexSignatures = clazz.members == null ? [] : clazz.members.filter(function (x) { return x.kind === ts.SyntaxKind.IndexSignature; });
             if (indexSignatures.length === 1) {
                 var indexSignature = indexSignatures[0];
                 if (indexSignature.parameters.length !== 1) {
@@ -465,7 +465,9 @@ var JsonSchemaGenerator = (function () {
             }
             if (this.args.generateRequired) {
                 var requiredProps = props.reduce(function (required, prop) {
-                    if (!(prop.flags & ts.SymbolFlags.Optional) && !prop.mayBeUndefined) {
+                    var def = {};
+                    _this.parseCommentsIntoDefinition(prop, def, {});
+                    if (!(prop.flags & ts.SymbolFlags.Optional) && !prop.mayBeUndefined && !def.hasOwnProperty("ignore")) {
                         required.push(prop.getName());
                     }
                     return required;
@@ -546,6 +548,10 @@ var JsonSchemaGenerator = (function () {
         if (asRef === void 0) { asRef = this.args.useRef; }
         if (unionModifier === void 0) { unionModifier = "anyOf"; }
         var definition = {};
+        if (this.args.useTypeOfKeyword && (typ.flags & ts.TypeFlags.Object) && (typ.objectFlags & ts.ObjectFlags.Anonymous)) {
+            definition.typeof = "function";
+            return definition;
+        }
         var returnedDefinition = definition;
         var symbol = typ.getSymbol();
         var isRawType = (!symbol || symbol.name === "integer" || symbol.name === "Array" || symbol.name === "ReadonlyArray" || symbol.name === "Date");
@@ -808,7 +814,7 @@ exports.programFromConfig = programFromConfig;
 function exec(filePattern, fullTypeName, args) {
     if (args === void 0) { args = getDefaultArgs(); }
     var program;
-    if (path.basename(filePattern) === "tsconfig.json") {
+    if (REGEX_TSCONFIG_NAME.test(path.basename(filePattern))) {
         program = programFromConfig(filePattern);
     }
     else {

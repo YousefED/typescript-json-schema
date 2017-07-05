@@ -1,4 +1,5 @@
 {
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "anyOf": [
         {
             "$ref": "#/definitions/Square"
@@ -11,54 +12,13 @@
         }
     ],
     "definitions": {
-        "Square": {
-            "type": "object",
-            "properties": {
-                "kind": {
-                    "type": "string",
-                    "enum": [
-                        "square"
-                    ]
-                },
-                "size": {
-                    "type": "number"
-                }
-            },
-            "required": [
-                "kind",
-                "size"
-            ]
-        },
-        "Rectangle": {
-            "type": "object",
-            "properties": {
-                "kind": {
-                    "type": "string",
-                    "enum": [
-                        "rectangle"
-                    ]
-                },
-                "width": {
-                    "type": "number"
-                },
-                "height": {
-                    "type": "number"
-                }
-            },
-            "required": [
-                "height",
-                "kind",
-                "width"
-            ]
-        },
         "Circle": {
-            "type": "object",
             "properties": {
                 "kind": {
-                    "type": "string",
                     "enum": [
                         "circle"
-                    ]
+                    ],
+                    "type": "string"
                 },
                 "radius": {
                     "type": "number"
@@ -67,8 +27,49 @@
             "required": [
                 "kind",
                 "radius"
-            ]
+            ],
+            "type": "object"
+        },
+        "Rectangle": {
+            "properties": {
+                "height": {
+                    "type": "number"
+                },
+                "kind": {
+                    "enum": [
+                        "rectangle"
+                    ],
+                    "type": "string"
+                },
+                "width": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "height",
+                "kind",
+                "width"
+            ],
+            "type": "object"
+        },
+        "Square": {
+            "properties": {
+                "kind": {
+                    "enum": [
+                        "square"
+                    ],
+                    "type": "string"
+                },
+                "size": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "kind",
+                "size"
+            ],
+            "type": "object"
         }
-    },
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    }
 }
+

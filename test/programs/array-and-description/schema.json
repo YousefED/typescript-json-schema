@@ -1,20 +1,22 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "type": "object",
     "properties": {
-        "name": {
-            "type": "string",
-            "description": "A name"
-        },
         "description": {
             "type": "string"
         },
+        "name": {
+            "description": "A name",
+            "type": "string"
+        },
         "test": {
-            "type": "array",
-            "items": {}
+            "items": {
+            },
+            "type": "array"
         }
     },
     "required": [
         "test"
-    ]
+    ],
+    "type": "object"
 }
+

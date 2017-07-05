@@ -26,10 +26,11 @@
     "properties": {
         "d": {
             "$ref": "#/definitions/C.C"
-        }   
+        }
     },
     "required": [
         "d"
     ],
     "type": "object"
 }
+

@@ -1,0 +1,23 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "properties": {
+        "numberArray": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "stringArray": {
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        }
+    },
+    "required": [
+        "numberArray",
+        "stringArray"
+    ],
+    "type": "object"
+}
+

@@ -1,5 +1,5 @@
 {
-    "type": "object",
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "properties": {
         "val": {
             "type": "number"
@@ -10,25 +10,36 @@
                 "number"
             ]
         },
-        "valUndef": {
-            "type": "number"
-        },
         "valOpt": {
             "type": "number"
         },
         "valTrue": {
-            "enum": [ true ],
+            "enum": [
+                true
+            ],
             "type": "boolean"
         },
         "valTrueOpt": {
-            "enum": [ true ],
+            "enum": [
+                true
+            ],
             "type": "boolean"
         },
         "valTrueOrNull": {
             "anyOf": [
-                { "enum": [ true ], "type": "boolean" },
-                { "type": "null"  }
+                {
+                    "enum": [
+                        true
+                    ],
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                }
             ]
+        },
+        "valUndef": {
+            "type": "number"
         }
     },
     "required": [
@@ -37,5 +48,6 @@
         "valTrue",
         "valTrueOrNull"
     ],
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    "type": "object"
 }
+

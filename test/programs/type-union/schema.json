@@ -1,5 +1,5 @@
 {
-    "type": "object",
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "properties": {
         "var1": {
             "type": [
@@ -10,10 +10,10 @@
         "var2": {
             "anyOf": [
                 {
-                    "type": "array",
                     "items": {
                         "type": "number"
-                    }
+                    },
+                    "type": "array"
                 },
                 {
                     "type": "string"
@@ -25,5 +25,6 @@
         "var1",
         "var2"
     ],
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    "type": "object"
 }
+

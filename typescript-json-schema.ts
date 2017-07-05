@@ -1,7 +1,7 @@
-import * as ts from "typescript";
 import * as glob from "glob";
-import * as path from "path";
 import * as stringify from "json-stable-stringify";
+import * as path from "path";
+import * as ts from "typescript";
 
 
 const vm = require("vm");
@@ -12,15 +12,15 @@ const REGEX_TJS_JSDOC = /^-([\w]+)\s([\w-]+)/g;
 
 export function getDefaultArgs(): Args {
     return {
-        useRef: true,
-        useTypeAliasRef: false,
-        useRootRef: false,
-        useTitle: false,
-        useDefaultProperties: false,
-        disableExtraProperties: false,
-        usePropertyOrder: false,
-        useTypeOfKeyword: false,
-        generateRequired: false,
+        ref: true,
+        aliasRef: false,
+        topRef: false,
+        titles: false,
+        defaultProps: false,
+        noExtraProps: false,
+        propOrder: false,
+        typeOfKeyword: false,
+        required: false,
         strictNullChecks: false,
         ignoreErrors: false,
         out: "",
@@ -33,15 +33,15 @@ export type ValidationKeywords = {
 };
 
 export type Args = {
-    useRef: boolean;
-    useTypeAliasRef: boolean;
-    useRootRef: boolean;
-    useTitle: boolean;
-    useDefaultProperties: boolean;
-    disableExtraProperties: boolean;
-    usePropertyOrder: boolean;
-    useTypeOfKeyword: boolean;
-    generateRequired: boolean;
+    ref: boolean;
+    aliasRef: boolean;
+    topRef: boolean;
+    titles: boolean;
+    defaultProps: boolean;
+    noExtraProps: boolean;
+    propOrder: boolean;
+    typeOfKeyword: boolean;
+    required: boolean;
     strictNullChecks: boolean;
     ignoreErrors: boolean;
     out: string;
@@ -118,26 +118,45 @@ function unique(arr: string[]): string[] {
 export class JsonSchemaGenerator {
     /**
      * JSDoc keywords that should be used to annotate the JSON schema.
+     *
+     * Many of these validation keywords are defined here: http://json-schema.org/latest/json-schema-validation.html
      */
     private static validationKeywords = {
+        multipleOf: true,               // 6.1.
+        maximum: true,                  // 6.2.
+        exclusiveMaximum: true,         // 6.3.
+        minimum: true,                  // 6.4.
+        exclusiveMinimum: true,         // 6.5.
+        maxLength: true,                // 6.6.
+        minLength: true,                // 6.7.
+        pattern: true,                  // 6.8.
+        // items: true,                    // 6.9.
+        // additionalItems: true,          // 6.10.
+        maxItems: true,                 // 6.11.
+        minItems: true,                 // 6.12.
+        uniqueItems: true,              // 6.13.
+        // contains: true,                 // 6.14.
+        maxProperties: true,            // 6.15.
+        minProperties: true,            // 6.16.
+        // required: true,                 // 6.17.  This is not required. It is auto-generated.
+        // properties: true,               // 6.18.  This is not required. It is auto-generated.
+        // patternProperties: true,        // 6.19.
+        additionalProperties: true,     // 6.20.
+        // dependencies: true,             // 6.21.
+        // propertyNames: true,            // 6.22.
+        enum: true,                     // 6.23.
+        // const: true,                    // 6.24.
+        type: true,                     // 6.25.
+        // allOf: true,                    // 6.26.
+        // anyOf: true,                    // 6.27.
+        // oneOf: true,                    // 6.28.
+        // not: true,                      // 6.29.
+
         ignore: true,
         description: true,
-        type: true,
-        minimum: true,
-        exclusiveMinimum: true,
-        maximum: true,
-        exclusiveMaximum: true,
-        multipleOf: true,
-        minLength: true,
-        maxLength: true,
         format: true,
-        pattern: true,
-        minItems: true,
-        maxItems: true,
-        uniqueItems: true,
         default: true,
-        additionalProperties: true,
-        enum: true
+        $ref: true
     };
 
     private allSymbols: { [name: string]: ts.Type };
@@ -323,7 +342,7 @@ export class JsonSchemaGenerator {
         const reffedType = this.getReferencedTypeSymbol(prop, tc);
 
         let definition = this.getTypeDefinition(propertyType, tc, undefined, undefined, prop, reffedType);
-        // if (this.args.useTitle) {
+        // if (this.args.titles) {
         //     definition.title = propertyName;
         // }
 
@@ -506,7 +525,7 @@ export class JsonSchemaGenerator {
 
     private getClassDefinition(clazzType: ts.Type, tc: ts.TypeChecker, definition: Definition): Definition {
         const node = clazzType.getSymbol().getDeclarations()[0];
-        if (this.args.useTypeOfKeyword && node.kind === ts.SyntaxKind.FunctionType) {
+        if (this.args.typeOfKeyword && node.kind === ts.SyntaxKind.FunctionType) {
             definition.typeof = "function";
             return definition;
         }
@@ -524,29 +543,31 @@ export class JsonSchemaGenerator {
 
             definition.oneOf = oneOf;
         } else {
-            const indexSignatures = clazz.members == null ? [] : clazz.members.filter(x => x.kind === ts.SyntaxKind.IndexSignature);
-            if (indexSignatures.length === 1) {
-                // for case "array-types"
-                const indexSignature = indexSignatures[0] as ts.IndexSignatureDeclaration;
-                if (indexSignature.parameters.length !== 1) {
-                    throw "Not supported: IndexSignatureDeclaration parameters.length != 1";
-                }
-                const indexSymbol: ts.Symbol = (<any>indexSignature.parameters[0]).symbol;
-                const indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
-                const isStringIndexed = (indexType.flags === ts.TypeFlags.String);
-                if (indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
-                    throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
-                }
+            if (clazz.members) {
+                const indexSignatures = clazz.members == null ? [] : clazz.members.filter(x => x.kind === ts.SyntaxKind.IndexSignature);
+                if (indexSignatures.length === 1) {
+                    // for case "array-types"
+                    const indexSignature = indexSignatures[0] as ts.IndexSignatureDeclaration;
+                    if (indexSignature.parameters.length !== 1) {
+                        throw "Not supported: IndexSignatureDeclaration parameters.length != 1";
+                    }
+                    const indexSymbol: ts.Symbol = (<any>indexSignature.parameters[0]).symbol;
+                    const indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
+                    const isStringIndexed = (indexType.flags === ts.TypeFlags.String);
+                    if (indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
+                        throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
+                    }
 
-                const typ = tc.getTypeAtLocation(indexSignature.type!);
-                const def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
+                    const typ = tc.getTypeAtLocation(indexSignature.type!);
+                    const def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
 
-                if (isStringIndexed) {
-                    definition.type = "object";
-                    definition.additionalProperties = def;
-                } else {
-                    definition.type = "array";
-                    definition.items = def;
+                    if (isStringIndexed) {
+                        definition.type = "object";
+                        definition.additionalProperties = def;
+                    } else {
+                        definition.type = "array";
+                        definition.items = def;
+                    }
                 }
             }
 
@@ -567,13 +588,13 @@ export class JsonSchemaGenerator {
                 definition.properties = propertyDefinitions;
             }
 
-            if (this.args.useDefaultProperties) {
+            if (this.args.defaultProps) {
                 definition.defaultProperties = [];
             }
-            if (this.args.disableExtraProperties && definition.additionalProperties === undefined) {
+            if (this.args.noExtraProps && definition.additionalProperties === undefined) {
                 definition.additionalProperties = false;
             }
-            if (this.args.usePropertyOrder) {
+            if (this.args.propOrder) {
                 // propertyOrder is non-standard, but useful:
                 // https://github.com/json-schema/json-schema/issues/87
                 const propertyOrder = props.reduce((order: string[], prop: ts.Symbol) => {
@@ -583,7 +604,7 @@ export class JsonSchemaGenerator {
 
                 definition.propertyOrder = propertyOrder;
             }
-            if (this.args.generateRequired) {
+            if (this.args.required) {
                 const requiredProps = props.reduce((required: string[], prop: ts.Symbol) => {
                     let def = {};
                     this.parseCommentsIntoDefinition(prop, def, {});
@@ -654,7 +675,6 @@ export class JsonSchemaGenerator {
         return def;
     }
 
-
     /**
      * Gets/generates a globally unique type name for the given type
      */
@@ -680,7 +700,7 @@ export class JsonSchemaGenerator {
         return name;
     }
 
-    private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker, asRef = this.args.useRef, unionModifier: string = "anyOf", prop?: ts.Symbol, reffedType?: ts.Symbol): Definition {
+    private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker, asRef = this.args.ref, unionModifier: string = "anyOf", prop?: ts.Symbol, reffedType?: ts.Symbol): Definition {
         const definition: Definition = {}; // real definition
 
         if (this.args.useTypeOfKeyword && (typ.flags & ts.TypeFlags.Object) && ((<ts.ObjectType>typ).objectFlags & ts.ObjectFlags.Anonymous)) {
@@ -703,7 +723,7 @@ export class JsonSchemaGenerator {
         }
 
         // aliased types must be handled slightly different
-        const asTypeAliasRef = asRef && reffedType && (this.args.useTypeAliasRef || isStringEnum);
+        const asTypeAliasRef = asRef && reffedType && (this.args.aliasRef || isStringEnum);
         if (!asTypeAliasRef) {
             if (isRawType || typ.getFlags() & ts.TypeFlags.Object && (<ts.ObjectType>typ).objectFlags & ts.ObjectFlags.Anonymous) {
                 asRef = false;  // raw types and inline types cannot be reffed,
@@ -741,7 +761,7 @@ export class JsonSchemaGenerator {
         if (!asRef || !this.reffedDefinitions[fullTypeName]) {
             if (asRef) { // must be here to prevent recursivity problems
                 this.reffedDefinitions[fullTypeName] = asTypeAliasRef && reffedType!.getFlags() & ts.TypeFlags.IndexedAccess && symbol ? this.getTypeDefinition(typ, tc, true, undefined, symbol, symbol) : definition;
-                if (this.args.useTitle && fullTypeName) {
+                if (this.args.titles && fullTypeName) {
                     definition.title = fullTypeName;
                 }
             }
@@ -752,7 +772,7 @@ export class JsonSchemaGenerator {
                     this.getUnionDefinition(typ as ts.UnionType, prop!, tc, unionModifier, definition);
                 } else if (typ.flags & ts.TypeFlags.Intersection) {
                     // extend object instead of using allOf because allOf does not work well with additional properties. See #107
-                    if (this.args.disableExtraProperties) {
+                    if (this.args.noExtraProps) {
                         definition.additionalProperties = false;
                     }
 
@@ -797,9 +817,9 @@ export class JsonSchemaGenerator {
         if(!this.allSymbols[symbolName]) {
             throw `type ${symbolName} not found`;
         }
-        let def = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.useRootRef);
+        let def = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.topRef);
 
-        if (this.args.useRef && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
+        if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
             def.definitions = this.reffedDefinitions;
         }
         def["$schema"] = "http://json-schema.org/draft-04/schema#";
@@ -813,7 +833,7 @@ export class JsonSchemaGenerator {
         };
         for (let i = 0; i < symbols.length; i++) {
             const symbol = symbols[i];
-            root.definitions[symbol] = this.getTypeDefinition(this.userSymbols[symbol], this.tc, this.args.useRootRef);
+            root.definitions[symbol] = this.getTypeDefinition(this.userSymbols[symbol], this.tc, this.args.topRef);
         }
         return root;
     }
@@ -825,7 +845,6 @@ export class JsonSchemaGenerator {
     public getMainFileSymbols(program: ts.Program): string[] {
         const files = program.getSourceFiles().filter(file => !file.isDeclarationFile);
         if (files.length) {
-            const mainFile = files[0];
             return Object.keys(this.userSymbols).filter((key) => {
                 const symbol = this.userSymbols[key].getSymbol();
                 if (!symbol || !symbol.declarations || !symbol.declarations.length) {
@@ -835,7 +854,7 @@ export class JsonSchemaGenerator {
                 while (node && node.parent) {
                     node = node.parent;
                 }
-                return node === mainFile;
+                return files.indexOf(node.getSourceFile()) > -1;
             });
         }
         return [];
@@ -911,7 +930,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
                         inheritingTypes[baseName].push(fullName);
                     });
                 } else {
-                    ts.forEachChild(node, (n) => inspect(n, tc));
+                    ts.forEachChild(node, n => inspect(n, tc));
                 }
             }
             inspect(sourceFile, typeChecker);
@@ -998,23 +1017,23 @@ export function run() {
     var args = require("yargs")
         .usage(helpText)
         .demand(2)
-        .boolean("refs").default("refs", defaultArgs.useRef)
+        .boolean("refs").default("refs", defaultArgs.ref)
             .describe("refs", "Create shared ref definitions.")
-        .boolean("aliasRefs").default("aliasRefs", defaultArgs.useTypeAliasRef)
+        .boolean("aliasRefs").default("aliasRefs", defaultArgs.aliasRef)
             .describe("aliasRefs", "Create shared ref definitions for the type aliases.")
-        .boolean("topRef").default("topRef", defaultArgs.useRootRef)
+        .boolean("topRef").default("topRef", defaultArgs.topRef)
             .describe("topRef", "Create a top-level ref definition.")
-        .boolean("titles").default("titles", defaultArgs.useTitle)
+        .boolean("titles").default("titles", defaultArgs.titles)
             .describe("titles", "Creates titles in the output schema.")
-        .boolean("defaultProps").default("defaultProps", defaultArgs.useDefaultProperties)
+        .boolean("defaultProps").default("defaultProps", defaultArgs.defaultProps)
             .describe("defaultProps", "Create default properties definitions.")
-        .boolean("noExtraProps").default("noExtraProps", defaultArgs.disableExtraProperties)
+        .boolean("noExtraProps").default("noExtraProps", defaultArgs.noExtraProps)
             .describe("noExtraProps", "Disable additional properties in objects by default.")
-        .boolean("propOrder").default("propOrder", defaultArgs.usePropertyOrder)
+        .boolean("propOrder").default("propOrder", defaultArgs.propOrder)
             .describe("propOrder", "Create property order definitions.")
-        .boolean("useTypeOfKeyword").default("useTypeOfKeyword", defaultArgs.usePropertyOrder)
-            .describe("useTypeOfKeyword", "Use typeOf keyword (https://goo.gl/DC6sni) for functions.")
-        .boolean("required").default("required", defaultArgs.generateRequired)
+        .boolean("typeOfKeyword").default("typeOfKeyword", defaultArgs.typeOfKeyword)
+            .describe("typeOfKeyword", "Use typeOf keyword (https://goo.gl/DC6sni) for functions.")
+        .boolean("required").default("required", defaultArgs.required)
             .describe("required", "Create required array for non-optional properties.")
         .boolean("strictNullChecks").default("strictNullChecks", defaultArgs.strictNullChecks)
             .describe("strictNullChecks", "Make values non-nullable by default.")
@@ -1027,15 +1046,15 @@ export function run() {
         .argv;
 
     exec(args._[0], args._[1], {
-        useRef: args.refs,
-        useTypeAliasRef: args.aliasRefs,
-        useRootRef: args.topRef,
-        useTitle: args.titles,
-        useDefaultProperties: args.defaultProps,
-        disableExtraProperties: args.noExtraProps,
-        usePropertyOrder: args.propOrder,
-        useTypeOfKeyword: args.useTypeOfKeyword,
-        generateRequired: args.required,
+        ref: args.refs,
+        aliasRef: args.aliasRefs,
+        topRef: args.topRef,
+        titles: args.titles,
+        defaultProps: args.defaultProps,
+        noExtraProps: args.noExtraProps,
+        propOrder: args.propOrder,
+        typeOfKeyword: args.useTypeOfKeyword,
+        required: args.required,
         strictNullChecks: args.strictNullChecks,
         ignoreErrors: args.ignoreErrors,
         out: args.out,

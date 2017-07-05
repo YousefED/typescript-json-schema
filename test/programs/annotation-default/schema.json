@@ -57,7 +57,8 @@
                 3.21,
                 "foo"
             ],
-            "items": {},
+            "items": {
+            },
             "type": "array"
         },
         "varString": {
@@ -90,3 +91,4 @@
     ],
     "type": "object"
 }
+

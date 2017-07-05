@@ -1,13 +1,5 @@
 {
-    "type": "object",
-    "properties": {
-        "direction": {
-            "$ref": "#/definitions/Cardinal"
-        }
-    },
-    "required": [
-        "direction"
-    ],
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "definitions": {
         "Cardinal": {
             "enum": [
@@ -19,5 +11,14 @@
             "type": "string"
         }
     },
-    "$schema": "http://json-schema.org/draft-04/schema#"
+    "properties": {
+        "direction": {
+            "$ref": "#/definitions/Cardinal"
+        }
+    },
+    "required": [
+        "direction"
+    ],
+    "type": "object"
 }
+

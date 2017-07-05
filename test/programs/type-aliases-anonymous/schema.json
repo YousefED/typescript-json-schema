@@ -1,0 +1,25 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "MyObject": {
+            "type": "object",
+            "properties": {
+                "export": {
+                    "$ref": "#/definitions/MyExportString"
+                },
+                "private": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "export",
+                "private"
+            ],
+            "additionalProperties": false
+        },
+        "MyExportString": {
+            "type": "string"
+        }
+    },
+    "$ref": "#/definitions/MyObject"
+}

@@ -2,6 +2,7 @@ import * as glob from "glob";
 import * as stringify from "json-stable-stringify";
 import * as path from "path";
 import * as ts from "typescript";
+export { Program, CompilerOptions } from "typescript";
 
 
 const vm = require("vm");

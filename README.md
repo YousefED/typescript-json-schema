@@ -44,7 +44,6 @@ Options:
 ```ts
 import {resolve} from "path";
 
-import {CompilerOptions} from "typescript";
 import * as TJS from "typescript-json-schema";
 
 // optionally pass argument to schema generator
@@ -53,7 +52,7 @@ const settings: TJS.PartialArgs = {
 };
 
 // optionally pass ts compiler options
-const compilerOptions: CompilerOptions = {
+const compilerOptions: TJS.CompilerOptions = {
     strictNullChecks: true
 }
 

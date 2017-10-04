@@ -382,9 +382,9 @@ export class JsonSchemaGenerator {
     private getEnumDefinition(clazzType: ts.Type, tc: ts.TypeChecker, definition: Definition): Definition {
         const node = clazzType.getSymbol()!.getDeclarations()![0];
         const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-        const members: ts.EnumMember[] = node.kind === ts.SyntaxKind.EnumDeclaration ?
+        const members: ts.NodeArray<ts.EnumMember> = node.kind === ts.SyntaxKind.EnumDeclaration ?
             (node as ts.EnumDeclaration).members :
-            [node as ts.EnumMember];
+            ts.createNodeArray([node as ts.EnumMember]);
         var enumValues: (number|boolean|string|null)[] = [];
         let enumTypes: string[] = [];
 
@@ -793,7 +793,7 @@ export class JsonSchemaGenerator {
                     this.getDefinitionForRootType(typ, tc, reffedType!, definition);
                 } else if (node && (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)) {
                     this.getEnumDefinition(typ, tc, definition);
-                } else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && Object.keys(symbol.members).length === 0) {
+                } else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && symbol.members!.size === 0) {
                     // {} is TypeLiteral with no members. Need special case because it doesn't have declarations.
                     definition.type = "object";
                     definition.properties = {};
@@ -970,7 +970,7 @@ export function generateSchema(program: ts.Program, fullTypeName: string, args: 
 
 export function programFromConfig(configFileName: string): ts.Program {
     // basically a copy of https://github.com/Microsoft/TypeScript/blob/3663d400270ccae8b69cbeeded8ffdc8fa12d7ad/src/compiler/tsc.ts -> parseConfigFile
-    const result = ts.parseConfigFileTextToJson(configFileName, ts.sys.readFile(configFileName));
+    const result = ts.parseConfigFileTextToJson(configFileName, ts.sys.readFile(configFileName)!);
     const configObject = result.config;
 
     const configParseResult = ts.parseJsonConfigFileContent(configObject, ts.sys, path.dirname(configFileName), {}, configFileName);

@@ -263,7 +263,7 @@ var JsonSchemaGenerator = (function () {
         var fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
         var members = node.kind === ts.SyntaxKind.EnumDeclaration ?
             node.members :
-            [node];
+            ts.createNodeArray([node]);
         var enumValues = [];
         var enumTypes = [];
         var addType = function (type) {
@@ -625,7 +625,7 @@ var JsonSchemaGenerator = (function () {
                 else if (node && (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)) {
                     this.getEnumDefinition(typ, tc, definition);
                 }
-                else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && Object.keys(symbol.members).length === 0) {
+                else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && symbol.members.size === 0) {
                     definition.type = "object";
                     definition.properties = {};
                 }

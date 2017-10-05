@@ -28,6 +28,12 @@ export function getDefaultArgs(): Args {
     };
 }
 
+export type Symbol = {
+  name: string;
+  fullName: string;
+  fileName?: string;
+};
+
 export type ValidationKeywords = {
   [prop: string]: boolean
 };
@@ -159,6 +165,7 @@ export class JsonSchemaGenerator {
         $ref: true
     };
 
+    private symbols: Symbol[];
     private allSymbols: { [name: string]: ts.Type };
     private userSymbols: { [name: string]: ts.Type };
     private inheritingTypes: { [baseName: string]: string[] };
@@ -171,12 +178,14 @@ export class JsonSchemaGenerator {
     private typeNamesUsed: { [name: string]: boolean } = {};
 
     constructor(
+      symbols: Symbol[],
       allSymbols: { [name: string]: ts.Type },
       userSymbols: { [name: string]: ts.Type },
       inheritingTypes: { [baseName: string]: string[] },
       tc: ts.TypeChecker,
       private args = getDefaultArgs(),
     ) {
+        this.symbols = symbols;
         this.allSymbols = allSymbols;
         this.userSymbols = userSymbols;
         this.inheritingTypes = inheritingTypes;
@@ -839,6 +848,14 @@ export class JsonSchemaGenerator {
         return root;
     }
 
+    public getAllSymbols(): Symbol[] {
+      return this.symbols;
+    }
+    
+    public getSymbols(name: string): Symbol[] {
+      return this.symbols.filter(symbol => symbol.name === name);
+    }
+
     public getUserSymbols(): string[] {
         return Object.keys(this.userSymbols);
     }
@@ -891,6 +908,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
 
     if (diagnostics.length === 0 || args.ignoreErrors) {
 
+        const symbols: Symbol[] = [];
         const allSymbols: { [name: string]: ts.Type } = {};
         const userSymbols: { [name: string]: ts.Type } = {};
         const inheritingTypes: { [baseName: string]: string[] } = {};
@@ -908,12 +926,12 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
 
                     const nodeType = tc.getTypeAtLocation(node);
 
-                    // remove file name
-                    // TODO: we probably don't want this eventually,
-                    // as same types can occur in different files and will override eachother in allSymbols
-                    // This means atm we can't generate all types in large programs.
-                    fullName = fullName.replace(/".*"\./, "");
-
+                    symbols.push({
+                      name: fullName.replace(/".*"\./, ""),
+                      fullName: fullName,
+                      fileName: symbol.valueDeclaration && symbol.valueDeclaration!.getSourceFile().fileName
+                    });
+                    
                     allSymbols[fullName] = nodeType;
 
                     // if (sourceFileIdx === 1) {
@@ -937,7 +955,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
             inspect(sourceFile, typeChecker);
         });
 
-        return new JsonSchemaGenerator(allSymbols, userSymbols, inheritingTypes, typeChecker, settings);
+        return new JsonSchemaGenerator(symbols, allSymbols, userSymbols, inheritingTypes, typeChecker, settings);
     } else {
         diagnostics.forEach((diagnostic) => {
             let message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");

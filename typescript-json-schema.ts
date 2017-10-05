@@ -23,7 +23,7 @@ export function getDefaultArgs(): Args {
         required: false,
         strictNullChecks: false,
         ignoreErrors: false,
-        noFullyQualifiedNames: false,
+        fullyQualifiedNames: false,
         out: "",
         validationKeywords: []
     };
@@ -51,7 +51,7 @@ export type Args = {
     required: boolean;
     strictNullChecks: boolean;
     ignoreErrors: boolean;
-    noFullyQualifiedNames: boolean;
+    fullyQualifiedNames: boolean;
     out: string;
     validationKeywords: string[];
 };
@@ -935,7 +935,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
                       fileName: symbol.valueDeclaration && symbol.valueDeclaration!.getSourceFile().fileName
                     });
                     
-                    if (args.noFullyQualifiedNames) {
+                    if (!args.fullyQualifiedNames) {
                       fullName = shortName;
                     }
                     
@@ -1065,8 +1065,8 @@ export function run() {
             .describe("strictNullChecks", "Make values non-nullable by default.")
         .boolean("ignoreErrors").default("ignoreErrors", defaultArgs.ignoreErrors)
             .describe("ignoreErrors", "Generate even if the program has errors.")
-        .boolean("noFullyQualifiedNames").default("noFullyQualifiedNames", defaultArgs.noFullyQualifiedNames)
-            .describe("noFullyQualifiedNames", "Do not use fully qualified names, possibly overwriting types.")
+        .boolean("fullyQualifiedNames").default("fullyQualifiedNames", defaultArgs.fullyQualifiedNames)
+            .describe("fullyQualifiedNames", "Use fully qualified names for type symbols.")
         .alias("out", "o")
             .describe("out", "The output file, defaults to using stdout")
         .array("validationKeywords").default("validationKeywords", defaultArgs.validationKeywords)
@@ -1085,7 +1085,7 @@ export function run() {
         required: args.required,
         strictNullChecks: args.strictNullChecks,
         ignoreErrors: args.ignoreErrors,
-        noFullyQualifiedNames: args.noFullyQualifiedNames,
+        fullyQualifiedNames: args.fullyQualifiedNames,
         out: args.out,
         validationKeywords: args.validationKeywords
     });

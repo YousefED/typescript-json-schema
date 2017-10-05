@@ -17,7 +17,6 @@ export function assertSchema(group: string, type: string, settings: TJS.PartialA
     it(group + " should create correct schema", () => {
         if (!("required" in settings)) {
             settings.required = true;
-            settings.noFullyQualifiedNames = true;
         }
 
         const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(BASE + group + "/main.ts")], compilerOptions), type, settings);
@@ -40,9 +39,8 @@ export function assertSchema(group: string, type: string, settings: TJS.PartialA
 
 describe("interfaces", () => {
     it("should return an instance of JsonSchemaGenerator", () => {
-        const settings: TJS.PartialArgs = { noFullyQualifiedNames: true };
         const program = TJS.getProgramFromFiles([resolve(BASE + "comments/main.ts")]);
-        const generator = TJS.buildGenerator(program, settings);
+        const generator = TJS.buildGenerator(program);
 
         assert.instanceOf(generator, TJS.JsonSchemaGenerator);
         if (generator !== null) {
@@ -55,9 +53,8 @@ describe("interfaces", () => {
         }
     });
     it("should output the schemas set by setSchemaOverride", () => {
-        const settings: TJS.PartialArgs = { noFullyQualifiedNames: true };
         const program = TJS.getProgramFromFiles([resolve(BASE + "interface-multi/main.ts")]);
-        const generator = TJS.buildGenerator(program, settings);
+        const generator = TJS.buildGenerator(program);
         assert(generator !== null);
         if (generator !== null) {
             const schemaOverride: TJS.Definition = { type: "string" };

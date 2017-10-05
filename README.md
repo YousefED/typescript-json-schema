@@ -94,7 +94,7 @@ generator2.getSchemaForSymbol(symbolList[1].fullName);
 const fullSymbolList = generator2.getAllSymbols();
 ```
 
-`getSymbols` and `getAllSymbols` return an array of `Symbol`, which is of the
+`getSymbols` and `getAllSymbols` return an array of `SymbolRef`, which is of the
 following format:
 
 ```ts

@@ -2,7 +2,7 @@ import * as glob from "glob";
 import * as stringify from "json-stable-stringify";
 import * as path from "path";
 import * as ts from "typescript";
-export { Program, CompilerOptions } from "typescript";
+export { Program, CompilerOptions, Symbol } from "typescript";
 
 
 const vm = require("vm");
@@ -30,7 +30,7 @@ export function getDefaultArgs(): Args {
     };
 }
 
-export type Symbol = {
+export type SymbolRef = {
   name: string;
   fullName: string;
   fullyQualifiedName: string;
@@ -170,7 +170,7 @@ export class JsonSchemaGenerator {
         id: true
     };
 
-    private symbols: Symbol[];
+    private symbols: SymbolRef[];
     private allSymbols: { [name: string]: ts.Type };
     private userSymbols: { [name: string]: ts.Type };
     private inheritingTypes: { [baseName: string]: string[] };
@@ -183,7 +183,7 @@ export class JsonSchemaGenerator {
     private typeNamesUsed: { [name: string]: boolean } = {};
 
     constructor(
-      symbols: Symbol[],
+      symbols: SymbolRef[],
       allSymbols: { [name: string]: ts.Type },
       userSymbols: { [name: string]: ts.Type },
       inheritingTypes: { [baseName: string]: string[] },
@@ -853,11 +853,11 @@ export class JsonSchemaGenerator {
         return root;
     }
 
-    public getAllSymbols(): Symbol[] {
+    public getAllSymbols(): SymbolRef[] {
       return this.symbols;
     }
     
-    public getSymbols(name: string): Symbol[] {
+    public getSymbols(name: string): SymbolRef[] {
       return this.symbols.filter(symbol => symbol.name === name);
     }
 
@@ -913,7 +913,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
 
     if (diagnostics.length === 0 || args.ignoreErrors) {
 
-        const symbols: Symbol[] = [];
+        const symbols: SymbolRef[] = [];
         const allSymbols: { [name: string]: ts.Type } = {};
         const userSymbols: { [name: string]: ts.Type } = {};
         const inheritingTypes: { [baseName: string]: string[] } = {};

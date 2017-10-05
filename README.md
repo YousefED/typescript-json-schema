@@ -62,18 +62,42 @@ const program = TJS.getProgramFromFiles([resolve("my-file.ts")], compilerOptions
 // We can either get the schema for one file and one type...
 const schema = TJS.generateSchema(program, "MyType", settings);
 
-
-// ... or a generator that lets us incrementally get more schemas
-
+// ... or a generator that lets us incrementally get more schemas.
 const generator = TJS.buildGenerator(program, settings);
 
-// all symbols
+// Get all symbol fully qualified names.
 const symbols = generator.getUserSymbols();
 
-// Get symbols for different types from generator.
+// Get symbols for different types from the generator
+// by its fully qualified name.
 generator.getSchemaForSymbol("MyType");
 generator.getSchemaForSymbol("AnotherType");
+
+// In larger projects type names may not be unique and a
+// list of all types of a given name can be retrieved.
+const symbolList = generator.getSymbols("MyType");
+
+// You can then choose the appropriate type, and can
+// continue as usual with the symbol's full name.
+generator.getSchemaForSymbol(symbolList[1].fullName);
+
+// Also it is possible to get a full list of all symbols.
+const fullSymbolList = generator.getAllSymbols();
 ```
+
+`getSymbols` and `getAllSymbols` returns an array of `Symbol`, which is of the
+following format:
+
+```ts
+{
+  name: string;
+  fullName: string;
+  fileName?: string;
+}
+```
+
+`getUserSymbols` and `getMainFileSymbols` return an array of `string`, which contain
+the fully qualified names of the types.
 
 ### Annotations
 

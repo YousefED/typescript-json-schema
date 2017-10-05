@@ -107,7 +107,7 @@ following format:
 ```
 
 `getUserSymbols` and `getMainFileSymbols` return an array of `string`, which contain
-the fully qualified names of the types.
+the `fullName` of the types.
 
 ### Annotations
 

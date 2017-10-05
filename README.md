@@ -103,6 +103,7 @@ following format:
   name: string;
   fullName: string;
   fullyQualifiedName: string;
+  symbol: ts.Symbol;
 }
 ```
 

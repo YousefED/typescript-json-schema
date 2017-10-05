@@ -33,6 +33,7 @@ export type Symbol = {
   name: string;
   fullName: string;
   fullyQualifiedName: string;
+  symbol: ts.Symbol;
 };
 
 export type ValidationKeywords = {
@@ -930,7 +931,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
                     const name = fullyQualifiedName.replace(/".*"\./, "");
                     const fullName = !args.fullyQualifiedNames ? name : fullyQualifiedName;
                     
-                    symbols.push({ name, fullName, fullyQualifiedName });
+                    symbols.push({ name, fullName, fullyQualifiedName, symbol });
                     allSymbols[fullName] = nodeType;
 
                     // if (sourceFileIdx === 1) {

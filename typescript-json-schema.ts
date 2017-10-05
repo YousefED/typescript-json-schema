@@ -156,7 +156,8 @@ export class JsonSchemaGenerator {
         description: true,
         format: true,
         default: true,
-        $ref: true
+        $ref: true,
+        id: true
     };
 
     private allSymbols: { [name: string]: ts.Type };

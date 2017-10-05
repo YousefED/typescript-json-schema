@@ -23,8 +23,9 @@ export function getDefaultArgs(): Args {
         required: false,
         strictNullChecks: false,
         ignoreErrors: false,
+        noFullyQualifiedNames: false,
         out: "",
-        validationKeywords: [],
+        validationKeywords: []
     };
 }
 
@@ -50,6 +51,7 @@ export type Args = {
     required: boolean;
     strictNullChecks: boolean;
     ignoreErrors: boolean;
+    noFullyQualifiedNames: boolean;
     out: string;
     validationKeywords: string[];
 };
@@ -925,12 +927,17 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
                     let fullName = tc.getFullyQualifiedName(symbol);
 
                     const nodeType = tc.getTypeAtLocation(node);
-
+                    const shortName = fullName.replace(/".*"\./, "");
+                    
                     symbols.push({
-                      name: fullName.replace(/".*"\./, ""),
+                      name: shortName,
                       fullName: fullName,
                       fileName: symbol.valueDeclaration && symbol.valueDeclaration!.getSourceFile().fileName
                     });
+                    
+                    if (args.noFullyQualifiedNames) {
+                      fullName = shortName;
+                    }
                     
                     allSymbols[fullName] = nodeType;
 
@@ -1058,6 +1065,8 @@ export function run() {
             .describe("strictNullChecks", "Make values non-nullable by default.")
         .boolean("ignoreErrors").default("ignoreErrors", defaultArgs.ignoreErrors)
             .describe("ignoreErrors", "Generate even if the program has errors.")
+        .boolean("noFullyQualifiedNames").default("noFullyQualifiedNames", defaultArgs.noFullyQualifiedNames)
+            .describe("noFullyQualifiedNames", "Do not use fully qualified names, possibly overwriting types.")
         .alias("out", "o")
             .describe("out", "The output file, defaults to using stdout")
         .array("validationKeywords").default("validationKeywords", defaultArgs.validationKeywords)
@@ -1076,8 +1085,9 @@ export function run() {
         required: args.required,
         strictNullChecks: args.strictNullChecks,
         ignoreErrors: args.ignoreErrors,
+        noFullyQualifiedNames: args.noFullyQualifiedNames,
         out: args.out,
-        validationKeywords: args.validationKeywords,
+        validationKeywords: args.validationKeywords
     });
 }
 

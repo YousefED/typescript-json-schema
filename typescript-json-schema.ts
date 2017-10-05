@@ -33,7 +33,6 @@ export type Symbol = {
   name: string;
   fullName: string;
   fullyQualifiedName: string;
-  fileName?: string;
 };
 
 export type ValidationKeywords = {

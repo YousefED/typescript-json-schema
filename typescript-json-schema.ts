@@ -32,6 +32,7 @@ export function getDefaultArgs(): Args {
 export type Symbol = {
   name: string;
   fullName: string;
+  fullyQualifiedName: string;
   fileName?: string;
 };
 
@@ -931,7 +932,8 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
                     
                     symbols.push({
                       name: shortName,
-                      fullName: fullName,
+                      fullName: !args.fullyQualifiedNames ? shortName : fullName,
+                      fullyQualifiedName: fullName,
                       fileName: symbol.valueDeclaration && symbol.valueDeclaration!.getSourceFile().fileName
                     });
                     

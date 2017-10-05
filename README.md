@@ -102,6 +102,7 @@ following format:
 {
   name: string;
   fullName: string;
+  fullyQualifiedName: string;
   fileName?: string;
 }
 ```

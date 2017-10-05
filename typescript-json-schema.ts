@@ -924,22 +924,13 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
                   || node.kind === ts.SyntaxKind.TypeAliasDeclaration
                 ) {
                     const symbol: ts.Symbol = (<any>node).symbol;
-                    let fullName = tc.getFullyQualifiedName(symbol);
-
                     const nodeType = tc.getTypeAtLocation(node);
-                    const shortName = fullName.replace(/".*"\./, "");
                     
-                    symbols.push({
-                      name: shortName,
-                      fullName: !args.fullyQualifiedNames ? shortName : fullName,
-                      fullyQualifiedName: fullName,
-                      fileName: symbol.valueDeclaration && symbol.valueDeclaration!.getSourceFile().fileName
-                    });
+                    const fullyQualifiedName = tc.getFullyQualifiedName(symbol);
+                    const name = fullyQualifiedName.replace(/".*"\./, "");
+                    const fullName = !args.fullyQualifiedNames ? name : fullyQualifiedName;
                     
-                    if (!args.fullyQualifiedNames) {
-                      fullName = shortName;
-                    }
-                    
+                    symbols.push({ name, fullName, fullyQualifiedName });
                     allSymbols[fullName] = nodeType;
 
                     // if (sourceFileIdx === 1) {

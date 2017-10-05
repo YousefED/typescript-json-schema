@@ -1,4 +1,5 @@
 import * as ts from "typescript";
+export { Program, CompilerOptions } from "typescript";
 export declare function getDefaultArgs(): Args;
 export declare type ValidationKeywords = {
     [prop: string]: boolean;

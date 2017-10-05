@@ -2,7 +2,6 @@ import * as Ajv from "ajv";
 import { assert } from "chai";
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { CompilerOptions } from "typescript";
 
 import * as TJS from "../typescript-json-schema";
 
@@ -13,7 +12,7 @@ ajv.addMetaSchema(metaSchema, "http://json-schema.org/draft-04/schema#");
 
 const BASE = "test/programs/";
 
-export function assertSchema(group: string, type: string, settings: TJS.PartialArgs = {}, compilerOptions?: CompilerOptions) {
+export function assertSchema(group: string, type: string, settings: TJS.PartialArgs = {}, compilerOptions?: TJS.CompilerOptions) {
     it(group + " should create correct schema", () => {
         if (!("required" in settings)) {
             settings.required = true;
@@ -138,6 +137,7 @@ describe("schema", () => {
         assertSchema("annotation-default", "MyObject");
         assertSchema("annotation-ref", "MyObject");
         assertSchema("annotation-tjs", "MyObject");
+        assertSchema("annotation-id", "MyObject");
 
         assertSchema("typeof-keyword", "MyObject", {typeOfKeyword: true});
 

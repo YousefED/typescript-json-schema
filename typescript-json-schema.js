@@ -707,7 +707,8 @@ var JsonSchemaGenerator = (function () {
         description: true,
         format: true,
         default: true,
-        $ref: true
+        $ref: true,
+        id: true
     };
     return JsonSchemaGenerator;
 }());

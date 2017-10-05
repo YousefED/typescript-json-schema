@@ -85,7 +85,7 @@ generator.getSchemaForSymbol(symbolList[1].fullName);
 const fullSymbolList = generator.getAllSymbols();
 ```
 
-`getSymbols` and `getAllSymbols` returns an array of `Symbol`, which is of the
+`getSymbols` and `getAllSymbols` return an array of `Symbol`, which is of the
 following format:
 
 ```ts

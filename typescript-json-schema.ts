@@ -63,14 +63,14 @@ export type Definition = {
     type?: string | string[],
     definitions?: {[key: string]: any},
     format?: string,
-    items?: Definition,
+    items?: Definition | Definition[],
     minItems?: number,
     additionalItems?: {
-        anyOf: Definition
+        anyOf: Definition[]
     },
     enum?: PrimitiveType[] | Definition[],
     default?: PrimitiveType | Object,
-    additionalProperties?: Definition,
+    additionalProperties?: Definition | boolean,
     required?: string[],
     propertyOrder?: string[],
     properties?: {},
@@ -235,13 +235,14 @@ export class JsonSchemaGenerator {
 
     private extractLiteralValue(typ: ts.Type): PrimitiveType | undefined {
         if (typ.flags & ts.TypeFlags.EnumLiteral) {
-            let str = (<ts.LiteralType>typ).text;
+            // or .text for old TS
+            let str = (<ts.LiteralType>typ).value || (typ as any).text;
             let num = parseFloat(str);
             return isNaN(num) ? str : num;
         } else if (typ.flags & ts.TypeFlags.StringLiteral) {
-            return (<ts.LiteralType>typ).text;
+            return (<ts.LiteralType>typ).value || (typ as any).text;
         } else if (typ.flags & ts.TypeFlags.NumberLiteral) {
-            return parseFloat((<ts.LiteralType>typ).text);
+            return parseFloat((<ts.LiteralType>typ).value || (typ as any).text);
         } else if (typ.flags & ts.TypeFlags.BooleanLiteral) {
             return (typ as any).intrinsicName === "true";
         }
@@ -308,7 +309,7 @@ export class JsonSchemaGenerator {
                         definition.type = typeof value;
                         definition.enum = [ value ];
                     } else if (symbol && (symbol.getName() === "Array" || symbol.getName() === "ReadonlyArray")) {
-                        const arrayType = (<ts.TypeReference>propertyType).typeArguments[0];
+                        const arrayType = (<ts.TypeReference>propertyType).typeArguments![0];
                         definition.type = "array";
                         definition.items = this.getTypeDefinition(arrayType, tc);
                     } else {
@@ -344,6 +345,7 @@ export class JsonSchemaGenerator {
         const reffedType = this.getReferencedTypeSymbol(prop, tc);
 
         let definition = this.getTypeDefinition(propertyType, tc, undefined, undefined, prop, reffedType);
+
         if (this.args.titles) {
             definition.title = propertyName;
         }
@@ -381,11 +383,11 @@ export class JsonSchemaGenerator {
     }
 
     private getEnumDefinition(clazzType: ts.Type, tc: ts.TypeChecker, definition: Definition): Definition {
-        const node = clazzType.getSymbol().getDeclarations()[0];
+        const node = clazzType.getSymbol()!.getDeclarations()![0];
         const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
-        const members: ts.EnumMember[] = node.kind === ts.SyntaxKind.EnumDeclaration ?
+        const members: ts.NodeArray<ts.EnumMember> = node.kind === ts.SyntaxKind.EnumDeclaration ?
             (node as ts.EnumDeclaration).members :
-            [node as ts.EnumMember];
+            ts.createNodeArray([node as ts.EnumMember]);
         var enumValues: (number|boolean|string|null)[] = [];
         let enumTypes: string[] = [];
 
@@ -526,7 +528,7 @@ export class JsonSchemaGenerator {
     }
 
     private getClassDefinition(clazzType: ts.Type, tc: ts.TypeChecker, definition: Definition): Definition {
-        const node = clazzType.getSymbol().getDeclarations()[0];
+        const node = clazzType.getSymbol()!.getDeclarations()![0];
         if (this.args.typeOfKeyword && node.kind === ts.SyntaxKind.FunctionType) {
             definition.typeof = "function";
             return definition;
@@ -546,7 +548,7 @@ export class JsonSchemaGenerator {
             definition.oneOf = oneOf;
         } else {
             if (clazz.members) {
-                const indexSignatures = clazz.members.filter(x => x.kind === ts.SyntaxKind.IndexSignature);
+                const indexSignatures = clazz.members == null ? [] : clazz.members.filter(x => x.kind === ts.SyntaxKind.IndexSignature);
                 if (indexSignatures.length === 1) {
                     // for case "array-types"
                     const indexSignature = indexSignatures[0] as ts.IndexSignatureDeclaration;
@@ -704,6 +706,12 @@ export class JsonSchemaGenerator {
 
     private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker, asRef = this.args.ref, unionModifier: string = "anyOf", prop?: ts.Symbol, reffedType?: ts.Symbol): Definition {
         const definition: Definition = {}; // real definition
+
+        if (this.args.typeOfKeyword && (typ.flags & ts.TypeFlags.Object) && ((<ts.ObjectType>typ).objectFlags & ts.ObjectFlags.Anonymous)) {
+            definition.typeof = "function";
+            return definition;
+        }
+
         let returnedDefinition = definition; // returned definition, may be a $ref
 
         const symbol = typ.getSymbol();
@@ -750,7 +758,7 @@ export class JsonSchemaGenerator {
         if (prop) {
             this.parseCommentsIntoDefinition(prop, returnedDefinition, otherAnnotations);
         }
-        this.parseCommentsIntoDefinition(symbol, definition, otherAnnotations);
+        this.parseCommentsIntoDefinition(symbol!, definition, otherAnnotations);
 
         // Create the actual definition only if is an inline definition, or
         // if it will be a $ref and it is not yet created
@@ -761,7 +769,7 @@ export class JsonSchemaGenerator {
                     definition.title = fullTypeName;
                 }
             }
-            const node = symbol && symbol.getDeclarations() !== undefined ? symbol.getDeclarations()[0] : null;
+            const node = symbol && symbol.getDeclarations() !== undefined ? symbol.getDeclarations()![0] : null;
 
             if (definition.type === undefined) {  // if users override the type, do not try to infer it
                 if (typ.flags & ts.TypeFlags.Union) {
@@ -788,7 +796,7 @@ export class JsonSchemaGenerator {
                     this.getDefinitionForRootType(typ, tc, reffedType!, definition);
                 } else if (node && (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)) {
                     this.getEnumDefinition(typ, tc, definition);
-                } else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && Object.keys(symbol.members).length === 0) {
+                } else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && symbol.members!.size === 0) {
                     // {} is TypeLiteral with no members. Need special case because it doesn't have declarations.
                     definition.type = "object";
                     definition.properties = {};
@@ -937,7 +945,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
         diagnostics.forEach((diagnostic) => {
             let message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
             if(diagnostic.file) {
-                let { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+                let { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
                 console.error(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
             } else {
                 console.error(message);
@@ -965,7 +973,7 @@ export function generateSchema(program: ts.Program, fullTypeName: string, args: 
 
 export function programFromConfig(configFileName: string): ts.Program {
     // basically a copy of https://github.com/Microsoft/TypeScript/blob/3663d400270ccae8b69cbeeded8ffdc8fa12d7ad/src/compiler/tsc.ts -> parseConfigFile
-    const result = ts.parseConfigFileTextToJson(configFileName, ts.sys.readFile(configFileName));
+    const result = ts.parseConfigFileTextToJson(configFileName, ts.sys.readFile(configFileName)!);
     const configObject = result.config;
 
     const configParseResult = ts.parseJsonConfigFileContent(configObject, ts.sys, path.dirname(configFileName), {}, configFileName);

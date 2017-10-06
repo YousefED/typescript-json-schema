@@ -1,0 +1,13 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "properties": {
+        "publicMember": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "publicMember"
+    ],
+    "type": "object"
+}
+

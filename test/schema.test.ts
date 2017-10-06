@@ -227,5 +227,9 @@ describe("schema", () => {
         assertSchema("imports", "MyObject");
 
         assertSchema("generate-all-types", "*");
+
+        assertSchema("private-members", "MyObject", {
+            excludePrivate: true
+        });
     });
 });

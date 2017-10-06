@@ -72,10 +72,10 @@ export type Definition = {
     type?: string | string[],
     definitions?: {[key: string]: any},
     format?: string,
-    items?: Definition | Array<Definition>,
+    items?: Definition | Definition[],
     minItems?: number,
     additionalItems?: {
-        anyOf: Array<Definition>
+        anyOf: Definition[]
     },
     enum?: PrimitiveType[] | Definition[],
     default?: PrimitiveType | Object,
@@ -357,9 +357,10 @@ export class JsonSchemaGenerator {
         const reffedType = this.getReferencedTypeSymbol(prop, tc);
 
         let definition = this.getTypeDefinition(propertyType, tc, undefined, undefined, prop, reffedType);
-        // if (this.args.titles) {
-        //     definition.title = propertyName;
-        // }
+
+        if (this.args.titles) {
+            definition.title = propertyName;
+        }
 
         if (definition.hasOwnProperty("ignore")) {
             return null;

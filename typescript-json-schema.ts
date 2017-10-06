@@ -345,7 +345,7 @@ export class JsonSchemaGenerator {
         const reffedType = this.getReferencedTypeSymbol(prop, tc);
 
         let definition = this.getTypeDefinition(propertyType, tc, undefined, undefined, prop, reffedType);
-        
+
         if (this.args.titles) {
             definition.title = propertyName;
         }

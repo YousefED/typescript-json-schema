@@ -7,6 +7,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
+Object.defineProperty(exports, "__esModule", { value: true });
 var glob = require("glob");
 var stringify = require("json-stable-stringify");
 var path = require("path");
@@ -125,15 +126,15 @@ var JsonSchemaGenerator = (function () {
     };
     JsonSchemaGenerator.prototype.extractLiteralValue = function (typ) {
         if (typ.flags & ts.TypeFlags.EnumLiteral) {
-            var str = typ.text;
+            var str = typ.value || typ.text;
             var num = parseFloat(str);
             return isNaN(num) ? str : num;
         }
         else if (typ.flags & ts.TypeFlags.StringLiteral) {
-            return typ.text;
+            return typ.value || typ.text;
         }
         else if (typ.flags & ts.TypeFlags.NumberLiteral) {
-            return parseFloat(typ.text);
+            return parseFloat(typ.value || typ.text);
         }
         else if (typ.flags & ts.TypeFlags.BooleanLiteral) {
             return typ.intrinsicName === "true";
@@ -265,7 +266,7 @@ var JsonSchemaGenerator = (function () {
         var fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
         var members = node.kind === ts.SyntaxKind.EnumDeclaration ?
             node.members :
-            [node];
+            ts.createNodeArray([node]);
         var enumValues = [];
         var enumTypes = [];
         var addType = function (type) {
@@ -416,7 +417,7 @@ var JsonSchemaGenerator = (function () {
         }
         else {
             if (clazz.members) {
-                var indexSignatures = clazz.members.filter(function (x) { return x.kind === ts.SyntaxKind.IndexSignature; });
+                var indexSignatures = clazz.members == null ? [] : clazz.members.filter(function (x) { return x.kind === ts.SyntaxKind.IndexSignature; });
                 if (indexSignatures.length === 1) {
                     var indexSignature = indexSignatures[0];
                     if (indexSignature.parameters.length !== 1) {
@@ -552,6 +553,10 @@ var JsonSchemaGenerator = (function () {
         if (asRef === void 0) { asRef = this.args.ref; }
         if (unionModifier === void 0) { unionModifier = "anyOf"; }
         var definition = {};
+        if (this.args.typeOfKeyword && (typ.flags & ts.TypeFlags.Object) && (typ.objectFlags & ts.ObjectFlags.Anonymous)) {
+            definition.typeof = "function";
+            return definition;
+        }
         var returnedDefinition = definition;
         var symbol = typ.getSymbol();
         var isRawType = (!symbol || symbol.name === "integer" || symbol.name === "Array" || symbol.name === "ReadonlyArray" || symbol.name === "Date");
@@ -623,7 +628,7 @@ var JsonSchemaGenerator = (function () {
                 else if (node && (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)) {
                     this.getEnumDefinition(typ, tc, definition);
                 }
-                else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && Object.keys(symbol.members).length === 0) {
+                else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && symbol.members.size === 0) {
                     definition.type = "object";
                     definition.properties = {};
                 }
@@ -684,31 +689,32 @@ var JsonSchemaGenerator = (function () {
         }
         return [];
     };
+    JsonSchemaGenerator.validationKeywords = {
+        multipleOf: true,
+        maximum: true,
+        exclusiveMaximum: true,
+        minimum: true,
+        exclusiveMinimum: true,
+        maxLength: true,
+        minLength: true,
+        pattern: true,
+        maxItems: true,
+        minItems: true,
+        uniqueItems: true,
+        maxProperties: true,
+        minProperties: true,
+        additionalProperties: true,
+        enum: true,
+        type: true,
+        ignore: true,
+        description: true,
+        format: true,
+        default: true,
+        $ref: true,
+        id: true
+    };
     return JsonSchemaGenerator;
 }());
-JsonSchemaGenerator.validationKeywords = {
-    multipleOf: true,
-    maximum: true,
-    exclusiveMaximum: true,
-    minimum: true,
-    exclusiveMinimum: true,
-    maxLength: true,
-    minLength: true,
-    pattern: true,
-    maxItems: true,
-    minItems: true,
-    uniqueItems: true,
-    maxProperties: true,
-    minProperties: true,
-    additionalProperties: true,
-    enum: true,
-    type: true,
-    ignore: true,
-    description: true,
-    format: true,
-    default: true,
-    $ref: true
-};
 exports.JsonSchemaGenerator = JsonSchemaGenerator;
 function getProgramFromFiles(files, compilerOptions) {
     if (compilerOptions === void 0) { compilerOptions = {}; }

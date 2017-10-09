@@ -26,7 +26,8 @@ export function getDefaultArgs(): Args {
         ignoreErrors: false,
         fullyQualifiedNames: false,
         out: "",
-        validationKeywords: []
+        validationKeywords: [],
+        excludePrivate: false,
     };
 }
 
@@ -56,6 +57,7 @@ export type Args = {
     fullyQualifiedNames: boolean;
     out: string;
     validationKeywords: string[];
+    excludePrivate: boolean;
 };
 
 export type PartialArgs = Partial<Args>;
@@ -547,7 +549,17 @@ export class JsonSchemaGenerator {
         }
 
         const clazz = <ts.ClassDeclaration>node;
-        const props = tc.getPropertiesOfType(clazzType);
+        const props = tc.getPropertiesOfType(clazzType).filter(prop => {
+            if (!this.args.excludePrivate) {
+                return true;
+            }
+
+            let decls = prop.declarations;
+            return !(decls && decls.filter(decl => {
+                let mods = decl.modifiers;
+                return mods && mods.filter(mod => mod.kind === ts.SyntaxKind.PrivateKeyword).length > 0;
+            }).length > 0);
+        });
         const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
         const modifierFlags = ts.getCombinedModifierFlags(node);
@@ -1083,7 +1095,8 @@ export function run() {
         ignoreErrors: args.ignoreErrors,
         fullyQualifiedNames: args.fullyQualifiedNames,
         out: args.out,
-        validationKeywords: args.validationKeywords
+        validationKeywords: args.validationKeywords,
+        excludePrivate: args.excludePrivate,
     });
 }
 

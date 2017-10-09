@@ -869,7 +869,7 @@ export class JsonSchemaGenerator {
     public getAllSymbols(): SymbolRef[] {
       return this.symbols;
     }
-    
+
     public getSymbols(name: string): SymbolRef[] {
       return this.symbols.filter(symbol => symbol.name === name);
     }
@@ -941,11 +941,11 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
                 ) {
                     const symbol: ts.Symbol = (<any>node).symbol;
                     const nodeType = tc.getTypeAtLocation(node);
-                    
+
                     const fullyQualifiedName = tc.getFullyQualifiedName(symbol);
                     const name = fullyQualifiedName.replace(/".*"\./, "");
                     const fullName = !args.fullyQualifiedNames ? name : fullyQualifiedName;
-                    
+
                     symbols.push({ name, fullName, fullyQualifiedName, symbol });
                     allSymbols[fullName] = nodeType;
 
@@ -1079,6 +1079,8 @@ export function run() {
             .describe("out", "The output file, defaults to using stdout")
         .array("validationKeywords").default("validationKeywords", defaultArgs.validationKeywords)
             .describe("validationKeywords", "Provide additional validation keywords to include.")
+        .boolean("excludePrivate").default("excludePrivate", defaultArgs.excludePrivate)
+            .describe("excludePrivate", "Exclude private members from the schema.")
         .argv;
 
     exec(args._[0], args._[1], {

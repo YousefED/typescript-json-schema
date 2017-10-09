@@ -38,6 +38,7 @@ Options:
   --validationKeywords  Provide additional validation keywords to include            [array]   [default: []]
   --ignoreErrors        Generate even if the program has errors.                     [boolean] [default: false]
   --excludePrivate      Exclude private members from the schema                      [boolean] [default: false]
+  --uniqueNames         Use unique names for type symbols.                           [boolean] [default: false]
 ```
 
 ### Programmatic use
@@ -74,6 +75,38 @@ const symbols = generator.getUserSymbols();
 generator.getSchemaForSymbol("MyType");
 generator.getSchemaForSymbol("AnotherType");
 ```
+
+```ts
+// In larger projects type names may not be unique,
+// while unique names may be enabled.
+const settings: TJS.PartialArgs = {
+    uniqueNames: true
+};
+
+const generator = TJS.buildGenerator(program, settings);
+
+// A list of all types of a given name can then be retrieved.
+const symbolList = generator.getSymbols("MyType");
+
+// Choose the appropriate type, and continue with the symbol's unique name.
+generator.getSchemaForSymbol(symbolList[1].name);
+
+// Also it is possible to get a list of all symbols.
+const fullSymbolList = generator.getAllSymbols();
+```
+
+`getSymbols` and `getAllSymbols` return an array of `SymbolRef`, which is of the following format:
+
+```ts
+type SymbolRef = {
+  name: string;
+  typeName: string;
+  fullyQualifiedName: string;
+  symbol: ts.Symbol;
+};
+```
+
+`getUserSymbols` and `getMainFileSymbols` return an array of `string`.
 
 ### Annotations
 

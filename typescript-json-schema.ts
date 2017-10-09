@@ -2,7 +2,7 @@ import * as glob from "glob";
 import * as stringify from "json-stable-stringify";
 import * as path from "path";
 import * as ts from "typescript";
-export { Program, CompilerOptions } from "typescript";
+export { Program, CompilerOptions, Symbol } from "typescript";
 
 
 const vm = require("vm");
@@ -27,6 +27,7 @@ export function getDefaultArgs(): Args {
         out: "",
         validationKeywords: [],
         excludePrivate: false,
+        uniqueNames: false,
     };
 }
 
@@ -49,6 +50,7 @@ export type Args = {
     out: string;
     validationKeywords: string[];
     excludePrivate: boolean;
+    uniqueNames: boolean;
 };
 
 export type PartialArgs = Partial<Args>;
@@ -79,6 +81,13 @@ export type Definition = {
     defaultProperties?: string[],
 
     typeof?: "function"
+};
+
+export type SymbolRef = {
+  name: string;
+  typeName: string;
+  fullyQualifiedName: string;
+  symbol: ts.Symbol;
 };
 
 function extend(target: any, ..._: any[]) {
@@ -163,6 +172,7 @@ export class JsonSchemaGenerator {
         id: true
     };
 
+    private symbols: SymbolRef[];
     private allSymbols: { [name: string]: ts.Type };
     private userSymbols: { [name: string]: ts.Type };
     private inheritingTypes: { [baseName: string]: string[] };
@@ -175,12 +185,14 @@ export class JsonSchemaGenerator {
     private typeNamesUsed: { [name: string]: boolean } = {};
 
     constructor(
+      symbols: SymbolRef[],
       allSymbols: { [name: string]: ts.Type },
       userSymbols: { [name: string]: ts.Type },
       inheritingTypes: { [baseName: string]: string[] },
       tc: ts.TypeChecker,
       private args = getDefaultArgs(),
     ) {
+        this.symbols = symbols;
         this.allSymbols = allSymbols;
         this.userSymbols = userSymbols;
         this.inheritingTypes = inheritingTypes;
@@ -854,6 +866,14 @@ export class JsonSchemaGenerator {
         return root;
     }
 
+    public getAllSymbols(): SymbolRef[] {
+      return this.symbols;
+    }
+
+    public getSymbols(name: string): SymbolRef[] {
+      return this.symbols.filter(symbol => symbol.typeName === name);
+    }
+
     public getUserSymbols(): string[] {
         return Object.keys(this.userSymbols);
     }
@@ -906,6 +926,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
 
     if (diagnostics.length === 0 || args.ignoreErrors) {
 
+        const symbols: SymbolRef[] = [];
         const allSymbols: { [name: string]: ts.Type } = {};
         const userSymbols: { [name: string]: ts.Type } = {};
         const inheritingTypes: { [baseName: string]: string[] } = {};
@@ -919,21 +940,17 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
                   || node.kind === ts.SyntaxKind.TypeAliasDeclaration
                 ) {
                     const symbol: ts.Symbol = (<any>node).symbol;
-                    let fullName = tc.getFullyQualifiedName(symbol);
-
                     const nodeType = tc.getTypeAtLocation(node);
+                    const fullyQualifiedName = tc.getFullyQualifiedName(symbol);
+                    const typeName = fullyQualifiedName.replace(/".*"\./, "");
+                    const name = !args.uniqueNames ? typeName : `${typeName}.${(<any>symbol).id}`;
 
-                    // remove file name
-                    // TODO: we probably don't want this eventually,
-                    // as same types can occur in different files and will override eachother in allSymbols
-                    // This means atm we can't generate all types in large programs.
-                    fullName = fullName.replace(/".*"\./, "");
-
-                    allSymbols[fullName] = nodeType;
+                    symbols.push({ name, typeName, fullyQualifiedName, symbol });
+                    allSymbols[name] = nodeType;
 
                     // if (sourceFileIdx === 1) {
                     if (!sourceFile.hasNoDefaultLib) {
-                        userSymbols[fullName] = nodeType;
+                        userSymbols[name] = nodeType;
                     }
 
                     const baseTypes = nodeType.getBaseTypes() || [];
@@ -943,7 +960,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
                         if (!inheritingTypes[baseName]) {
                             inheritingTypes[baseName] = [];
                         }
-                        inheritingTypes[baseName].push(fullName);
+                        inheritingTypes[baseName].push(name);
                     });
                 } else {
                     ts.forEachChild(node, n => inspect(n, tc));
@@ -952,7 +969,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
             inspect(sourceFile, typeChecker);
         });
 
-        return new JsonSchemaGenerator(allSymbols, userSymbols, inheritingTypes, typeChecker, settings);
+        return new JsonSchemaGenerator(symbols, allSymbols, userSymbols, inheritingTypes, typeChecker, settings);
     } else {
         diagnostics.forEach((diagnostic) => {
             let message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
@@ -1059,6 +1076,8 @@ export function run() {
             .describe("out", "The output file, defaults to using stdout")
         .array("validationKeywords").default("validationKeywords", defaultArgs.validationKeywords)
             .describe("validationKeywords", "Provide additional validation keywords to include.")
+        .array("uniqueNames").default("uniqueNames", defaultArgs.uniqueNames)
+            .describe("uniqueNames", "Use unique names for type symbols.")
         .argv;
 
     exec(args._[0], args._[1], {
@@ -1076,6 +1095,7 @@ export function run() {
         out: args.out,
         validationKeywords: args.validationKeywords,
         excludePrivate: args.excludePrivate,
+        uniqueNames: args.uniqueNames,
     });
 }
 

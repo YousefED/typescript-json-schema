@@ -24,20 +24,21 @@ In case no `tsconfig.json` is available for your project, you can directly speci
 Usage: node typescript-json-schema.js <path-to-typescript-files-or-tsconfig> <type>
 
 Options:
-  --refs                Create shared ref definitions.                               [boolean] [default: true]
-  --aliasRefs           Create shared ref definitions for the type aliases.          [boolean] [default: false]
-  --topRef              Create a top-level ref definition.                           [boolean] [default: false]
-  --titles              Creates titles in the output schema.                         [boolean] [default: false]
-  --defaultProps        Create default properties definitions.                       [boolean] [default: false]
-  --noExtraProps        Disable additional properties in objects by default.         [boolean] [default: false]
-  --propOrder           Create property order definitions.                           [boolean] [default: false]
-  --required            Create required array for non-optional properties.           [boolean] [default: false]
-  --strictNullChecks    Make values non-nullable by default.                         [boolean] [default: false]
-  --useTypeOfKeyword    Use `typeOf` keyword (https://goo.gl/DC6sni) for functions.  [boolean] [default: false]
-  --out, -o             The output file, defaults to using stdout
-  --validationKeywords  Provide additional validation keywords to include            [array]   [default: []]
-  --ignoreErrors        Generate even if the program has errors.                     [boolean] [default: false]
-  --excludePrivate      Exclude private members from the schema                      [boolean] [default: false]
+  --refs                 Create shared ref definitions.                              [boolean] [default: true]
+  --aliasRefs            Create shared ref definitions for the type aliases.         [boolean] [default: false]
+  --topRef               Create a top-level ref definition.                          [boolean] [default: false]
+  --titles               Creates titles in the output schema.                        [boolean] [default: false]
+  --defaultProps         Create default properties definitions.                      [boolean] [default: false]
+  --noExtraProps         Disable additional properties in objects by default.        [boolean] [default: false]
+  --propOrder            Create property order definitions.                          [boolean] [default: false]
+  --required             Create required array for non-optional properties.          [boolean] [default: false]
+  --strictNullChecks     Make values non-nullable by default.                        [boolean] [default: false]
+  --useTypeOfKeyword     Use `typeOf` keyword (https://goo.gl/DC6sni) for functions. [boolean] [default: false]
+  --fullyQualifiedNames  Use fully qualified names for type symbols.                 [boolean] [default: false]
+  --out, -o              The output file, defaults to using stdout
+  --validationKeywords   Provide additional validation keywords to include.          [array]   [default: []]
+  --ignoreErrors         Generate even if the program has errors.                    [boolean] [default: false]
+  --excludePrivate       Exclude private members from the schema.                    [boolean] [default: false]
 ```
 
 ### Programmatic use
@@ -62,18 +63,52 @@ const program = TJS.getProgramFromFiles([resolve("my-file.ts")], compilerOptions
 // We can either get the schema for one file and one type...
 const schema = TJS.generateSchema(program, "MyType", settings);
 
-
-// ... or a generator that lets us incrementally get more schemas
-
+// ... or a generator that lets us incrementally get more schemas.
 const generator = TJS.buildGenerator(program, settings);
 
-// all symbols
+// Get all symbol fully qualified names.
 const symbols = generator.getUserSymbols();
 
-// Get symbols for different types from generator.
+// Get symbols for different types from the generator
+// by its fully qualified name.
 generator.getSchemaForSymbol("MyType");
 generator.getSchemaForSymbol("AnotherType");
+
+
+// In larger projects type names may not be unique and
+// their fully qualified names can be used.
+const settings2: TJS.PartialArgs = {
+    required: true,
+    fullyQualifiedNames: true
+};
+
+const generator2 = TJS.buildGenerator(program, settings2});
+
+// A list of all types of a given name can then be retrieved.
+const symbolList = generator2.getSymbols("MyType");
+
+// Choose the appropriate type, and continue
+// as usual with the symbol's full name.
+generator2.getSchemaForSymbol(symbolList[1].fullName);
+
+// Also it is possible to get a full list of all symbols.
+const fullSymbolList = generator2.getAllSymbols();
 ```
+
+`getSymbols` and `getAllSymbols` return an array of `SymbolRef`, which is of the
+following format:
+
+```ts
+{
+  name: string;
+  fullName: string;
+  fullyQualifiedName: string;
+  symbol: ts.Symbol;
+}
+```
+
+`getUserSymbols` and `getMainFileSymbols` return an array of `string`, which contain
+the `fullName` of the types.
 
 ### Annotations
 

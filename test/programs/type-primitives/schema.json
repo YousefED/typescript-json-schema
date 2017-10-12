@@ -39,6 +39,13 @@
             },
             "type": "object"
         },
+        "object3": {
+            "default": null,
+            "properties": {
+            },
+            "additionalProperties": true,
+            "type": "object"
+        },
         "string1": {
             "default": "defaultValue",
             "type": "string"
@@ -53,6 +60,7 @@
         "number1",
         "object1",
         "object2",
+        "object3",
         "string1"
     ],
     "type": "object"

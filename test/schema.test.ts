@@ -231,5 +231,13 @@ describe("schema", () => {
         assertSchema("private-members", "MyObject", {
             excludePrivate: true
         });
+
+        assertSchema("exclude-functions", "MyObject", {
+            excludeFunctions: true
+        });
+
+        assertSchema("exclude-functions-union", "MyObject", {
+            excludeFunctions: true
+        });
     });
 });

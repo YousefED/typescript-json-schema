@@ -31,7 +31,6 @@ function getDefaultArgs() {
         ignoreErrors: false,
         out: "",
         validationKeywords: [],
-        excludePrivate: false,
     };
 }
 exports.getDefaultArgs = getDefaultArgs;
@@ -407,16 +406,7 @@ var JsonSchemaGenerator = (function () {
             return definition;
         }
         var clazz = node;
-        var props = tc.getPropertiesOfType(clazzType).filter(function (prop) {
-            if (!_this.args.excludePrivate) {
-                return true;
-            }
-            var decls = prop.declarations;
-            return !(decls && decls.filter(function (decl) {
-                var mods = decl.modifiers;
-                return mods && mods.filter(function (mod) { return mod.kind === ts.SyntaxKind.PrivateKeyword; }).length > 0;
-            }).length > 0);
-        });
+        var props = tc.getPropertiesOfType(clazzType);
         var fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
         var modifierFlags = ts.getCombinedModifierFlags(node);
         if (modifierFlags & ts.ModifierFlags.Abstract) {
@@ -559,7 +549,7 @@ var JsonSchemaGenerator = (function () {
         this.typeNamesUsed[name] = true;
         return name;
     };
-    JsonSchemaGenerator.prototype.getTypeDefinition = function (typ, tc, asRef, unionModifier, prop, reffedType, pairedSymbol) {
+    JsonSchemaGenerator.prototype.getTypeDefinition = function (typ, tc, asRef, unionModifier, prop, reffedType) {
         if (asRef === void 0) { asRef = this.args.ref; }
         if (unionModifier === void 0) { unionModifier = "anyOf"; }
         var definition = {};
@@ -633,9 +623,6 @@ var JsonSchemaGenerator = (function () {
                     }
                 }
                 else if (isRawType) {
-                    if (pairedSymbol) {
-                        this.parseCommentsIntoDefinition(pairedSymbol, definition, {});
-                    }
                     this.getDefinitionForRootType(typ, tc, reffedType, definition);
                 }
                 else if (node && (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)) {
@@ -663,21 +650,21 @@ var JsonSchemaGenerator = (function () {
         if (!this.allSymbols[symbolName]) {
             throw "type " + symbolName + " not found";
         }
-        var def = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName] || undefined);
+        var def = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.topRef);
         if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
             def.definitions = this.reffedDefinitions;
         }
         def["$schema"] = "http://json-schema.org/draft-04/schema#";
         return def;
     };
-    JsonSchemaGenerator.prototype.getSchemaForSymbols = function (symbolNames) {
+    JsonSchemaGenerator.prototype.getSchemaForSymbols = function (symbols) {
         var root = {
             $schema: "http://json-schema.org/draft-04/schema#",
             definitions: {}
         };
-        for (var i = 0; i < symbolNames.length; i++) {
-            var symbolName = symbolNames[i];
-            root.definitions[symbolName] = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName]);
+        for (var i = 0; i < symbols.length; i++) {
+            var symbol = symbols[i];
+            root.definitions[symbol] = this.getTypeDefinition(this.userSymbols[symbol], this.tc, this.args.topRef);
         }
         return root;
     };
@@ -689,7 +676,7 @@ var JsonSchemaGenerator = (function () {
         var files = program.getSourceFiles().filter(function (file) { return !file.isDeclarationFile; });
         if (files.length) {
             return Object.keys(this.userSymbols).filter(function (key) {
-                var symbol = _this.userSymbols[key];
+                var symbol = _this.userSymbols[key].getSymbol();
                 if (!symbol || !symbol.declarations || !symbol.declarations.length) {
                     return false;
                 }
@@ -768,7 +755,7 @@ function buildGenerator(program, args) {
                     fullName_1 = fullName_1.replace(/".*"\./, "");
                     allSymbols_1[fullName_1] = nodeType;
                     if (!sourceFile.hasNoDefaultLib) {
-                        userSymbols_1[fullName_1] = symbol;
+                        userSymbols_1[fullName_1] = nodeType;
                     }
                     var baseTypes = nodeType.getBaseTypes() || [];
                     baseTypes.forEach(function (baseType) {
@@ -907,7 +894,6 @@ function run() {
         ignoreErrors: args.ignoreErrors,
         out: args.out,
         validationKeywords: args.validationKeywords,
-        excludePrivate: args.excludePrivate,
     });
 }
 exports.run = run;

@@ -164,7 +164,7 @@ export class JsonSchemaGenerator {
     };
 
     private allSymbols: { [name: string]: ts.Type };
-    private userSymbols: { [name: string]: ts.Type };
+    private userSymbols: { [name: string]: ts.Symbol };
     private inheritingTypes: { [baseName: string]: string[] };
     private tc: ts.TypeChecker;
 
@@ -176,7 +176,7 @@ export class JsonSchemaGenerator {
 
     constructor(
       allSymbols: { [name: string]: ts.Type },
-      userSymbols: { [name: string]: ts.Type },
+      userSymbols: { [name: string]: ts.Symbol },
       inheritingTypes: { [baseName: string]: string[] },
       tc: ts.TypeChecker,
       private args = getDefaultArgs(),
@@ -716,7 +716,7 @@ export class JsonSchemaGenerator {
         return name;
     }
 
-    private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker, asRef = this.args.ref, unionModifier: string = "anyOf", prop?: ts.Symbol, reffedType?: ts.Symbol): Definition {
+    private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker, asRef = this.args.ref, unionModifier: string = "anyOf", prop?: ts.Symbol, reffedType?: ts.Symbol, pairedSymbol?: ts.Symbol): Definition {
         const definition: Definition = {}; // real definition
 
         if (this.args.typeOfKeyword && (typ.flags & ts.TypeFlags.Object) && ((<ts.ObjectType>typ).objectFlags & ts.ObjectFlags.Anonymous)) {
@@ -805,6 +805,9 @@ export class JsonSchemaGenerator {
                         }
                     }
                 } else if (isRawType) {
+                    if (pairedSymbol) {
+                        this.parseCommentsIntoDefinition(pairedSymbol, definition, {});
+                    }
                     this.getDefinitionForRootType(typ, tc, reffedType!, definition);
                 } else if (node && (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)) {
                     this.getEnumDefinition(typ, tc, definition);
@@ -833,7 +836,7 @@ export class JsonSchemaGenerator {
         if(!this.allSymbols[symbolName]) {
             throw `type ${symbolName} not found`;
         }
-        let def = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.topRef);
+        let def = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName] || undefined);
 
         if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
             def.definitions = this.reffedDefinitions;
@@ -842,14 +845,14 @@ export class JsonSchemaGenerator {
         return def;
     }
 
-    public getSchemaForSymbols(symbols: string[]): Definition {
+    public getSchemaForSymbols(symbolNames: string[]): Definition {
         const root = {
             $schema: "http://json-schema.org/draft-04/schema#",
             definitions: {}
         };
-        for (let i = 0; i < symbols.length; i++) {
-            const symbol = symbols[i];
-            root.definitions[symbol] = this.getTypeDefinition(this.userSymbols[symbol], this.tc, this.args.topRef);
+        for (let i = 0; i < symbolNames.length; i++) {
+            const symbolName = symbolNames[i];
+            root.definitions[symbolName] = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName]);
         }
         return root;
     }
@@ -862,7 +865,7 @@ export class JsonSchemaGenerator {
         const files = program.getSourceFiles().filter(file => !file.isDeclarationFile);
         if (files.length) {
             return Object.keys(this.userSymbols).filter((key) => {
-                const symbol = this.userSymbols[key].getSymbol();
+                const symbol = this.userSymbols[key];
                 if (!symbol || !symbol.declarations || !symbol.declarations.length) {
                     return false;
                 }
@@ -907,7 +910,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
     if (diagnostics.length === 0 || args.ignoreErrors) {
 
         const allSymbols: { [name: string]: ts.Type } = {};
-        const userSymbols: { [name: string]: ts.Type } = {};
+        const userSymbols: { [name: string]: ts.Symbol } = {};
         const inheritingTypes: { [baseName: string]: string[] } = {};
 
         program.getSourceFiles().forEach((sourceFile, _sourceFileIdx) => {
@@ -933,7 +936,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
 
                     // if (sourceFileIdx === 1) {
                     if (!sourceFile.hasNoDefaultLib) {
-                        userSymbols[fullName] = nodeType;
+                        userSymbols[fullName] = symbol;
                     }
 
                     const baseTypes = nodeType.getBaseTypes() || [];

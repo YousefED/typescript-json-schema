@@ -70,6 +70,7 @@ describe("schema", () => {
 
     describe("type aliases", () => {
         assertSchema("type-alias-single", "MyString");
+        assertSchema("type-alias-single-annotated", "MyString");
         assertSchema("type-aliases", "MyObject", {
             aliasRef: true
         });

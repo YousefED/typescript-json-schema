@@ -18,6 +18,7 @@ export declare type Args = {
     ignoreErrors: boolean;
     out: string;
     validationKeywords: string[];
+    excludePrivate: boolean;
 };
 export declare type PartialArgs = Partial<Args>;
 export declare type PrimitiveType = number | boolean | string | null;
@@ -61,7 +62,7 @@ export declare class JsonSchemaGenerator {
     constructor(allSymbols: {
         [name: string]: ts.Type;
     }, userSymbols: {
-        [name: string]: ts.Type;
+        [name: string]: ts.Symbol;
     }, inheritingTypes: {
         [baseName: string]: string[];
     }, tc: ts.TypeChecker, args?: Args);
@@ -82,10 +83,10 @@ export declare class JsonSchemaGenerator {
     private addSimpleType(def, type);
     private makeNullable(def);
     private getTypeName(typ, tc);
-    private getTypeDefinition(typ, tc, asRef?, unionModifier?, prop?, reffedType?);
+    private getTypeDefinition(typ, tc, asRef?, unionModifier?, prop?, reffedType?, pairedSymbol?);
     setSchemaOverride(symbolName: string, schema: Definition): void;
     getSchemaForSymbol(symbolName: string, includeReffedDefinitions?: boolean): Definition;
-    getSchemaForSymbols(symbols: string[]): Definition;
+    getSchemaForSymbols(symbolNames: string[]): Definition;
     getUserSymbols(): string[];
     getMainFileSymbols(program: ts.Program): string[];
 }

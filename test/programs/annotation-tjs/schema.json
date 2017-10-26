@@ -25,7 +25,15 @@
             "format": "json-pointer",
             "type": "string"
         },
+        "oneCharacter": {
+            "minimum": 5,
+            "type": "number"
+        },
         "regexPattern": {
+            "pattern": "^[a-zA-Z0-9]{4}-abc_123$",
+            "type": "string"
+        },
+        "regexPatternWithWhitespace": {
             "pattern": "^[a-zA-Z0-9]{4}-abc_123$",
             "type": "string"
         },
@@ -49,7 +57,9 @@
         "ipv4",
         "ipv6",
         "jsonPointer",
+        "oneCharacter",
         "regexPattern",
+        "regexPatternWithWhitespace",
         "uri",
         "uriReference",
         "uriTemplate"

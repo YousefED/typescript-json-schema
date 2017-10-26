@@ -9,7 +9,7 @@ const vm = require("vm");
 
 const REGEX_FILE_NAME = /".*"\./;
 const REGEX_TSCONFIG_NAME = /^.*\.json$/;
-const REGEX_TJS_JSDOC = /^-([\w]+)\s([\w-]+)/g;
+const REGEX_TJS_JSDOC = /^-([\w]+)\s+(\S[\s\S]+)$/g;
 
 export function getDefaultArgs(): Args {
     return {

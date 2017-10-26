@@ -49,4 +49,14 @@ interface MyObject {
      * @TJS-pattern ^[a-zA-Z0-9]{4}-abc_123$
      */
     regexPattern: string;
+
+    /**
+     * @TJS-pattern ^[a-zA-Z0-9]{4}-abc_123$    
+     */
+    regexPatternWithWhitespace: string;
+
+    /**
+     * @TJS-minimum 5
+     */
+    oneCharacter: number;
 }

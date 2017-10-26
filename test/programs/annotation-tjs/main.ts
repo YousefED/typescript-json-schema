@@ -44,4 +44,9 @@ interface MyObject {
      * @TJS-format json-pointer
      */
     jsonPointer: string;
+
+    /**
+     * @TJS-pattern ^[a-zA-Z0-9]{4}-abc_123$
+     */
+    regexPattern: string;
 }

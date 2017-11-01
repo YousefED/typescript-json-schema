@@ -6,6 +6,7 @@
         },
         "foo": {
             "enum": [
+                "",
                 "abort",
                 "fail",
                 "ok"

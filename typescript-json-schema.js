@@ -15,7 +15,7 @@ var ts = require("typescript");
 var vm = require("vm");
 var REGEX_FILE_NAME = /".*"\./;
 var REGEX_TSCONFIG_NAME = /^.*\.json$/;
-var REGEX_TJS_JSDOC = /^-([\w]+)\s([\w-]+)/g;
+var REGEX_TJS_JSDOC = /^-([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
 function getDefaultArgs() {
     return {
         ref: true,
@@ -126,16 +126,19 @@ var JsonSchemaGenerator = (function () {
         });
     };
     JsonSchemaGenerator.prototype.extractLiteralValue = function (typ) {
+        var str = typ.value;
+        if (str === undefined) {
+            str = typ.text;
+        }
         if (typ.flags & ts.TypeFlags.EnumLiteral) {
-            var str = typ.value || typ.text;
             var num = parseFloat(str);
             return isNaN(num) ? str : num;
         }
         else if (typ.flags & ts.TypeFlags.StringLiteral) {
-            return typ.value || typ.text;
+            return str;
         }
         else if (typ.flags & ts.TypeFlags.NumberLiteral) {
-            return parseFloat(typ.value || typ.text);
+            return parseFloat(str);
         }
         else if (typ.flags & ts.TypeFlags.BooleanLiteral) {
             return typ.intrinsicName === "true";

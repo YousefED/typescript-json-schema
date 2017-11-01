@@ -3,6 +3,7 @@
     "definitions": {
         "result": {
             "enum": [
+                "",
                 "abort",
                 "fail",
                 "ok"

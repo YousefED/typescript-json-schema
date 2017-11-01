@@ -236,15 +236,18 @@ export class JsonSchemaGenerator {
     }
 
     private extractLiteralValue(typ: ts.Type): PrimitiveType | undefined {
+        let str = (<ts.LiteralType>typ).value;
+        if (str === undefined) {
+            str = (typ as any).text;
+        }
         if (typ.flags & ts.TypeFlags.EnumLiteral) {
             // or .text for old TS
-            let str = (<ts.LiteralType>typ).value || (typ as any).text;
-            let num = parseFloat(str);
+            let num = parseFloat(str as string);
             return isNaN(num) ? str : num;
         } else if (typ.flags & ts.TypeFlags.StringLiteral) {
-            return (<ts.LiteralType>typ).value || (typ as any).text;
+            return str;
         } else if (typ.flags & ts.TypeFlags.NumberLiteral) {
-            return parseFloat((<ts.LiteralType>typ).value || (typ as any).text);
+            return parseFloat(str as string);
         } else if (typ.flags & ts.TypeFlags.BooleanLiteral) {
             return (typ as any).intrinsicName === "true";
         }

@@ -141,7 +141,7 @@ export class JsonSchemaGenerator {
         // contains: true,                 // 6.14.
         maxProperties: true,            // 6.15.
         minProperties: true,            // 6.16.
-        // required: true,                 // 6.17.  This is not required. It is auto-generated.
+        required: true,                 // 6.17.  This is not required. It is auto-generated.
         // properties: true,               // 6.18.  This is not required. It is auto-generated.
         // patternProperties: true,        // 6.19.
         additionalProperties: true,     // 6.20.

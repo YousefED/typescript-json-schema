@@ -299,9 +299,8 @@ export class JsonSchemaGenerator {
                     definition.type = "null";
                     break;
                 case "undefined":
-                    definition.type = "undefined";
-                    break;
                 case "any":
+                case "void":
                     // no type restriction, so that anything will match
                     break;
                 case "date":

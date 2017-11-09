@@ -299,6 +299,8 @@ export class JsonSchemaGenerator {
                     definition.type = "null";
                     break;
                 case "undefined":
+                    definition.type = "undefined";
+                    break;
                 case "any":
                 case "void":
                     // no type restriction, so that anything will match
@@ -344,11 +346,16 @@ export class JsonSchemaGenerator {
 
     private getDefinitionForProperty(prop: ts.Symbol, tc: ts.TypeChecker, node: ts.Node) {
         const propertyName = prop.getName();
+
         const propertyType = tc.getTypeOfSymbolAtLocation(prop, node);
 
         const reffedType = this.getReferencedTypeSymbol(prop, tc);
 
         let definition = this.getTypeDefinition(propertyType, tc, undefined, undefined, prop, reffedType);
+
+        if (definition.type === "undefined") {
+            delete definition.type;
+        }
 
         if (this.args.titles) {
             definition.title = propertyName;
@@ -470,11 +477,13 @@ export class JsonSchemaGenerator {
             if (value !== undefined) {
                 addEnumValue(value);
             } else {
+
                 const def = this.getTypeDefinition(unionType.types[i], tc);
                 if (def.type === "undefined") {
                     if (prop) {
                         (<any>prop).mayBeUndefined = true;
                     }
+                    delete def.type;
                 } else {
                     const keys = Object.keys(def);
                     if (keys.length === 1 && keys[0] === "type") {

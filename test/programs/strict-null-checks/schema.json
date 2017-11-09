@@ -11,12 +11,7 @@
             ]
         },
         "valOpt": {
-            "anyOf": [
-                {},
-                {
-                    "type": "number"
-                }
-            ]
+            "type": "number"
         },
         "valTrue": {
             "enum": [
@@ -25,15 +20,10 @@
             "type": "boolean"
         },
         "valTrueOpt": {
-            "anyOf": [
-                {},
-                {
-                    "enum": [
-                        true
-                    ],
-                    "type": "boolean"
-                }
-            ]
+            "enum": [
+                true
+            ],
+            "type": "boolean"
         },
         "valTrueOrNull": {
             "anyOf": [

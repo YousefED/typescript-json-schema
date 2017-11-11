@@ -568,13 +568,13 @@ export class JsonSchemaGenerator {
                     // for case "array-types"
                     const indexSignature = indexSignatures[0] as ts.IndexSignatureDeclaration;
                     if (indexSignature.parameters.length !== 1) {
-                        throw "Not supported: IndexSignatureDeclaration parameters.length != 1";
+                        throw new Error("Not supported: IndexSignatureDeclaration parameters.length != 1");
                     }
                     const indexSymbol: ts.Symbol = (<any>indexSignature.parameters[0]).symbol;
                     const indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
                     const isStringIndexed = (indexType.flags === ts.TypeFlags.String);
                     if (indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
-                        throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
+                        throw new Error("Not supported: IndexSignatureDeclaration with index symbol other than a number or a string");
                     }
 
                     const typ = tc.getTypeAtLocation(indexSignature.type!);
@@ -837,7 +837,7 @@ export class JsonSchemaGenerator {
 
     public getSchemaForSymbol(symbolName: string, includeReffedDefinitions: boolean = true): Definition {
         if(!this.allSymbols[symbolName]) {
-            throw `type ${symbolName} not found`;
+            throw new Error(`type ${symbolName} not found`);
         }
         let def = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName] || undefined);
 

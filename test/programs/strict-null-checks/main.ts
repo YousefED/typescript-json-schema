@@ -2,7 +2,8 @@
 class MyObject {
      val: number;
      valNullable: number | null;
-     valUndef: number | undefined;
+     valUndef: undefined;
+     valVoid: void;
      valOpt?: number;
 
      valTrueOpt?: true;

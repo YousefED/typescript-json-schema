@@ -38,16 +38,16 @@
                 }
             ]
         },
-        "valUndef": {
-            "type": "number"
-        }
+        "valUndef": {},
+        "valVoid": {}
     },
     "required": [
         "val",
         "valNullable",
         "valTrue",
-        "valTrueOrNull"
+        "valTrueOrNull",
+        "valUndef",
+        "valVoid"
     ],
     "type": "object"
 }
-

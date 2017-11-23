@@ -848,7 +848,7 @@ export class JsonSchemaGenerator {
         return def;
     }
 
-    public getSchemaForSymbols(symbolNames: string[]): Definition {
+    public getSchemaForSymbols(symbolNames: string[], includeReffedDefinitions: boolean = true): Definition {
         const root = {
             $schema: "http://json-schema.org/draft-04/schema#",
             definitions: {}
@@ -856,6 +856,9 @@ export class JsonSchemaGenerator {
         for (let i = 0; i < symbolNames.length; i++) {
             const symbolName = symbolNames[i];
             root.definitions[symbolName] = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName]);
+        }
+        if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
+            root.definitions = {...root.definitions, ... this.reffedDefinitions};
         }
         return root;
     }

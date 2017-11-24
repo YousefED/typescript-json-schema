@@ -86,7 +86,7 @@ export declare class JsonSchemaGenerator {
     private getTypeDefinition(typ, tc, asRef?, unionModifier?, prop?, reffedType?, pairedSymbol?);
     setSchemaOverride(symbolName: string, schema: Definition): void;
     getSchemaForSymbol(symbolName: string, includeReffedDefinitions?: boolean): Definition;
-    getSchemaForSymbols(symbolNames: string[]): Definition;
+    getSchemaForSymbols(symbolNames: string[], includeReffedDefinitions?: boolean): Definition;
     getUserSymbols(): string[];
     getMainFileSymbols(program: ts.Program): string[];
 }

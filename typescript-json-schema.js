@@ -434,13 +434,13 @@ var JsonSchemaGenerator = (function () {
                 if (indexSignatures.length === 1) {
                     var indexSignature = indexSignatures[0];
                     if (indexSignature.parameters.length !== 1) {
-                        throw "Not supported: IndexSignatureDeclaration parameters.length != 1";
+                        throw new Error("Not supported: IndexSignatureDeclaration parameters.length != 1");
                     }
                     var indexSymbol = indexSignature.parameters[0].symbol;
                     var indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
                     var isStringIndexed = (indexType.flags === ts.TypeFlags.String);
                     if (indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
-                        throw "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string";
+                        throw new Error("Not supported: IndexSignatureDeclaration with index symbol other than a number or a string");
                     }
                     var typ = tc.getTypeAtLocation(indexSignature.type);
                     var def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
@@ -664,7 +664,7 @@ var JsonSchemaGenerator = (function () {
     JsonSchemaGenerator.prototype.getSchemaForSymbol = function (symbolName, includeReffedDefinitions) {
         if (includeReffedDefinitions === void 0) { includeReffedDefinitions = true; }
         if (!this.allSymbols[symbolName]) {
-            throw "type " + symbolName + " not found";
+            throw new Error("type " + symbolName + " not found");
         }
         var def = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName] || undefined);
         if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
@@ -673,7 +673,8 @@ var JsonSchemaGenerator = (function () {
         def["$schema"] = "http://json-schema.org/draft-04/schema#";
         return def;
     };
-    JsonSchemaGenerator.prototype.getSchemaForSymbols = function (symbolNames) {
+    JsonSchemaGenerator.prototype.getSchemaForSymbols = function (symbolNames, includeReffedDefinitions) {
+        if (includeReffedDefinitions === void 0) { includeReffedDefinitions = true; }
         var root = {
             $schema: "http://json-schema.org/draft-04/schema#",
             definitions: {}
@@ -681,6 +682,9 @@ var JsonSchemaGenerator = (function () {
         for (var i = 0; i < symbolNames.length; i++) {
             var symbolName = symbolNames[i];
             root.definitions[symbolName] = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName]);
+        }
+        if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
+            root.definitions = __assign({}, root.definitions, this.reffedDefinitions);
         }
         return root;
     };

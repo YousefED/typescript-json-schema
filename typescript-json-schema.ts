@@ -997,7 +997,7 @@ export function programFromConfig(configFileName: string): ts.Program {
     const result = ts.parseConfigFileTextToJson(configFileName, ts.sys.readFile(configFileName)!);
     const configObject = result.config;
 
-    const configParseResult = ts.parseJsonConfigFileContent(configObject, ts.sys, path.dirname(configFileName), {}, configFileName);
+    const configParseResult = ts.parseJsonConfigFileContent(configObject, ts.sys, path.dirname(configFileName), {}, path.basename(configFileName));
     const options = configParseResult.options;
     options.noEmit = true;
     delete options.out;

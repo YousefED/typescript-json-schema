@@ -103,7 +103,7 @@ describe("schema", () => {
             topRef: true
         });
 
-        assertSchema('type-mapped-types', "MyMappedType");
+        assertSchema("type-mapped-types", "MyMappedType");
 
         /*
         assertSchema("type-aliases-primitive", "MyString");

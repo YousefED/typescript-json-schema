@@ -1,11 +1,11 @@
 {
     "$ref": "#/definitions/MyObject",
-    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$schema": "http://json-schema.org/draft-06/schema#",
     "definitions": {
-        "MyGeneric<number, string>": {
+        "MyGeneric<number,string>": {
             "properties": {
                 "field": {
-                    "$ref": "#/definitions/MyGeneric<string, number>"
+                    "$ref": "#/definitions/MyGeneric<string,number>"
                 }
             },
             "required": [
@@ -13,10 +13,10 @@
             ],
             "type": "object"
         },
-        "MyGeneric<string, number>": {
+        "MyGeneric<string,number>": {
             "properties": {
                 "field": {
-                    "$ref": "#/definitions/MyGeneric<number, string>"
+                    "$ref": "#/definitions/MyGeneric<number,string>"
                 }
             },
             "required": [
@@ -27,7 +27,7 @@
         "MyObject": {
             "properties": {
                 "value": {
-                    "$ref": "#/definitions/MyGeneric<string, number>"
+                    "$ref": "#/definitions/MyGeneric<string,number>"
                 }
             },
             "required": [

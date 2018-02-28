@@ -595,6 +595,7 @@ var JsonSchemaGenerator = (function () {
         else if (asRef) {
             fullTypeName = this.getTypeName(typ, tc);
         }
+        fullTypeName = fullTypeName.replace(" ", "");
         if (asRef) {
             returnedDefinition = {
                 $ref: "#/definitions/" + fullTypeName
@@ -644,7 +645,7 @@ var JsonSchemaGenerator = (function () {
                 else if (node && (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)) {
                     this.getEnumDefinition(typ, tc, definition);
                 }
-                else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && symbol.members.size === 0) {
+                else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && symbol.members.size === 0 && !(node && (node.kind === ts.SyntaxKind.MappedType))) {
                     definition.type = "object";
                     definition.properties = {};
                 }
@@ -670,13 +671,13 @@ var JsonSchemaGenerator = (function () {
         if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
             def.definitions = this.reffedDefinitions;
         }
-        def["$schema"] = "http://json-schema.org/draft-04/schema#";
+        def["$schema"] = "http://json-schema.org/draft-06/schema#";
         return def;
     };
     JsonSchemaGenerator.prototype.getSchemaForSymbols = function (symbolNames, includeReffedDefinitions) {
         if (includeReffedDefinitions === void 0) { includeReffedDefinitions = true; }
         var root = {
-            $schema: "http://json-schema.org/draft-04/schema#",
+            $schema: "http://json-schema.org/draft-06/schema#",
             definitions: {}
         };
         for (var i = 0; i < symbolNames.length; i++) {
@@ -736,8 +737,10 @@ var JsonSchemaGenerator = (function () {
     return JsonSchemaGenerator;
 }());
 exports.JsonSchemaGenerator = JsonSchemaGenerator;
-function getProgramFromFiles(files, compilerOptions) {
-    if (compilerOptions === void 0) { compilerOptions = {}; }
+function getProgramFromFiles(files, jsonCompilerOptions, basePath) {
+    if (jsonCompilerOptions === void 0) { jsonCompilerOptions = {}; }
+    if (basePath === void 0) { basePath = "./"; }
+    var compilerOptions = ts.convertCompilerOptionsFromJson(jsonCompilerOptions, basePath).options;
     var options = {
         noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS
     };
@@ -828,7 +831,7 @@ exports.generateSchema = generateSchema;
 function programFromConfig(configFileName) {
     var result = ts.parseConfigFileTextToJson(configFileName, ts.sys.readFile(configFileName));
     var configObject = result.config;
-    var configParseResult = ts.parseJsonConfigFileContent(configObject, ts.sys, path.dirname(configFileName), {}, configFileName);
+    var configParseResult = ts.parseJsonConfigFileContent(configObject, ts.sys, path.dirname(configFileName), {}, path.basename(configFileName));
     var options = configParseResult.options;
     options.noEmit = true;
     delete options.out;

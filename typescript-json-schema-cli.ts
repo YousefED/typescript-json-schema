@@ -38,6 +38,8 @@ export function run() {
             .describe("uniqueNames", "Use unique names for type symbols.")
         .array("include").default("*", defaultArgs.include)
             .describe("include", "Further limit tsconfig to include only matching files.")
+        .array("plugins").default("plugins", defaultArgs.plugins)
+            .describe("plugins", "List of plugins to run.")
         .argv;
 
     exec(args._[0], args._[1], {
@@ -57,7 +59,9 @@ export function run() {
         include: args.include,
         excludePrivate: args.excludePrivate,
         uniqueNames: args.uniqueNames,
+        plugins: args.plugins.map((mod: string) => new (require(mod).Plugin)()),
     });
+
 }
 
 if (typeof window === "undefined" && require.main === module) {

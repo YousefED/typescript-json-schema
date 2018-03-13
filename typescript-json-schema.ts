@@ -29,12 +29,17 @@ export function getDefaultArgs(): Args {
         include: [],
         excludePrivate: false,
         uniqueNames: false,
+        plugins: [],
     };
 }
 
 export type ValidationKeywords = {
   [prop: string]: boolean
 };
+
+export interface Plugin {
+  override(node: ts.Symbol, definition: Definition): boolean;
+}
 
 export type Args = {
     ref: boolean;
@@ -53,6 +58,7 @@ export type Args = {
     include: string[];
     excludePrivate: boolean;
     uniqueNames: boolean;
+    plugins: Plugin[];
 };
 
 export type PartialArgs = Partial<Args>;
@@ -331,6 +337,15 @@ export class JsonSchemaGenerator {
         );
     }
 
+    public pluginsOverride(symbol: ts.Symbol, definition: Definition): boolean {
+      for (const plugin of this.args.plugins) {
+        if (plugin.override(symbol, definition)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     public get ReffedDefinitions(): { [key: string]: Definition } {
         return this.reffedDefinitions;
     }
@@ -436,9 +451,6 @@ export class JsonSchemaGenerator {
     }
 
     private getDefinitionForProperty(prop: ts.Symbol, node: ts.Node) {
-        if (prop.flags & ts.SymbolFlags.Method) {
-            return null;
-        }
         const propertyName = prop.getName();
         const propertyType = this.tc.getTypeOfSymbolAtLocation(prop, node);
 
@@ -889,43 +901,45 @@ export class JsonSchemaGenerator {
             const node = symbol && symbol.getDeclarations() !== undefined ? symbol.getDeclarations()![0] : null;
 
             if (definition.type === undefined) {  // if users override the type, do not try to infer it
-                if (typ.flags & ts.TypeFlags.Union) {
-                    this.getUnionDefinition(typ as ts.UnionType, prop!, unionModifier, definition);
-                } else if (typ.flags & ts.TypeFlags.Intersection) {
-                    if (this.args.noExtraProps) {
-                        // extend object instead of using allOf because allOf does not work well with additional properties. See #107
+                if (!symbol || !this.pluginsOverride(symbol, definition)) {
+                    if (typ.flags & ts.TypeFlags.Union) {
+                        this.getUnionDefinition(typ as ts.UnionType, prop!, unionModifier, definition);
+                    } else if (typ.flags & ts.TypeFlags.Intersection) {
                         if (this.args.noExtraProps) {
-                            definition.additionalProperties = false;
-                        }
+                            // extend object instead of using allOf because allOf does not work well with additional properties. See #107
+                            if (this.args.noExtraProps) {
+                                definition.additionalProperties = false;
+                            }
 
-                        const types = (<ts.IntersectionType> typ).types;
-                        for (const member of types) {
-                            const other = this.getTypeDefinition(member, false);
-                            definition.type = other.type;  // should always be object
-                            definition.properties = extend(definition.properties || {}, other.properties);
-                            if (Object.keys(other.default || {}).length > 0) {
-                                definition.default = extend(definition.default || {}, other.default);
+                            const types = (<ts.IntersectionType> typ).types;
+                            for (const member of types) {
+                                const other = this.getTypeDefinition(member, false);
+                                definition.type = other.type;  // should always be object
+                                definition.properties = extend(definition.properties || {}, other.properties);
+                                if (Object.keys(other.default || {}).length > 0) {
+                                    definition.default = extend(definition.default || {}, other.default);
+                                }
+                                if (other.required) {
+                                    definition.required = unique((definition.required || []).concat(other.required)).sort();
+                                }
                             }
-                            if (other.required) {
-                                definition.required = unique((definition.required || []).concat(other.required)).sort();
-                            }
+                        } else {
+                            this.getIntersectionDefinition(typ as ts.IntersectionType, definition);
                         }
+                    } else if (isRawType) {
+                        if (pairedSymbol) {
+                            this.parseCommentsIntoDefinition(pairedSymbol, definition, {});
+                        }
+                        this.getDefinitionForRootType(typ, reffedType!, definition);
+                    } else if (node && (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)) {
+                        this.getEnumDefinition(typ, definition);
+                    } else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && symbol.members!.size === 0 && !(node && (node.kind === ts.SyntaxKind.MappedType))) {
+                        // {} is TypeLiteral with no members. Need special case because it doesn't have declarations.
+                        definition.type = "object";
+                        definition.properties = {};
                     } else {
-                        this.getIntersectionDefinition(typ as ts.IntersectionType, definition);
+                        this.getClassDefinition(typ, definition);
                     }
-                } else if (isRawType) {
-                    if (pairedSymbol) {
-                        this.parseCommentsIntoDefinition(pairedSymbol, definition, {});
-                    }
-                    this.getDefinitionForRootType(typ, reffedType!, definition);
-                } else if (node && (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)) {
-                    this.getEnumDefinition(typ, definition);
-                } else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && symbol.members!.size === 0 && !(node && (node.kind === ts.SyntaxKind.MappedType))) {
-                    // {} is TypeLiteral with no members. Need special case because it doesn't have declarations.
-                    definition.type = "object";
-                    definition.properties = {};
-                } else {
-                    this.getClassDefinition(typ, definition);
                 }
             }
         }

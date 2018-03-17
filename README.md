@@ -40,6 +40,7 @@ Options:
   --validationKeywords  Provide additional validation keywords to include            [array]   [default: []]
   --ignoreErrors        Generate even if the program has errors.                     [boolean] [default: false]
   --excludePrivate      Exclude private members from the schema                      [boolean] [default: false]
+  --excludeFunctions    Exclude function typed members from the schema               [boolean] [default: false]
 ```
 
 ### Programmatic use

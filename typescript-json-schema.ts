@@ -27,6 +27,7 @@ export function getDefaultArgs(): Args {
         out: "",
         validationKeywords: [],
         excludePrivate: false,
+        excludeFunctions: false
     };
 }
 
@@ -49,6 +50,7 @@ export type Args = {
     out: string;
     validationKeywords: string[];
     excludePrivate: boolean;
+    excludeFunctions: boolean;
 };
 
 export type PartialArgs = Partial<Args>;
@@ -1088,6 +1090,7 @@ export function run() {
         out: args.out,
         validationKeywords: args.validationKeywords,
         excludePrivate: args.excludePrivate,
+        excludeFunctions: args.excludeFunctions
     });
 }
 

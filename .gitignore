@@ -5,3 +5,7 @@ test/*.map
 .vscode/*.*
 npm-debug.log
 .idea
+
+/*.d.ts
+/*.js
+/*.js.map

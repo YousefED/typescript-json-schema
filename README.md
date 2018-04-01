@@ -23,7 +23,7 @@ In case no `tsconfig.json` is available for your project, you can directly speci
 The `TYPE` can either be a single, fully qualified type or `*` to generate the schema for all types. 
 
 ```
-Usage: node typescript-json-schema.js <path-to-typescript-files-or-tsconfig> <type>
+Usage: typescript-json-schema <path-to-typescript-files-or-tsconfig> <type>
 
 Options:
   --refs                Create shared ref definitions.                               [boolean] [default: true]

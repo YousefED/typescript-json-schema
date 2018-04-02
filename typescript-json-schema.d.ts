@@ -95,4 +95,3 @@ export declare function buildGenerator(program: ts.Program, args?: PartialArgs):
 export declare function generateSchema(program: ts.Program, fullTypeName: string, args?: PartialArgs): Definition | null;
 export declare function programFromConfig(configFileName: string): ts.Program;
 export declare function exec(filePattern: string, fullTypeName: string, args?: Args): void;
-export declare function run(): void;

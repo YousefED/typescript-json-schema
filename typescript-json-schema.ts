@@ -57,6 +57,7 @@ export type PrimitiveType = number | boolean | string | null;
 
 export type Definition = {
     $ref?: string,
+    $schema?: string,
     description?: string,
     allOf?: Definition[],
     oneOf?: Definition[],
@@ -75,7 +76,7 @@ export type Definition = {
     additionalProperties?: Definition | boolean,
     required?: string[],
     propertyOrder?: string[],
-    properties?: {},
+    properties?: {[key: string]: any},
     defaultProperties?: string[],
 
     typeof?: "function"

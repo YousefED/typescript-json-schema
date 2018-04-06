@@ -62,7 +62,7 @@ const compilerOptions: TJS.CompilerOptions = {
 // optionally pass a base path
 const basePath = "./my-dir";
 
-const program = TJS.getProgramFromFiles([resolve("my-file.ts")], compilerOptions, basePath);
+const program = TJS.getProgramFromFiles([resolve(basePath + "/my-file.ts")], compilerOptions);
 
 // We can either get the schema for one file and one type...
 const schema = TJS.generateSchema(program, "MyType", settings);

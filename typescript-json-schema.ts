@@ -240,16 +240,16 @@ export class JsonSchemaGenerator {
         if (str === undefined) {
             str = (typ as any).text;
         }
-        if (typ.flags & ts.TypeFlags.EnumLiteral) {
+        if (typ.flags & ts.TypeFlags.StringLiteral) {
+            return str;
+        } else if (typ.flags & ts.TypeFlags.BooleanLiteral) {
+            return (typ as any).intrinsicName === "true";
+        } else if (typ.flags & ts.TypeFlags.EnumLiteral) {
             // or .text for old TS
             let num = parseFloat(str as string);
             return isNaN(num) ? str : num;
-        } else if (typ.flags & ts.TypeFlags.StringLiteral) {
-            return str;
         } else if (typ.flags & ts.TypeFlags.NumberLiteral) {
             return parseFloat(str as string);
-        } else if (typ.flags & ts.TypeFlags.BooleanLiteral) {
-            return (typ as any).intrinsicName === "true";
         }
         return undefined;
     }

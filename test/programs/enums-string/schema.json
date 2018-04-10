@@ -3,6 +3,7 @@
     "definitions": {
         "Enum": {
             "enum": [
+                "123",
                 "x",
                 "y"
             ],

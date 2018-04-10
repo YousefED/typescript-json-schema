@@ -413,6 +413,9 @@ export class JsonSchemaGenerator {
     }
 
     private getDefinitionForProperty(prop: ts.Symbol, node: ts.Node) {
+        if (prop.flags & ts.SymbolFlags.Method) {
+            return null;
+        }
         const propertyName = prop.getName();
         const propertyType = this.tc.getTypeOfSymbolAtLocation(prop, node);
 
@@ -745,7 +748,7 @@ export class JsonSchemaGenerator {
                 const requiredProps = props.reduce((required: string[], prop: ts.Symbol) => {
                     const def = {};
                     this.parseCommentsIntoDefinition(prop, def, {});
-                    if (!(prop.flags & ts.SymbolFlags.Optional) && !(<any>prop).mayBeUndefined && !def.hasOwnProperty("ignore")) {
+                    if (!(prop.flags & ts.SymbolFlags.Optional) && !(prop.flags & ts.SymbolFlags.Method) && !(<any>prop).mayBeUndefined && !def.hasOwnProperty("ignore")) {
                         required.push(prop.getName());
                     }
                     return required;

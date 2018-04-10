@@ -949,8 +949,14 @@ export class JsonSchemaGenerator {
         return Object.keys(this.userSymbols);
     }
 
-    public getMainFileSymbols(program: ts.Program): string[] {
-        const files = program.getSourceFiles().filter(file => !file.isDeclarationFile);
+    public getMainFileSymbols(program: ts.Program, onlyIncludeFiles?: string[]): string[] {
+        function includeFile(file: ts.SourceFile): boolean {
+            if (onlyIncludeFiles === undefined) {
+                return !file.isDeclarationFile;
+            }
+            return onlyIncludeFiles.indexOf(file.fileName) >= 0;
+        }
+        const files = program.getSourceFiles().filter(includeFile);
         if (files.length) {
             return Object.keys(this.userSymbols).filter((key) => {
                 const symbol = this.userSymbols[key];
@@ -1058,7 +1064,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
     }
 }
 
-export function generateSchema(program: ts.Program, fullTypeName: string, args: PartialArgs = {}): Definition|null {
+export function generateSchema(program: ts.Program, fullTypeName: string, args: PartialArgs = {}, onlyIncludeFiles?: string[]): Definition|null {
     const generator = buildGenerator(program, args);
 
     if (generator === null) {
@@ -1066,7 +1072,7 @@ export function generateSchema(program: ts.Program, fullTypeName: string, args: 
     }
 
     if (fullTypeName === "*") { // All types in file(s)
-        return generator.getSchemaForSymbols(generator.getMainFileSymbols(program));
+        return generator.getSchemaForSymbols(generator.getMainFileSymbols(program, onlyIncludeFiles));
     } else { // Use specific type as root object
         return generator.getSchemaForSymbol(fullTypeName);
     }
@@ -1089,17 +1095,27 @@ export function programFromConfig(configFileName: string): ts.Program {
     return program;
 }
 
+function normalizeFileName(fn: string): string {
+    while (fn.substr(0, 2) === "./") {
+        fn = fn.substr(2);
+    }
+    return fn;
+}
+
 export function exec(filePattern: string, fullTypeName: string, args = getDefaultArgs()) {
     let program: ts.Program;
+    let onlyIncludeFiles: string[] | undefined = undefined;
     if (REGEX_TSCONFIG_NAME.test(path.basename(filePattern))) {
         program = programFromConfig(filePattern);
     } else {
-        program = getProgramFromFiles(glob.sync(filePattern), {
+        onlyIncludeFiles = glob.sync(filePattern);
+        program = getProgramFromFiles(onlyIncludeFiles, {
             strictNullChecks: args.strictNullChecks
         });
+        onlyIncludeFiles = onlyIncludeFiles.map(normalizeFileName);
     }
 
-    const definition = generateSchema(program, fullTypeName, args);
+    const definition = generateSchema(program, fullTypeName, args, onlyIncludeFiles);
     if (definition === null) {
         return;
     }

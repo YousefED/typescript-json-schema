@@ -56,7 +56,7 @@
     "required": [
         "varBoolean",
         "varInteger",
-        ",varString"
+        "varString"
     ],
     "type": "object"
 }

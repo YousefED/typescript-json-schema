@@ -362,7 +362,12 @@ export class JsonSchemaGenerator {
         // try to get default value
         let valDecl = prop.valueDeclaration as ts.VariableDeclaration;
         if (valDecl && valDecl.initializer) {
-            const initial = valDecl.initializer;
+            let initial = valDecl.initializer;
+
+            while (ts.isTypeAssertion(initial)) {
+                initial = initial.expression;
+            }
+
             if ((<any>initial).expression) { // node
                 console.warn("initializer is expression for property " + propertyName);
             } else if ((<any>initial).kind && (<any>initial).kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral) {

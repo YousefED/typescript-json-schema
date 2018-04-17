@@ -1,0 +1,62 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "properties": {
+        "varBoolean": {
+            "anyOf": [
+                {
+                    "enum": [
+                        "a",
+                        "b",
+                        "c",
+                        false,
+                        true
+                    ]
+                },
+                {
+                    "type": "number"
+                }
+            ],
+            "default": false
+        },
+        "varInteger": {
+            "anyOf": [
+                {
+                    "enum": [
+                        "a",
+                        "b",
+                        "c",
+                        false,
+                        true
+                    ]
+                },
+                {
+                    "type": "number"
+                }
+            ],
+            "default": 123
+        },
+        "varString": {
+            "anyOf": [
+                {
+                    "enum": [
+                        "a",
+                        "b",
+                        "c",
+                        false,
+                        true
+                    ]
+                },
+                {
+                    "type": "number"
+                }
+            ],
+            "default": "123"
+        }
+    },
+    "required": [
+        "varBoolean",
+        "varInteger",
+        "varString"
+    ],
+    "type": "object"
+}

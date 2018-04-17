@@ -240,5 +240,6 @@ describe("schema", () => {
         assertSchema("private-members", "MyObject", {
             excludePrivate: true
         });
+        assertSchema("builtin-names", "Ext.Foo");
     });
 });

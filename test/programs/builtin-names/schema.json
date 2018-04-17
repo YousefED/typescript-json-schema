@@ -1,0 +1,17 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "definitions": {
+        "Ext.Array": {
+            "type": "object"
+        }
+    },
+    "properties": {
+        "bar": {
+            "$ref": "#/definitions/Ext.Array"
+        }
+    },
+    "required": [
+        "bar"
+    ],
+    "type": "object"
+}

@@ -268,8 +268,6 @@ export class JsonSchemaGenerator {
     }
 
     private getDefinitionForRootType(propertyType: ts.Type, tc: ts.TypeChecker, reffedType: ts.Symbol, definition: Definition) {
-        const symbol = propertyType.getSymbol();
-
         const tupleType = this.resolveTupleType(propertyType);
 
         if (tupleType) { // tuple
@@ -283,49 +281,42 @@ export class JsonSchemaGenerator {
             };
         } else {
             const propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+            const flags = propertyType.flags;
+            const arrayType = tc.getIndexTypeOfType(propertyType, ts.IndexKind.Number);
 
-            switch (propertyTypeString.toLowerCase()) {
-                case "string":
-                    definition.type = "string";
-                    break;
-                case "number":
-                    const isInteger = (definition.type === "integer" || (reffedType && reffedType.getName() === "integer"));
-                    definition.type = isInteger ? "integer" : "number";
-                    break;
-                case "boolean":
-                    definition.type = "boolean";
-                    break;
-                case "null":
-                    definition.type = "null";
-                    break;
-                case "undefined":
-                    definition.type = "undefined";
-                    break;
-                case "any":
-                    // no type restriction, so that anything will match
-                    break;
-                case "date":
-                    definition.type = "string";
-                    definition.format = "date-time";
-                    break;
-                default:
-                    const value = this.extractLiteralValue(propertyType);
-                    if (value !== undefined) {
-                        definition.type = typeof value;
-                        definition.enum = [ value ];
-                    } else if (symbol && (symbol.getName() === "Array" || symbol.getName() === "ReadonlyArray")) {
-                        const arrayType = (<ts.TypeReference>propertyType).typeArguments![0];
-                        definition.type = "array";
-                        definition.items = this.getTypeDefinition(arrayType, tc);
-                    } else {
-                        // Report that type could not be processed
-                        let info: any = propertyType;
-                        try {
-                            info = JSON.stringify(propertyType);
-                        } catch(err) {}
-                        console.error("Unsupported type: ", info);
-                        // definition = this.getTypeDefinition(propertyType, tc);
-                    }
+            if (flags & ts.TypeFlags.String) {
+                definition.type = "string";
+            } else if (flags & ts.TypeFlags.Number) {
+                const isInteger = (definition.type === "integer" || (reffedType && reffedType.getName() === "integer"));
+                definition.type = isInteger ? "integer" : "number";
+            } else if (flags & ts.TypeFlags.Boolean) {
+                definition.type = "boolean";
+            } else if (flags & ts.TypeFlags.Null) {
+                definition.type = "null";
+            } else if (flags & ts.TypeFlags.Undefined) {
+                definition.type = "undefined";
+            } else if (flags & ts.TypeFlags.Any) {
+                // no type restriction, so that anything will match
+            } else if (propertyTypeString === "date") {
+                definition.type = "string";
+                definition.format = "date-time";
+            } else {
+                const value = this.extractLiteralValue(propertyType);
+                if (value !== undefined) {
+                    definition.type = typeof value;
+                    definition.enum = [ value ];
+                } else if (arrayType !== undefined) {
+                    definition.type = "array";
+                    definition.items = this.getTypeDefinition(arrayType, tc);
+                } else {
+                    // Report that type could not be processed
+                    let info: any = propertyType;
+                    try {
+                        info = JSON.stringify(propertyType);
+                    } catch(err) {}
+                    console.error("Unsupported type: ", info);
+                    // definition = this.getTypeDefinition(propertyType, tc);
+                }
             }
         }
 
@@ -735,7 +726,8 @@ export class JsonSchemaGenerator {
         let returnedDefinition = definition; // returned definition, may be a $ref
 
         const symbol = typ.getSymbol();
-        const isRawType = (!symbol || symbol.name === "integer" || symbol.name === "Array" || symbol.name === "ReadonlyArray" || symbol.name === "Date");
+        // FIXME: We can't just compare the name of the symbol - it ignores the namespace
+        const isRawType = (!symbol || symbol.name === "Date" || symbol.name === "integer" || tc.getIndexInfoOfType(typ, ts.IndexKind.Number) !== undefined);
 
         // special case: an union where all child are string literals -> make an enum instead
         let isStringEnum = false;

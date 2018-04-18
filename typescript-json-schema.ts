@@ -297,7 +297,7 @@ export class JsonSchemaGenerator {
                 definition.type = "undefined";
             } else if (flags & ts.TypeFlags.Any) {
                 // no type restriction, so that anything will match
-            } else if (propertyTypeString === "date") {
+            } else if (propertyTypeString === "Date") {
                 definition.type = "string";
                 definition.format = "date-time";
             } else {

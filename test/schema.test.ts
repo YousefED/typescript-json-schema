@@ -136,6 +136,7 @@ describe("schema", () => {
         });
         assertSchema("type-union-tagged", "Shape");
         assertSchema("type-aliases-union-namespace", "MyModel");
+        assertSchema("type-intersection-recursive", "*");
     });
 
     describe("annotations", () => {

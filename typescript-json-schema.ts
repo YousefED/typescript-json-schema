@@ -537,6 +537,51 @@ export class JsonSchemaGenerator {
         return definition;
     }
 
+    private getIntersectionDefinition(intersectionType: ts.IntersectionType, tc: ts.TypeChecker, definition: Definition) {
+        const simpleTypes: string[] = [];
+        const schemas: Definition[] = [];
+
+        const addSimpleType = (type: string) => {
+            if (simpleTypes.indexOf(type) === -1) {
+                simpleTypes.push(type);
+            }
+        };
+
+        for (let i = 0; i < intersectionType.types.length; ++i) {
+            const def = this.getTypeDefinition(intersectionType.types[i], tc);
+            if (def.type === "undefined") {
+                console.error("Undefined in intersection makes no sense.");
+            } else {
+                const keys = Object.keys(def);
+                if (keys.length === 1 && keys[0] === "type") {
+                    if (typeof def.type !== "string") {
+                        console.error("Expected only a simple type.");
+                    } else {
+                        addSimpleType(def.type);
+                    }
+                } else {
+                    schemas.push(def);
+                }
+            }
+        }
+
+        if (simpleTypes.length > 0) {
+            schemas.push({ type: simpleTypes.length === 1 ? simpleTypes[0] : simpleTypes });
+        }
+
+        if (schemas.length === 1) {
+            for (let k in schemas[0]) {
+                if (schemas[0].hasOwnProperty(k)) {
+                    definition[k] = schemas[0][k];
+                }
+            }
+        } else {
+            definition.allOf = schemas;
+        }
+        return definition;
+    }
+
+
     private getClassDefinition(clazzType: ts.Type, tc: ts.TypeChecker, definition: Definition): Definition {
         const node = clazzType.getSymbol()!.getDeclarations()![0];
         if (this.args.typeOfKeyword && node.kind === ts.SyntaxKind.FunctionType) {
@@ -797,22 +842,26 @@ export class JsonSchemaGenerator {
                 if (typ.flags & ts.TypeFlags.Union) {
                     this.getUnionDefinition(typ as ts.UnionType, prop!, tc, unionModifier, definition);
                 } else if (typ.flags & ts.TypeFlags.Intersection) {
-                    // extend object instead of using allOf because allOf does not work well with additional properties. See #107
                     if (this.args.noExtraProps) {
-                        definition.additionalProperties = false;
-                    }
+                        // extend object instead of using allOf because allOf does not work well with additional properties. See #107
+                        if (this.args.noExtraProps) {
+                            definition.additionalProperties = false;
+                        }
 
-                    const types = (<ts.IntersectionType> typ).types;
-                    for (let i = 0; i < types.length; ++i) {
-                        const other = this.getTypeDefinition(types[i], tc, false);
-                        definition.type = other.type;  // should always be object
-                        definition.properties = extend(definition.properties || {}, other.properties);
-                        if (Object.keys(other.default || {}).length > 0) {
-                            definition.default = extend(definition.default || {}, other.default);
+                        const types = (<ts.IntersectionType> typ).types;
+                        for (let i = 0; i < types.length; ++i) {
+                            const other = this.getTypeDefinition(types[i], tc, false);
+                            definition.type = other.type;  // should always be object
+                            definition.properties = extend(definition.properties || {}, other.properties);
+                            if (Object.keys(other.default || {}).length > 0) {
+                                definition.default = extend(definition.default || {}, other.default);
+                            }
+                            if (other.required) {
+                                definition.required = unique((definition.required || []).concat(other.required)).sort();
+                            }
                         }
-                        if (other.required) {
-                            definition.required = unique((definition.required || []).concat(other.required)).sort();
-                        }
+                    } else {
+                        this.getIntersectionDefinition(typ as ts.IntersectionType, tc, definition);
                     }
                 } else if (isRawType) {
                     if (pairedSymbol) {

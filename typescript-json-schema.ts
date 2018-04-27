@@ -267,12 +267,12 @@ export class JsonSchemaGenerator {
         return propertyType as any;
     }
 
-    private getDefinitionForRootType(propertyType: ts.Type, tc: ts.TypeChecker, reffedType: ts.Symbol, definition: Definition) {
+    private getDefinitionForRootType(propertyType: ts.Type, reffedType: ts.Symbol, definition: Definition) {
         const tupleType = this.resolveTupleType(propertyType);
 
         if (tupleType) { // tuple
             const elemTypes: ts.NodeArray<ts.TypeNode> = tupleType.elementTypes || (propertyType as any).typeArguments;
-            const fixedTypes = elemTypes.map(elType => this.getTypeDefinition(elType as any, tc));
+            const fixedTypes = elemTypes.map(elType => this.getTypeDefinition(elType as any));
             definition.type = "array";
             definition.items = fixedTypes;
             definition.minItems = fixedTypes.length;
@@ -280,9 +280,9 @@ export class JsonSchemaGenerator {
                 anyOf: fixedTypes
             };
         } else {
-            const propertyTypeString = tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+            const propertyTypeString = this.tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             const flags = propertyType.flags;
-            const arrayType = tc.getIndexTypeOfType(propertyType, ts.IndexKind.Number);
+            const arrayType = this.tc.getIndexTypeOfType(propertyType, ts.IndexKind.Number);
 
             if (flags & ts.TypeFlags.String) {
                 definition.type = "string";
@@ -307,7 +307,7 @@ export class JsonSchemaGenerator {
                     definition.enum = [ value ];
                 } else if (arrayType !== undefined) {
                     definition.type = "array";
-                    definition.items = this.getTypeDefinition(arrayType, tc);
+                    definition.items = this.getTypeDefinition(arrayType);
                 } else {
                     // Report that type could not be processed
                     let info: any = propertyType;
@@ -323,24 +323,24 @@ export class JsonSchemaGenerator {
         return definition;
     }
 
-    private getReferencedTypeSymbol(prop: ts.Symbol, tc: ts.TypeChecker): ts.Symbol|undefined {
+    private getReferencedTypeSymbol(prop: ts.Symbol): ts.Symbol|undefined {
         const decl = prop.getDeclarations();
         if (decl && decl.length) {
             const type = (<ts.TypeReferenceNode> (<any> decl[0]).type);
             if (type && (type.kind & ts.SyntaxKind.TypeReference) && type.typeName) {
-                return tc.getSymbolAtLocation(type.typeName);
+                return this.tc.getSymbolAtLocation(type.typeName);
             }
         }
         return undefined;
     }
 
-    private getDefinitionForProperty(prop: ts.Symbol, tc: ts.TypeChecker, node: ts.Node) {
+    private getDefinitionForProperty(prop: ts.Symbol, node: ts.Node) {
         const propertyName = prop.getName();
-        const propertyType = tc.getTypeOfSymbolAtLocation(prop, node);
+        const propertyType = this.tc.getTypeOfSymbolAtLocation(prop, node);
 
-        const reffedType = this.getReferencedTypeSymbol(prop, tc);
+        const reffedType = this.getReferencedTypeSymbol(prop);
 
-        let definition = this.getTypeDefinition(propertyType, tc, undefined, undefined, prop, reffedType);
+        let definition = this.getTypeDefinition(propertyType, undefined, undefined, prop, reffedType);
 
         if (this.args.titles) {
             definition.title = propertyName;
@@ -383,9 +383,9 @@ export class JsonSchemaGenerator {
         return definition;
     }
 
-    private getEnumDefinition(clazzType: ts.Type, tc: ts.TypeChecker, definition: Definition): Definition {
+    private getEnumDefinition(clazzType: ts.Type, definition: Definition): Definition {
         const node = clazzType.getSymbol()!.getDeclarations()![0];
-        const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+        const fullName = this.tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
         const members: ts.NodeArray<ts.EnumMember> = node.kind === ts.SyntaxKind.EnumDeclaration ?
             (node as ts.EnumDeclaration).members :
             ts.createNodeArray([node as ts.EnumMember]);
@@ -400,7 +400,7 @@ export class JsonSchemaGenerator {
 
         members.forEach(member => {
             const caseLabel = (<ts.Identifier>member.name).text;
-            const constantValue = tc.getConstantValue(member);
+            const constantValue = this.tc.getConstantValue(member);
             if (constantValue !== undefined) {
                 enumValues.push(constantValue);
                 addType(typeof constantValue);
@@ -444,7 +444,7 @@ export class JsonSchemaGenerator {
         return definition;
     }
 
-    private getUnionDefinition(unionType: ts.UnionType, prop: ts.Symbol, tc: ts.TypeChecker, unionModifier: string, definition: Definition) {
+    private getUnionDefinition(unionType: ts.UnionType, prop: ts.Symbol, unionModifier: string, definition: Definition) {
         const enumValues: PrimitiveType[] = [];
         const simpleTypes: string[] = [];
         const schemas: Definition[] = [];
@@ -467,7 +467,7 @@ export class JsonSchemaGenerator {
             if (value !== undefined) {
                 addEnumValue(value);
             } else {
-                const def = this.getTypeDefinition(unionType.types[i], tc);
+                const def = this.getTypeDefinition(unionType.types[i]);
                 if (def.type === "undefined") {
                     if (prop) {
                         (<any>prop).mayBeUndefined = true;
@@ -528,7 +528,7 @@ export class JsonSchemaGenerator {
         return definition;
     }
 
-    private getIntersectionDefinition(intersectionType: ts.IntersectionType, tc: ts.TypeChecker, definition: Definition) {
+    private getIntersectionDefinition(intersectionType: ts.IntersectionType, definition: Definition) {
         const simpleTypes: string[] = [];
         const schemas: Definition[] = [];
 
@@ -539,7 +539,7 @@ export class JsonSchemaGenerator {
         };
 
         for (let i = 0; i < intersectionType.types.length; ++i) {
-            const def = this.getTypeDefinition(intersectionType.types[i], tc);
+            const def = this.getTypeDefinition(intersectionType.types[i]);
             if (def.type === "undefined") {
                 console.error("Undefined in intersection makes no sense.");
             } else {
@@ -573,7 +573,7 @@ export class JsonSchemaGenerator {
     }
 
 
-    private getClassDefinition(clazzType: ts.Type, tc: ts.TypeChecker, definition: Definition): Definition {
+    private getClassDefinition(clazzType: ts.Type, definition: Definition): Definition {
         const node = clazzType.getSymbol()!.getDeclarations()![0];
         if (this.args.typeOfKeyword && node.kind === ts.SyntaxKind.FunctionType) {
             definition.typeof = "function";
@@ -581,7 +581,7 @@ export class JsonSchemaGenerator {
         }
 
         const clazz = <ts.ClassDeclaration>node;
-        const props = tc.getPropertiesOfType(clazzType).filter(prop => {
+        const props = this.tc.getPropertiesOfType(clazzType).filter(prop => {
             if (!this.args.excludePrivate) {
                 return true;
             }
@@ -592,13 +592,13 @@ export class JsonSchemaGenerator {
                 return mods && mods.filter(mod => mod.kind === ts.SyntaxKind.PrivateKeyword).length > 0;
             }).length > 0);
         });
-        const fullName = tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+        const fullName = this.tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
 
         const modifierFlags = ts.getCombinedModifierFlags(node);
 
         if (modifierFlags & ts.ModifierFlags.Abstract) {
             const oneOf = this.inheritingTypes[fullName].map((typename) => {
-                return this.getTypeDefinition(this.allSymbols[typename], tc);
+                return this.getTypeDefinition(this.allSymbols[typename]);
             });
 
             definition.oneOf = oneOf;
@@ -612,14 +612,14 @@ export class JsonSchemaGenerator {
                         throw new Error("Not supported: IndexSignatureDeclaration parameters.length != 1");
                     }
                     const indexSymbol: ts.Symbol = (<any>indexSignature.parameters[0]).symbol;
-                    const indexType = tc.getTypeOfSymbolAtLocation(indexSymbol, node);
+                    const indexType = this.tc.getTypeOfSymbolAtLocation(indexSymbol, node);
                     const isStringIndexed = (indexType.flags === ts.TypeFlags.String);
                     if (indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
                         throw new Error("Not supported: IndexSignatureDeclaration with index symbol other than a number or a string");
                     }
 
-                    const typ = tc.getTypeAtLocation(indexSignature.type!);
-                    const def = this.getTypeDefinition(typ, tc, undefined, "anyOf");
+                    const typ = this.tc.getTypeAtLocation(indexSignature.type!);
+                    const def = this.getTypeDefinition(typ, undefined, "anyOf");
 
                     if (isStringIndexed) {
                         definition.type = "object";
@@ -633,7 +633,7 @@ export class JsonSchemaGenerator {
 
             const propertyDefinitions = props.reduce((all, prop) => {
                 const propertyName = prop.getName();
-                const propDef = this.getDefinitionForProperty(prop, tc, node);
+                const propDef = this.getDefinitionForProperty(prop, node);
                 if (propDef != null) {
                     all[propertyName] = propDef;
                 }
@@ -738,13 +738,13 @@ export class JsonSchemaGenerator {
     /**
      * Gets/generates a globally unique type name for the given type
      */
-    private getTypeName(typ: ts.Type, tc: ts.TypeChecker) {
+    private getTypeName(typ: ts.Type) {
         const id = (typ as any).id as number;
         if (this.typeNamesById[id]) { // Name already assigned?
             return this.typeNamesById[id];
         }
 
-        const baseName = tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+        const baseName = this.tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
         let name = baseName;
         if (this.typeNamesUsed[name]) { // If a type with same name exists
             for (let i = 1; true; ++i) { // Try appending "_1", "_2", etc.
@@ -760,7 +760,7 @@ export class JsonSchemaGenerator {
         return name;
     }
 
-    private getTypeDefinition(typ: ts.Type, tc: ts.TypeChecker, asRef = this.args.ref, unionModifier: string = "anyOf", prop?: ts.Symbol, reffedType?: ts.Symbol, pairedSymbol?: ts.Symbol): Definition {
+    private getTypeDefinition(typ: ts.Type, asRef = this.args.ref, unionModifier: string = "anyOf", prop?: ts.Symbol, reffedType?: ts.Symbol, pairedSymbol?: ts.Symbol): Definition {
         const definition: Definition = {}; // real definition
 
         if (this.args.typeOfKeyword && (typ.flags & ts.TypeFlags.Object) && ((<ts.ObjectType>typ).objectFlags & ts.ObjectFlags.Anonymous)) {
@@ -772,7 +772,7 @@ export class JsonSchemaGenerator {
 
         const symbol = typ.getSymbol();
         // FIXME: We can't just compare the name of the symbol - it ignores the namespace
-        const isRawType = (!symbol || symbol.name === "Date" || symbol.name === "integer" || tc.getIndexInfoOfType(typ, ts.IndexKind.Number) !== undefined);
+        const isRawType = (!symbol || symbol.name === "Date" || symbol.name === "integer" || this.tc.getIndexInfoOfType(typ, ts.IndexKind.Number) !== undefined);
 
         // special case: an union where all child are string literals -> make an enum instead
         let isStringEnum = false;
@@ -794,13 +794,13 @@ export class JsonSchemaGenerator {
 
         let fullTypeName = "";
         if (asTypeAliasRef) {
-            fullTypeName = tc.getFullyQualifiedName(
+            fullTypeName = this.tc.getFullyQualifiedName(
                 reffedType!.getFlags() & ts.SymbolFlags.Alias ?
-                    tc.getAliasedSymbol(reffedType!) :
+                    this.tc.getAliasedSymbol(reffedType!) :
                     reffedType!
             ).replace(REGEX_FILE_NAME, "");
         } else if (asRef) {
-            fullTypeName = this.getTypeName(typ, tc);
+            fullTypeName = this.getTypeName(typ);
         }
 
         fullTypeName = fullTypeName.replace(" ", "");
@@ -823,7 +823,7 @@ export class JsonSchemaGenerator {
         // if it will be a $ref and it is not yet created
         if (!asRef || !this.reffedDefinitions[fullTypeName]) {
             if (asRef) { // must be here to prevent recursivity problems
-                this.reffedDefinitions[fullTypeName] = asTypeAliasRef && reffedType!.getFlags() & ts.TypeFlags.IndexedAccess && symbol ? this.getTypeDefinition(typ, tc, true, undefined, symbol, symbol) : definition;
+                this.reffedDefinitions[fullTypeName] = asTypeAliasRef && reffedType!.getFlags() & ts.TypeFlags.IndexedAccess && symbol ? this.getTypeDefinition(typ, true, undefined, symbol, symbol) : definition;
                 if (this.args.titles && fullTypeName) {
                     definition.title = fullTypeName;
                 }
@@ -832,7 +832,7 @@ export class JsonSchemaGenerator {
 
             if (definition.type === undefined) {  // if users override the type, do not try to infer it
                 if (typ.flags & ts.TypeFlags.Union) {
-                    this.getUnionDefinition(typ as ts.UnionType, prop!, tc, unionModifier, definition);
+                    this.getUnionDefinition(typ as ts.UnionType, prop!, unionModifier, definition);
                 } else if (typ.flags & ts.TypeFlags.Intersection) {
                     if (this.args.noExtraProps) {
                         // extend object instead of using allOf because allOf does not work well with additional properties. See #107
@@ -842,7 +842,7 @@ export class JsonSchemaGenerator {
 
                         const types = (<ts.IntersectionType> typ).types;
                         for (let i = 0; i < types.length; ++i) {
-                            const other = this.getTypeDefinition(types[i], tc, false);
+                            const other = this.getTypeDefinition(types[i], false);
                             definition.type = other.type;  // should always be object
                             definition.properties = extend(definition.properties || {}, other.properties);
                             if (Object.keys(other.default || {}).length > 0) {
@@ -853,21 +853,21 @@ export class JsonSchemaGenerator {
                             }
                         }
                     } else {
-                        this.getIntersectionDefinition(typ as ts.IntersectionType, tc, definition);
+                        this.getIntersectionDefinition(typ as ts.IntersectionType, definition);
                     }
                 } else if (isRawType) {
                     if (pairedSymbol) {
                         this.parseCommentsIntoDefinition(pairedSymbol, definition, {});
                     }
-                    this.getDefinitionForRootType(typ, tc, reffedType!, definition);
+                    this.getDefinitionForRootType(typ, reffedType!, definition);
                 } else if (node && (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)) {
-                    this.getEnumDefinition(typ, tc, definition);
+                    this.getEnumDefinition(typ, definition);
                 } else if (symbol && symbol.flags & ts.SymbolFlags.TypeLiteral && symbol.members!.size === 0 && !(node && (node.kind === ts.SyntaxKind.MappedType))) {
                     // {} is TypeLiteral with no members. Need special case because it doesn't have declarations.
                     definition.type = "object";
                     definition.properties = {};
                 } else {
-                    this.getClassDefinition(typ, tc, definition);
+                    this.getClassDefinition(typ, definition);
                 }
             }
         }
@@ -887,7 +887,7 @@ export class JsonSchemaGenerator {
         if(!this.allSymbols[symbolName]) {
             throw new Error(`type ${symbolName} not found`);
         }
-        let def = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName] || undefined);
+        let def = this.getTypeDefinition(this.allSymbols[symbolName], this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName] || undefined);
 
         if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
             def.definitions = this.reffedDefinitions;
@@ -903,7 +903,7 @@ export class JsonSchemaGenerator {
         };
         for (let i = 0; i < symbolNames.length; i++) {
             const symbolName = symbolNames[i];
-            root.definitions[symbolName] = this.getTypeDefinition(this.allSymbols[symbolName], this.tc, this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName]);
+            root.definitions[symbolName] = this.getTypeDefinition(this.allSymbols[symbolName], this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName]);
         }
         if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
             root.definitions = {...root.definitions, ... this.reffedDefinitions};

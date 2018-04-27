@@ -850,7 +850,13 @@ export class JsonSchemaGenerator {
         // if it will be a $ref and it is not yet created
         if (!asRef || !this.reffedDefinitions[fullTypeName]) {
             if (asRef) { // must be here to prevent recursivity problems
-                this.reffedDefinitions[fullTypeName] = asTypeAliasRef && reffedType!.getFlags() & ts.TypeFlags.IndexedAccess && symbol ? this.getTypeDefinition(typ, true, undefined, symbol, symbol) : definition;
+                let reffedDefinition: Definition;
+                if (asTypeAliasRef && reffedType!.getFlags() & ts.TypeFlags.IndexedAccess && symbol) {
+                    reffedDefinition = this.getTypeDefinition(typ, true, undefined, symbol, symbol);
+                } else {
+                    reffedDefinition = definition;
+                }
+                this.reffedDefinitions[fullTypeName] =  reffedDefinition;
                 if (this.args.titles && fullTypeName) {
                     definition.title = fullTypeName;
                 }

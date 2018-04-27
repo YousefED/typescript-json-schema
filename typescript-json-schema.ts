@@ -140,7 +140,7 @@ function extractLiteralValue(typ: ts.Type): PrimitiveType | undefined {
         return (typ as any).intrinsicName === "true";
     } else if (typ.flags & ts.TypeFlags.EnumLiteral) {
         // or .text for old TS
-        let num = parseFloat(str as string);
+        const num = parseFloat(str as string);
         return isNaN(num) ? str : num;
     } else if (typ.flags & ts.TypeFlags.NumberLiteral) {
         return parseFloat(str as string);
@@ -167,7 +167,7 @@ const simpleTypesAllowedProperties = {
 };
 
 function addSimpleType(def: Definition, type: string) {
-    for (let k in def) {
+    for (const k in def) {
         if (!simpleTypesAllowedProperties[k]) {
             return false;
         }
@@ -197,7 +197,7 @@ function addSimpleType(def: Definition, type: string) {
 
 function makeNullable(def: Definition) {
     if (!addSimpleType(def, "null")) {
-        let union = def.oneOf || def.anyOf;
+        const union = def.oneOf || def.anyOf;
         if (union) {
             union.push({ type: "null" });
         } else {
@@ -325,7 +325,7 @@ export class JsonSchemaGenerator {
         }
 
         // the comments for a symbol
-        let comments = symbol.getDocumentationComment();
+        const comments = symbol.getDocumentationComment();
 
         if (comments.length) {
             definition.description = comments.map(comment => comment.kind === "lineBreak" ? comment.text : comment.text.trim().replace(/\r\n/g, "\n")).join("");
@@ -418,7 +418,7 @@ export class JsonSchemaGenerator {
 
         const reffedType = this.getReferencedTypeSymbol(prop);
 
-        let definition = this.getTypeDefinition(propertyType, undefined, undefined, prop, reffedType);
+        const definition = this.getTypeDefinition(propertyType, undefined, undefined, prop, reffedType);
 
         if (this.args.titles) {
             definition.title = propertyName;
@@ -429,7 +429,7 @@ export class JsonSchemaGenerator {
         }
 
         // try to get default value
-        let valDecl = prop.valueDeclaration as ts.VariableDeclaration;
+        const valDecl = prop.valueDeclaration as ts.VariableDeclaration;
         if (valDecl && valDecl.initializer) {
             let initial = valDecl.initializer;
 
@@ -468,7 +468,7 @@ export class JsonSchemaGenerator {
             (node as ts.EnumDeclaration).members :
             ts.createNodeArray([node as ts.EnumMember]);
         var enumValues: (number|boolean|string|null)[] = [];
-        let enumTypes: string[] = [];
+        const enumTypes: string[] = [];
 
         const addType = (type: string) => {
             if (enumTypes.indexOf(type) === -1) {
@@ -484,7 +484,7 @@ export class JsonSchemaGenerator {
                 addType(typeof constantValue);
             } else {
                 // try to extract the enums value; it will probably by a cast expression
-                let initial: ts.Expression|undefined = member.initializer;
+                const initial: ts.Expression|undefined = member.initializer;
                 if (initial) {
                     if ((<any>initial).expression) { // node
                         const exp = (<any>initial).expression;
@@ -539,13 +539,12 @@ export class JsonSchemaGenerator {
             }
         };
 
-        for (let i = 0; i < unionType.types.length; ++i) {
-            const valueType = unionType.types[i];
+        for (const valueType of unionType.types) {
             const value = extractLiteralValue(valueType);
             if (value !== undefined) {
                 pushEnumValue(value);
             } else {
-                const def = this.getTypeDefinition(unionType.types[i]);
+                const def = this.getTypeDefinition(valueType);
                 if (def.type === "undefined") {
                     if (prop) {
                         (<any>prop).mayBeUndefined = true;
@@ -595,7 +594,7 @@ export class JsonSchemaGenerator {
         }
 
         if (schemas.length === 1) {
-            for (let k in schemas[0]) {
+            for (const k in schemas[0]) {
                 if (schemas[0].hasOwnProperty(k)) {
                     definition[k] = schemas[0][k];
                 }
@@ -616,8 +615,8 @@ export class JsonSchemaGenerator {
             }
         };
 
-        for (let i = 0; i < intersectionType.types.length; ++i) {
-            const def = this.getTypeDefinition(intersectionType.types[i]);
+        for (const intersectionMember of intersectionType.types) {
+            const def = this.getTypeDefinition(intersectionMember);
             if (def.type === "undefined") {
                 console.error("Undefined in intersection makes no sense.");
             } else {
@@ -639,7 +638,7 @@ export class JsonSchemaGenerator {
         }
 
         if (schemas.length === 1) {
-            for (let k in schemas[0]) {
+            for (const k in schemas[0]) {
                 if (schemas[0].hasOwnProperty(k)) {
                     definition[k] = schemas[0][k];
                 }
@@ -664,9 +663,9 @@ export class JsonSchemaGenerator {
                 return true;
             }
 
-            let decls = prop.declarations;
+            const decls = prop.declarations;
             return !(decls && decls.filter(decl => {
-                let mods = decl.modifiers;
+                const mods = decl.modifiers;
                 return mods && mods.filter(mod => mod.kind === ts.SyntaxKind.PrivateKeyword).length > 0;
             }).length > 0);
         });
@@ -744,7 +743,7 @@ export class JsonSchemaGenerator {
             }
             if (this.args.required) {
                 const requiredProps = props.reduce((required: string[], prop: ts.Symbol) => {
-                    let def = {};
+                    const def = {};
                     this.parseCommentsIntoDefinition(prop, def, {});
                     if (!(prop.flags & ts.SymbolFlags.Optional) && !(<any>prop).mayBeUndefined && !def.hasOwnProperty("ignore")) {
                         required.push(prop.getName());
@@ -874,8 +873,8 @@ export class JsonSchemaGenerator {
                         }
 
                         const types = (<ts.IntersectionType> typ).types;
-                        for (let i = 0; i < types.length; ++i) {
-                            const other = this.getTypeDefinition(types[i], false);
+                        for (const member of types) {
+                            const other = this.getTypeDefinition(member, false);
                             definition.type = other.type;  // should always be object
                             definition.properties = extend(definition.properties || {}, other.properties);
                             if (Object.keys(other.default || {}).length > 0) {
@@ -920,7 +919,7 @@ export class JsonSchemaGenerator {
         if(!this.allSymbols[symbolName]) {
             throw new Error(`type ${symbolName} not found`);
         }
-        let def = this.getTypeDefinition(this.allSymbols[symbolName], this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName] || undefined);
+        const def = this.getTypeDefinition(this.allSymbols[symbolName], this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName] || undefined);
 
         if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
             def.definitions = this.reffedDefinitions;
@@ -934,8 +933,7 @@ export class JsonSchemaGenerator {
             $schema: "http://json-schema.org/draft-06/schema#",
             definitions: {}
         };
-        for (let i = 0; i < symbolNames.length; i++) {
-            const symbolName = symbolNames[i];
+        for (const symbolName of symbolNames) {
             root.definitions[symbolName] = this.getTypeDefinition(this.allSymbols[symbolName], this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName]);
         }
         if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
@@ -983,7 +981,7 @@ export function getProgramFromFiles(files: string[], jsonCompilerOptions: any = 
 
 export function buildGenerator(program: ts.Program, args: PartialArgs = {}): JsonSchemaGenerator|null {
     // Use defaults unles otherwise specified
-    let settings = getDefaultArgs();
+    const settings = getDefaultArgs();
 
     for (const pref in args) {
         if (args.hasOwnProperty(pref)) {
@@ -1010,7 +1008,6 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
                   || node.kind === ts.SyntaxKind.TypeAliasDeclaration
                 ) {
                     const symbol: ts.Symbol = (<any>node).symbol;
-                    let fullName = tc.getFullyQualifiedName(symbol);
 
                     const nodeType = tc.getTypeAtLocation(node);
 
@@ -1018,7 +1015,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
                     // TODO: we probably don't want this eventually,
                     // as same types can occur in different files and will override eachother in allSymbols
                     // This means atm we can't generate all types in large programs.
-                    fullName = fullName.replace(/".*"\./, "");
+                    const fullName = tc.getFullyQualifiedName(symbol).replace(/".*"\./, "");
 
                     allSymbols[fullName] = nodeType;
 
@@ -1046,9 +1043,9 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
         return new JsonSchemaGenerator(allSymbols, userSymbols, inheritingTypes, typeChecker, settings);
     } else {
         diagnostics.forEach((diagnostic) => {
-            let message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
+            const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
             if(diagnostic.file) {
-                let { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
+                const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
                 console.error(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
             } else {
                 console.error(message);
@@ -1065,13 +1062,11 @@ export function generateSchema(program: ts.Program, fullTypeName: string, args: 
         return null;
     }
 
-    let definition: Definition;
     if (fullTypeName === "*") { // All types in file(s)
-        definition = generator.getSchemaForSymbols(generator.getMainFileSymbols(program));
+        return generator.getSchemaForSymbols(generator.getMainFileSymbols(program));
     } else { // Use specific type as root object
-        definition = generator.getSchemaForSymbol(fullTypeName);
+        return generator.getSchemaForSymbol(fullTypeName);
     }
-    return definition;
 }
 
 export function programFromConfig(configFileName: string): ts.Program {

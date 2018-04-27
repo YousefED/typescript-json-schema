@@ -214,60 +214,85 @@ function makeNullable(def: Definition) {
     return def;
 }
 
+/**
+ * JSDoc keywords that should be used to annotate the JSON schema.
+ *
+ * Many of these validation keywords are defined here: http://json-schema.org/latest/json-schema-validation.html
+ */
+const validationKeywords = {
+    multipleOf: true,               // 6.1.
+    maximum: true,                  // 6.2.
+    exclusiveMaximum: true,         // 6.3.
+    minimum: true,                  // 6.4.
+    exclusiveMinimum: true,         // 6.5.
+    maxLength: true,                // 6.6.
+    minLength: true,                // 6.7.
+    pattern: true,                  // 6.8.
+    // items: true,                    // 6.9.
+    // additionalItems: true,          // 6.10.
+    maxItems: true,                 // 6.11.
+    minItems: true,                 // 6.12.
+    uniqueItems: true,              // 6.13.
+    // contains: true,                 // 6.14.
+    maxProperties: true,            // 6.15.
+    minProperties: true,            // 6.16.
+    // required: true,                 // 6.17.  This is not required. It is auto-generated.
+    // properties: true,               // 6.18.  This is not required. It is auto-generated.
+    // patternProperties: true,        // 6.19.
+    additionalProperties: true,     // 6.20.
+    // dependencies: true,             // 6.21.
+    // propertyNames: true,            // 6.22.
+    enum: true,                     // 6.23.
+    // const: true,                    // 6.24.
+    type: true,                     // 6.25.
+    // allOf: true,                    // 6.26.
+    // anyOf: true,                    // 6.27.
+    // oneOf: true,                    // 6.28.
+    // not: true,                      // 6.29.
+
+    ignore: true,
+    description: true,
+    format: true,
+    default: true,
+    $ref: true,
+    id: true
+};
+
 export class JsonSchemaGenerator {
-    /**
-     * JSDoc keywords that should be used to annotate the JSON schema.
-     *
-     * Many of these validation keywords are defined here: http://json-schema.org/latest/json-schema-validation.html
-     */
-    private static validationKeywords = {
-        multipleOf: true,               // 6.1.
-        maximum: true,                  // 6.2.
-        exclusiveMaximum: true,         // 6.3.
-        minimum: true,                  // 6.4.
-        exclusiveMinimum: true,         // 6.5.
-        maxLength: true,                // 6.6.
-        minLength: true,                // 6.7.
-        pattern: true,                  // 6.8.
-        // items: true,                    // 6.9.
-        // additionalItems: true,          // 6.10.
-        maxItems: true,                 // 6.11.
-        minItems: true,                 // 6.12.
-        uniqueItems: true,              // 6.13.
-        // contains: true,                 // 6.14.
-        maxProperties: true,            // 6.15.
-        minProperties: true,            // 6.16.
-        // required: true,                 // 6.17.  This is not required. It is auto-generated.
-        // properties: true,               // 6.18.  This is not required. It is auto-generated.
-        // patternProperties: true,        // 6.19.
-        additionalProperties: true,     // 6.20.
-        // dependencies: true,             // 6.21.
-        // propertyNames: true,            // 6.22.
-        enum: true,                     // 6.23.
-        // const: true,                    // 6.24.
-        type: true,                     // 6.25.
-        // allOf: true,                    // 6.26.
-        // anyOf: true,                    // 6.27.
-        // oneOf: true,                    // 6.28.
-        // not: true,                      // 6.29.
-
-        ignore: true,
-        description: true,
-        format: true,
-        default: true,
-        $ref: true,
-        id: true
-    };
-
-    private allSymbols: { [name: string]: ts.Type };
-    private userSymbols: { [name: string]: ts.Symbol };
-    private inheritingTypes: { [baseName: string]: string[] };
     private tc: ts.TypeChecker;
 
+    /**
+     * All types for declarations of classes, interfaces, enums, and type aliases
+     * defined in all TS files.
+     */
+    private allSymbols: { [name: string]: ts.Type };
+    /**
+     * All symbols for declarations of classes, interfaces, enums, and type aliases
+     * defined in non-default-lib TS files.
+     */
+    private userSymbols: { [name: string]: ts.Symbol };
+    /**
+     * Maps from the names of base types to the names of the types that inherit from
+     * them.
+     */
+    private inheritingTypes: { [baseName: string]: string[] };
+
     private reffedDefinitions: { [key: string]: Definition } = {};
+
+    /**
+     * This is a set of all the user-defined validation keywords.
+     */
     private userValidationKeywords: ValidationKeywords;
 
+    /**
+     * Types are assigned names which are looked up by their IDs.  This is the
+     * map from type IDs to type names.
+     */
     private typeNamesById: { [id: number]: string } = {};
+    /**
+     * Whenever a type is assigned its name, its entry in this dictionary is set,
+     * so that we don't give the same name to two separate types.
+     */
     private typeNamesUsed: { [name: string]: boolean } = {};
 
     constructor(
@@ -311,7 +336,7 @@ export class JsonSchemaGenerator {
         jsdocs.forEach(doc => {
             // if we have @TJS-... annotations, we have to parse them
             const [name, text] = (doc.name === "TJS" ? new RegExp(REGEX_TJS_JSDOC).exec(doc.text!)!.slice(1,3) : [doc.name, doc.text]) as string[];
-            if (JsonSchemaGenerator.validationKeywords[name] || this.userValidationKeywords[name]) {
+            if (validationKeywords[name] || this.userValidationKeywords[name]) {
                 definition[name] = parseValue(text);
             } else {
                 // special annotations
@@ -806,6 +831,8 @@ export class JsonSchemaGenerator {
         fullTypeName = fullTypeName.replace(" ", "");
 
         if (asRef) {
+            // We don't return the full definition, but we put it into
+            // reffedDefinitions below.
             returnedDefinition = {
                 $ref:  "#/definitions/" + fullTypeName
             };

@@ -118,6 +118,102 @@ function unique(arr: string[]): string[] {
     return r;
 }
 
+/**
+ * Try to parse a value and returns the string if it fails.
+ */
+function parseValue(value: string) {
+    try {
+        return JSON.parse(value);
+    } catch (error) {
+        return value;
+    }
+}
+
+function extractLiteralValue(typ: ts.Type): PrimitiveType | undefined {
+    let str = (<ts.LiteralType>typ).value;
+    if (str === undefined) {
+        str = (typ as any).text;
+    }
+    if (typ.flags & ts.TypeFlags.StringLiteral) {
+        return str;
+    } else if (typ.flags & ts.TypeFlags.BooleanLiteral) {
+        return (typ as any).intrinsicName === "true";
+    } else if (typ.flags & ts.TypeFlags.EnumLiteral) {
+        // or .text for old TS
+        let num = parseFloat(str as string);
+        return isNaN(num) ? str : num;
+    } else if (typ.flags & ts.TypeFlags.NumberLiteral) {
+        return parseFloat(str as string);
+    }
+    return undefined;
+}
+
+/**
+ * Checks whether a type is a tuple type.
+ */
+function resolveTupleType(propertyType: ts.Type): ts.TupleTypeNode|null {
+    if (!propertyType.getSymbol() && (propertyType.getFlags() & ts.TypeFlags.Object && (<ts.ObjectType>propertyType).objectFlags & ts.ObjectFlags.Reference)) {
+        return (propertyType as ts.TypeReference).target as any;
+    }
+    if (!(propertyType.getFlags() & ts.TypeFlags.Object && (<ts.ObjectType>propertyType).objectFlags & ts.ObjectFlags.Tuple)) {
+        return null;
+    }
+    return propertyType as any;
+}
+
+const simpleTypesAllowedProperties = {
+    type: true,
+    description: true
+};
+
+function addSimpleType(def: Definition, type: string) {
+    for (let k in def) {
+        if (!simpleTypesAllowedProperties[k]) {
+            return false;
+        }
+    }
+
+    if (!def.type) {
+        def.type = type;
+    } else if (typeof def.type !== "string") {
+        if (!(<Object[]>def.type).every((val) => { return typeof val === "string"; })) {
+            return false;
+        }
+
+        if (def.type.indexOf("null") === -1) {
+            def.type.push("null");
+        }
+    } else {
+        if (typeof def.type !== "string") {
+            return false;
+        }
+
+        if (def.type !== "null") {
+            def.type = [ def.type, "null" ];
+        }
+    }
+    return true;
+}
+
+function makeNullable(def: Definition) {
+    if (!addSimpleType(def, "null")) {
+        let union = def.oneOf || def.anyOf;
+        if (union) {
+            union.push({ type: "null" });
+        } else {
+            const subdef = {};
+            for (var k in def) {
+                if (def.hasOwnProperty(k)) {
+                    subdef[k] = def[k];
+                    delete def[k];
+                }
+            }
+            def.anyOf = [ subdef, { type: "null" } ];
+        }
+    }
+    return def;
+}
+
 export class JsonSchemaGenerator {
     /**
      * JSDoc keywords that should be used to annotate the JSON schema.
@@ -196,17 +292,6 @@ export class JsonSchemaGenerator {
     }
 
     /**
-     * Try to parse a value and returns the string if it fails.
-     */
-    private parseValue(value: string) {
-        try {
-            return JSON.parse(value);
-        } catch (error) {
-            return value;
-        }
-    }
-
-    /**
      * Parse the comments of a symbol into the definition and other annotations.
      */
     private parseCommentsIntoDefinition(symbol: ts.Symbol, definition: {description?: string}, otherAnnotations: {}): void {
@@ -227,7 +312,7 @@ export class JsonSchemaGenerator {
             // if we have @TJS-... annotations, we have to parse them
             const [name, text] = (doc.name === "TJS" ? new RegExp(REGEX_TJS_JSDOC).exec(doc.text!)!.slice(1,3) : [doc.name, doc.text]) as string[];
             if (JsonSchemaGenerator.validationKeywords[name] || this.userValidationKeywords[name]) {
-                definition[name] = this.parseValue(text);
+                definition[name] = parseValue(text);
             } else {
                 // special annotations
                 otherAnnotations[doc.name] = true;
@@ -235,40 +320,8 @@ export class JsonSchemaGenerator {
         });
     }
 
-    private extractLiteralValue(typ: ts.Type): PrimitiveType | undefined {
-        let str = (<ts.LiteralType>typ).value;
-        if (str === undefined) {
-            str = (typ as any).text;
-        }
-        if (typ.flags & ts.TypeFlags.StringLiteral) {
-            return str;
-        } else if (typ.flags & ts.TypeFlags.BooleanLiteral) {
-            return (typ as any).intrinsicName === "true";
-        } else if (typ.flags & ts.TypeFlags.EnumLiteral) {
-            // or .text for old TS
-            let num = parseFloat(str as string);
-            return isNaN(num) ? str : num;
-        } else if (typ.flags & ts.TypeFlags.NumberLiteral) {
-            return parseFloat(str as string);
-        }
-        return undefined;
-    }
-
-    /**
-     * Checks whether a type is a tuple type.
-     */
-    private resolveTupleType(propertyType: ts.Type): ts.TupleTypeNode|null {
-        if (!propertyType.getSymbol() && (propertyType.getFlags() & ts.TypeFlags.Object && (<ts.ObjectType>propertyType).objectFlags & ts.ObjectFlags.Reference)) {
-            return (propertyType as ts.TypeReference).target as any;
-        }
-        if (!(propertyType.getFlags() & ts.TypeFlags.Object && (<ts.ObjectType>propertyType).objectFlags & ts.ObjectFlags.Tuple)) {
-            return null;
-        }
-        return propertyType as any;
-    }
-
     private getDefinitionForRootType(propertyType: ts.Type, reffedType: ts.Symbol, definition: Definition) {
-        const tupleType = this.resolveTupleType(propertyType);
+        const tupleType = resolveTupleType(propertyType);
 
         if (tupleType) { // tuple
             const elemTypes: ts.NodeArray<ts.TypeNode> = tupleType.elementTypes || (propertyType as any).typeArguments;
@@ -301,7 +354,7 @@ export class JsonSchemaGenerator {
                 definition.type = "string";
                 definition.format = "date-time";
             } else {
-                const value = this.extractLiteralValue(propertyType);
+                const value = extractLiteralValue(propertyType);
                 if (value !== undefined) {
                     definition.type = typeof value;
                     definition.enum = [ value ];
@@ -449,13 +502,13 @@ export class JsonSchemaGenerator {
         const simpleTypes: string[] = [];
         const schemas: Definition[] = [];
 
-        const addSimpleType = (type: string) => {
+        const pushSimpleType = (type: string) => {
             if (simpleTypes.indexOf(type) === -1) {
                 simpleTypes.push(type);
             }
         };
 
-        const addEnumValue = (val: PrimitiveType) => {
+        const pushEnumValue = (val: PrimitiveType) => {
             if (enumValues.indexOf(val) === -1) {
                 enumValues.push(val);
             }
@@ -463,9 +516,9 @@ export class JsonSchemaGenerator {
 
         for (let i = 0; i < unionType.types.length; ++i) {
             const valueType = unionType.types[i];
-            const value = this.extractLiteralValue(valueType);
+            const value = extractLiteralValue(valueType);
             if (value !== undefined) {
-                addEnumValue(value);
+                pushEnumValue(value);
             } else {
                 const def = this.getTypeDefinition(unionType.types[i]);
                 if (def.type === "undefined") {
@@ -478,7 +531,7 @@ export class JsonSchemaGenerator {
                         if (typeof def.type !== "string") {
                             console.error("Expected only a simple type.");
                         } else {
-                            addSimpleType(def.type);
+                            pushSimpleType(def.type);
                         }
                     } else {
                         schemas.push(def);
@@ -495,7 +548,7 @@ export class JsonSchemaGenerator {
                 enumValues[0] !== enumValues[1];
 
             if (isOnlyBooleans) {
-                addSimpleType("boolean");
+                pushSimpleType("boolean");
             } else {
                 const enumSchema: Definition = { enum: enumValues.sort() };
 
@@ -532,7 +585,7 @@ export class JsonSchemaGenerator {
         const simpleTypes: string[] = [];
         const schemas: Definition[] = [];
 
-        const addSimpleType = (type: string) => {
+        const pushSimpleType = (type: string) => {
             if (simpleTypes.indexOf(type) === -1) {
                 simpleTypes.push(type);
             }
@@ -548,7 +601,7 @@ export class JsonSchemaGenerator {
                     if (typeof def.type !== "string") {
                         console.error("Expected only a simple type.");
                     } else {
-                        addSimpleType(def.type);
+                        pushSimpleType(def.type);
                     }
                 } else {
                     schemas.push(def);
@@ -680,59 +733,6 @@ export class JsonSchemaGenerator {
             }
         }
         return definition;
-    }
-
-    private simpleTypesAllowedProperties = {
-        type: true,
-        description: true
-    };
-
-    private addSimpleType(def: Definition, type: string) {
-        for (let k in def) {
-            if (!this.simpleTypesAllowedProperties[k]) {
-                return false;
-            }
-        }
-
-        if (!def.type) {
-            def.type = type;
-        } else if (typeof def.type !== "string") {
-            if (!(<Object[]>def.type).every((val) => { return typeof val === "string"; })) {
-                return false;
-            }
-
-            if (def.type.indexOf("null") === -1) {
-                def.type.push("null");
-            }
-        } else {
-            if (typeof def.type !== "string") {
-                return false;
-            }
-
-            if (def.type !== "null") {
-                def.type = [ def.type, "null" ];
-            }
-        }
-        return true;
-    }
-
-    private makeNullable(def: Definition) {
-        if (!this.addSimpleType(def, "null")) {
-            let union = def.oneOf || def.anyOf;
-            if (union) {
-                union.push({ type: "null" });
-            } else {
-                const subdef = {};
-                for (var k in def) {
-                    if (def.hasOwnProperty(k)) {
-                        subdef[k] = def[k];
-                        delete def[k];
-                    }
-                }
-                def.anyOf = [ subdef, { type: "null" } ];
-            }
-        }
-        return def;
     }
 
     /**
@@ -873,7 +873,7 @@ export class JsonSchemaGenerator {
         }
 
         if (otherAnnotations["nullable"]) {
-            this.makeNullable(returnedDefinition);
+            makeNullable(returnedDefinition);
         }
 
         return returnedDefinition;

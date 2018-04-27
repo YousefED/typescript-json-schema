@@ -325,7 +325,7 @@ export class JsonSchemaGenerator {
         }
 
         // the comments for a symbol
-        const comments = symbol.getDocumentationComment();
+        const comments = symbol.getDocumentationComment(this.tc);
 
         if (comments.length) {
             definition.description = comments.map(comment => comment.kind === "lineBreak" ? comment.text : comment.text.trim().replace(/\r\n/g, "\n")).join("");
@@ -337,7 +337,7 @@ export class JsonSchemaGenerator {
             // if we have @TJS-... annotations, we have to parse them
             const [name, text] = (doc.name === "TJS" ? new RegExp(REGEX_TJS_JSDOC).exec(doc.text!)!.slice(1,3) : [doc.name, doc.text]) as string[];
             if (validationKeywords[name] || this.userValidationKeywords[name]) {
-                definition[name] = parseValue(text);
+                definition[name] = text === undefined ? "" : parseValue(text);
             } else {
                 // special annotations
                 otherAnnotations[doc.name] = true;
@@ -850,7 +850,7 @@ export class JsonSchemaGenerator {
         if (!asRef || !this.reffedDefinitions[fullTypeName]) {
             if (asRef) { // must be here to prevent recursivity problems
                 let reffedDefinition: Definition;
-                if (asTypeAliasRef && reffedType!.getFlags() & ts.TypeFlags.IndexedAccess && symbol) {
+                if (asTypeAliasRef && reffedType!.getFlags() & (ts.TypeFlags.IndexedAccess | ts.TypeFlags.Index) && symbol) {
                     reffedDefinition = this.getTypeDefinition(typ, true, undefined, symbol, symbol);
                 } else {
                     reffedDefinition = definition;

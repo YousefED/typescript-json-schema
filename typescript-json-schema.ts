@@ -379,6 +379,10 @@ export class JsonSchemaGenerator {
             } else if (propertyTypeString === "Date") {
                 definition.type = "string";
                 definition.format = "date-time";
+            }  else if (propertyTypeString === "object") {
+                definition.type = "object";
+                definition.properties = {};
+                definition.additionalProperties = true;
             } else {
                 const value = extractLiteralValue(propertyType);
                 if (value !== undefined) {

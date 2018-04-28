@@ -24,6 +24,7 @@ export declare type PartialArgs = Partial<Args>;
 export declare type PrimitiveType = number | boolean | string | null;
 export declare type Definition = {
     $ref?: string;
+    $schema?: string;
     description?: string;
     allOf?: Definition[];
     oneOf?: Definition[];
@@ -44,7 +45,9 @@ export declare type Definition = {
     additionalProperties?: Definition | boolean;
     required?: string[];
     propertyOrder?: string[];
-    properties?: {};
+    properties?: {
+        [key: string]: any;
+    };
     defaultProperties?: string[];
     typeof?: "function";
 };

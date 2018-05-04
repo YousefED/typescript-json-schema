@@ -92,10 +92,10 @@ const symbolList = generator.getSymbols("MyType");
 generator.getSchemaForSymbol(symbolList[1].name);
 
 // Also it is possible to get a list of all symbols.
-const fullSymbolList = generator.getAllSymbols();
+const fullSymbolList = generator.getSymbols();
 ```
 
-`getSymbols` and `getAllSymbols` return an array of `SymbolRef`, which is of the following format:
+`getSymbols('<SymbolName>')` and `getSymbols()` return an array of `SymbolRef`, which is of the following format:
 
 ```ts
 type SymbolRef = {

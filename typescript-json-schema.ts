@@ -866,11 +866,13 @@ export class JsonSchemaGenerator {
         return root;
     }
 
-    public getAllSymbols(): SymbolRef[] {
-      return this.symbols;
-    }
+    public getSymbols(): SymbolRef[];
 
-    public getSymbols(name: string): SymbolRef[] {
+    public getSymbols(name?: string): SymbolRef[] {
+      if (name === void 0) {
+        return this.symbols;
+      }
+
       return this.symbols.filter(symbol => symbol.typeName === name);
     }
 

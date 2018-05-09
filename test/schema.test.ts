@@ -243,3 +243,30 @@ describe("schema", () => {
         assertSchema("builtin-names", "Ext.Foo");
     });
 });
+
+describe("tsconfig.json", () => {
+    it("should read files from tsconfig.json", () => {
+        const program = TJS.programFromConfig(resolve(BASE + "tsconfig/tsconfig.json"));
+        const generator = TJS.buildGenerator(program);
+        assert(generator !== null);
+        assert.instanceOf(generator, TJS.JsonSchemaGenerator);
+        if (generator !== null) {
+            assert.doesNotThrow(() => generator.getSchemaForSymbol("IncludedAlways"));
+            assert.doesNotThrow(() => generator.getSchemaForSymbol("IncludedOnlyByTsConfig"));
+            assert.throws(() => generator.getSchemaForSymbol("Excluded"));
+        }
+    });
+    it("should support includeOnlyFiles with tsconfig.json", () => {
+        const program = TJS.programFromConfig(
+            resolve(BASE + "tsconfig/tsconfig.json"), [resolve(BASE + "tsconfig/includedAlways.ts")]
+        );
+        const generator = TJS.buildGenerator(program);
+        assert(generator !== null);
+        assert.instanceOf(generator, TJS.JsonSchemaGenerator);
+        if (generator !== null) {
+            assert.doesNotThrow(() => generator.getSchemaForSymbol("IncludedAlways"));
+            assert.throws(() => generator.getSchemaForSymbol("Excluded"));
+            assert.throws(() => generator.getSchemaForSymbol("IncludedOnlyByTsConfig"));
+        }
+    });
+});

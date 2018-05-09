@@ -26,6 +26,7 @@ export function getDefaultArgs(): Args {
         ignoreErrors: false,
         out: "",
         validationKeywords: [],
+        include: [],
         excludePrivate: false,
     };
 }
@@ -48,6 +49,7 @@ export type Args = {
     ignoreErrors: boolean;
     out: string;
     validationKeywords: string[];
+    include: string[];
     excludePrivate: boolean;
 };
 
@@ -1083,7 +1085,7 @@ export function generateSchema(program: ts.Program, fullTypeName: string, args: 
     }
 }
 
-export function programFromConfig(configFileName: string): ts.Program {
+export function programFromConfig(configFileName: string, onlyIncludeFiles?: string[]): ts.Program {
     // basically a copy of https://github.com/Microsoft/TypeScript/blob/3663d400270ccae8b69cbeeded8ffdc8fa12d7ad/src/compiler/tsc.ts -> parseConfigFile
     const result = ts.parseConfigFileTextToJson(configFileName, ts.sys.readFile(configFileName)!);
     const configObject = result.config;
@@ -1096,7 +1098,7 @@ export function programFromConfig(configFileName: string): ts.Program {
     delete options.outFile;
     delete options.declaration;
 
-    const program = ts.createProgram(configParseResult.fileNames, options);
+    const program = ts.createProgram(onlyIncludeFiles || configParseResult.fileNames, options);
     return program;
 }
 
@@ -1111,7 +1113,13 @@ export function exec(filePattern: string, fullTypeName: string, args = getDefaul
     let program: ts.Program;
     let onlyIncludeFiles: string[] | undefined = undefined;
     if (REGEX_TSCONFIG_NAME.test(path.basename(filePattern))) {
-        program = programFromConfig(filePattern);
+        let onlyIncludeFiles: string[] | undefined;
+
+        if (args.include.length > 0) {
+            const globs: string[][] = args.include.map(f => glob.sync(f));
+            onlyIncludeFiles = ([] as string[]).concat(...globs).map(normalizeFileName);
+        }
+        program = programFromConfig(filePattern, onlyIncludeFiles);
     } else {
         onlyIncludeFiles = glob.sync(filePattern);
         program = getProgramFromFiles(onlyIncludeFiles, {

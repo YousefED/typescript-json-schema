@@ -32,6 +32,8 @@ export function run() {
             .describe("out", "The output file, defaults to using stdout")
         .array("validationKeywords").default("validationKeywords", defaultArgs.validationKeywords)
             .describe("validationKeywords", "Provide additional validation keywords to include.")
+        .array("include").default("*", defaultArgs.include)
+            .describe("include", "Further limit tsconfig to include only matching files.")
         .argv;
 
     exec(args._[0], args._[1], {
@@ -48,6 +50,7 @@ export function run() {
         ignoreErrors: args.ignoreErrors,
         out: args.out,
         validationKeywords: args.validationKeywords,
+        include: args.include,
         excludePrivate: args.excludePrivate,
     });
 }

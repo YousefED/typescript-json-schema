@@ -1113,8 +1113,6 @@ export function exec(filePattern: string, fullTypeName: string, args = getDefaul
     let program: ts.Program;
     let onlyIncludeFiles: string[] | undefined = undefined;
     if (REGEX_TSCONFIG_NAME.test(path.basename(filePattern))) {
-        let onlyIncludeFiles: string[] | undefined;
-
         if (args.include.length > 0) {
             const globs: string[][] = args.include.map(f => glob.sync(f));
             onlyIncludeFiles = ([] as string[]).concat(...globs).map(normalizeFileName);

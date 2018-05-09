@@ -18,6 +18,7 @@ export declare type Args = {
     ignoreErrors: boolean;
     out: string;
     validationKeywords: string[];
+    include: string[];
     excludePrivate: boolean;
 };
 export declare type PartialArgs = Partial<Args>;
@@ -90,5 +91,5 @@ export declare class JsonSchemaGenerator {
 export declare function getProgramFromFiles(files: string[], jsonCompilerOptions?: any, basePath?: string): ts.Program;
 export declare function buildGenerator(program: ts.Program, args?: PartialArgs): JsonSchemaGenerator | null;
 export declare function generateSchema(program: ts.Program, fullTypeName: string, args?: PartialArgs, onlyIncludeFiles?: string[]): Definition | null;
-export declare function programFromConfig(configFileName: string): ts.Program;
+export declare function programFromConfig(configFileName: string, onlyIncludeFiles?: string[]): ts.Program;
 export declare function exec(filePattern: string, fullTypeName: string, args?: Args): void;

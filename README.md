@@ -17,7 +17,7 @@ Generate json-schemas from your Typescript sources.
 * Generate schema from a typescript type: `typescript-json-schema project/directory/tsconfig.json TYPE`
 
 To generate files for only _some_ types in `tsconfig.json` specify
-filenames or globs with the `--include` option.
+filenames or globs with the `--include` option. This is especially useful for large projects.
 
 In case no `tsconfig.json` is available for your project, you can directly specify the .ts files (this in this case we use some built-in compiler presets):
 

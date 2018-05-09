@@ -16,6 +16,9 @@ Generate json-schemas from your Typescript sources.
 * Install with `npm install typescript-json-schema -g`
 * Generate schema from a typescript type: `typescript-json-schema project/directory/tsconfig.json TYPE`
 
+To generate files for only _some_ types in `tsconfig.json` specify
+filenames or globs with the `--include` option.
+
 In case no `tsconfig.json` is available for your project, you can directly specify the .ts files (this in this case we use some built-in compiler presets):
 
 * Generate schema from a typescript type: `typescript-json-schema "project/directory/**/*.ts" TYPE`
@@ -38,6 +41,7 @@ Options:
   --useTypeOfKeyword    Use `typeOf` keyword (https://goo.gl/DC6sni) for functions.  [boolean] [default: false]
   --out, -o             The output file, defaults to using stdout
   --validationKeywords  Provide additional validation keywords to include            [array]   [default: []]
+  --include             Further limit tsconfig to include only matching files        [array]   [default: []]
   --ignoreErrors        Generate even if the program has errors.                     [boolean] [default: false]
   --excludePrivate      Exclude private members from the schema                      [boolean] [default: false]
 ```

@@ -20,5 +20,6 @@ class MyObject {
 
     object1: any          = null;
     object2: {}           = null;
+    object3: object       = null;
 
 }

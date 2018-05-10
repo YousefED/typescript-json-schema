@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$schema": "http://json-schema.org/draft-06/schema#",
     "definitions": {
         "GenericA<\"alias\">": {
             "properties": {
@@ -90,7 +90,7 @@
             ],
             "type": "object"
         },
-        "SomeGeneric<\"alias\", \"alias\">": {
+        "SomeGeneric<\"alias\",\"alias\">": {
             "properties": {
                 "a": {
                     "enum": [
@@ -119,7 +119,7 @@
             ],
             "type": "object"
         },
-        "SomeGeneric<1, 2>": {
+        "SomeGeneric<1,2>": {
             "properties": {
                 "a": {
                     "enum": [
@@ -157,10 +157,10 @@
             "$ref": "#/definitions/GenericC<GenericC<GenericA<string>>>"
         },
         "someAlias": {
-            "$ref": "#/definitions/SomeGeneric<\"alias\", \"alias\">"
+            "$ref": "#/definitions/SomeGeneric<\"alias\",\"alias\">"
         },
         "someGeneric": {
-            "$ref": "#/definitions/SomeGeneric<1, 2>"
+            "$ref": "#/definitions/SomeGeneric<1,2>"
         }
     },
     "required": [

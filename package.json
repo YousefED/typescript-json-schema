@@ -1,6 +1,6 @@
 {
   "name": "typescript-json-schema",
-  "version": "0.17.0",
+  "version": "0.23.0",
   "description": "typescript-json-schema generates JSON Schema files from your Typescript sources",
   "main": "typescript-json-schema.js",
   "typings": "typescript-json-schema.d.ts",
@@ -48,28 +48,28 @@
   "dependencies": {
     "glob": "~7.1.2",
     "json-stable-stringify": "^1.0.1",
-    "typescript": "~2.5.3",
-    "yargs": "^8.0.2"
+    "typescript": "~2.8.3",
+    "yargs": "^11.0.0"
   },
   "devDependencies": {
-    "@types/assertion-error": "^1.0.30",
-    "@types/chai": "^4.0.1",
-    "@types/glob": "^5.0.30",
-    "@types/json-stable-stringify": "^1.0.31",
-    "@types/mocha": "^2.2.41",
-    "@types/node": "^8.0.7",
-    "ajv": "^5.2.0",
-    "chai": "^4.0.2",
-    "mocha": "^3.4.2",
-    "source-map-support": "^0.4.15",
-    "ts-node": "^3.1.0",
-    "tslint": "^5.4.3"
+    "@types/assertion-error": "^1.1.0",
+    "@types/chai": "^4.1.3",
+    "@types/glob": "^5.0.35",
+    "@types/json-stable-stringify": "^1.0.32",
+    "@types/mocha": "^5.2.0",
+    "@types/node": "^9.4.6",
+    "ajv": "^6.4.0",
+    "chai": "^4.1.2",
+    "mocha": "^5.1.1",
+    "source-map-support": "^0.5.5",
+    "ts-node": "^6.0.1",
+    "tslint": "^5.9.1"
   },
   "scripts": {
     "test": "npm run build && mocha -t 5000 --require source-map-support/register test",
-    "debug": "ts-node --inspect=19248 --debug-brk typescript-json-schema.ts",
-    "run": "ts-node typescript-json-schema.ts",
+    "debug": "ts-node --inspect=19248 --debug-brk typescript-json-schema-cli.ts",
+    "run": "ts-node typescript-json-schema-cli.ts",
     "build": "tsc -p .",
-    "lint": "tslint --project tsconfig.json -c tslint.json --type-check --exclude '**/*.d.ts'"
+    "lint": "tslint --project tsconfig.json -c tslint.json --exclude '**/*.d.ts'"
   }
 }

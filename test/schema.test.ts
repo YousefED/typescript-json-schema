@@ -6,14 +6,15 @@ import { resolve } from "path";
 import * as TJS from "../typescript-json-schema";
 
 const ajv = new Ajv();
-
-const metaSchema = require("ajv/lib/refs/json-schema-draft-04.json");
-ajv.addMetaSchema(metaSchema, "http://json-schema.org/draft-04/schema#");
+const metaSchema = require("ajv/lib/refs/json-schema-draft-06.json");
+ajv.addMetaSchema(metaSchema);
 
 const BASE = "test/programs/";
 
-export function assertSchema(group: string, type: string, settings: TJS.PartialArgs = {}, compilerOptions?: TJS.CompilerOptions) {
-    it(group + " should create correct schema", () => {
+export function assertSchema(group: string, type: string, settings: TJS.PartialArgs = {}, compilerOptions?: TJS.CompilerOptions, only?: boolean) {
+    const run = only ? it.only : it;
+
+    run(group + " should create correct schema", () => {
         if (!("required" in settings)) {
             settings.required = true;
         }
@@ -31,6 +32,7 @@ export function assertSchema(group: string, type: string, settings: TJS.PartialA
         // test against the meta schema
         if (actual !== null) {
             ajv.validateSchema(actual);
+            console.warn(ajv.errors);
             assert.equal(ajv.errors, null, "The schema is not valid");
         }
     });
@@ -99,6 +101,7 @@ describe("schema", () => {
 
     describe("type aliases", () => {
         assertSchema("type-alias-single", "MyString");
+        assertSchema("type-alias-single-annotated", "MyString");
         assertSchema("type-aliases", "MyObject", {
             aliasRef: true
         });
@@ -131,6 +134,8 @@ describe("schema", () => {
             topRef: true
         });
 
+        assertSchema("type-mapped-types", "MyMappedType");
+
         /*
         assertSchema("type-aliases-primitive", "MyString");
         assertSchema("type-aliases-object", "MyAlias");
@@ -160,6 +165,7 @@ describe("schema", () => {
         });
         assertSchema("type-union-tagged", "Shape");
         assertSchema("type-aliases-union-namespace", "MyModel");
+        assertSchema("type-intersection-recursive", "*");
     });
 
     describe("annotations", () => {
@@ -199,7 +205,8 @@ describe("schema", () => {
         assertSchema("type-anonymous", "MyObject");
         assertSchema("type-primitives", "MyObject");
         assertSchema("type-nullable", "MyObject");
-        assertSchema("type-function", "MyObject");
+        // see https://github.com/epoberezkin/ajv/issues/725
+        // assertSchema("type-function", "MyObject");
     });
 
     describe("class and interface", () => {
@@ -217,6 +224,8 @@ describe("schema", () => {
         assertSchema("module-interface-single", "MyObject");
 
         assertSchema("ignored-required", "MyObject");
+
+        assertSchema("default-properties", "MyObject");
 
         // not supported yet #116
         // assertSchema("interface-extra-props", "MyObject");
@@ -264,5 +273,34 @@ describe("schema", () => {
         assertSchemas("unique-names", "MyObject", {
             uniqueNames: true
         });
+
+        assertSchema("builtin-names", "Ext.Foo");
+    });
+});
+
+describe("tsconfig.json", () => {
+    it("should read files from tsconfig.json", () => {
+        const program = TJS.programFromConfig(resolve(BASE + "tsconfig/tsconfig.json"));
+        const generator = TJS.buildGenerator(program);
+        assert(generator !== null);
+        assert.instanceOf(generator, TJS.JsonSchemaGenerator);
+        if (generator !== null) {
+            assert.doesNotThrow(() => generator.getSchemaForSymbol("IncludedAlways"));
+            assert.doesNotThrow(() => generator.getSchemaForSymbol("IncludedOnlyByTsConfig"));
+            assert.throws(() => generator.getSchemaForSymbol("Excluded"));
+        }
+    });
+    it("should support includeOnlyFiles with tsconfig.json", () => {
+        const program = TJS.programFromConfig(
+            resolve(BASE + "tsconfig/tsconfig.json"), [resolve(BASE + "tsconfig/includedAlways.ts")]
+        );
+        const generator = TJS.buildGenerator(program);
+        assert(generator !== null);
+        assert.instanceOf(generator, TJS.JsonSchemaGenerator);
+        if (generator !== null) {
+            assert.doesNotThrow(() => generator.getSchemaForSymbol("IncludedAlways"));
+            assert.throws(() => generator.getSchemaForSymbol("Excluded"));
+            assert.throws(() => generator.getSchemaForSymbol("IncludedOnlyByTsConfig"));
+        }
     });
 });

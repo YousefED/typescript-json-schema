@@ -5,3 +5,5 @@ test/*.map
 .vscode/*.*
 npm-debug.log
 .idea
+*~
+.#*

@@ -14,14 +14,19 @@ Generate json-schemas from your Typescript sources.
 ### Command line
 
 * Install with `npm install typescript-json-schema -g`
-* Generate schema from a typescript type: `typescript-json-schema project/directory/tsconfig.json fully.qualified.type.to.generate`
+* Generate schema from a typescript type: `typescript-json-schema project/directory/tsconfig.json TYPE`
+
+To generate files for only _some_ types in `tsconfig.json` specify
+filenames or globs with the `--include` option. This is especially useful for large projects.
 
 In case no `tsconfig.json` is available for your project, you can directly specify the .ts files (this in this case we use some built-in compiler presets):
 
-* Generate schema from a typescript type: `typescript-json-schema "project/directory/**/*.ts" fully.qualified.type.to.generate`
+* Generate schema from a typescript type: `typescript-json-schema "project/directory/**/*.ts" TYPE`
+
+The `TYPE` can either be a single, fully qualified type or `*` to generate the schema for all types. 
 
 ```
-Usage: node typescript-json-schema.js <path-to-typescript-files-or-tsconfig> <type>
+Usage: typescript-json-schema <path-to-typescript-files-or-tsconfig> <type>
 
 Options:
   --refs                Create shared ref definitions.                               [boolean] [default: true]
@@ -36,6 +41,7 @@ Options:
   --useTypeOfKeyword    Use `typeOf` keyword (https://goo.gl/DC6sni) for functions.  [boolean] [default: false]
   --out, -o             The output file, defaults to using stdout
   --validationKeywords  Provide additional validation keywords to include            [array]   [default: []]
+  --include             Further limit tsconfig to include only matching files        [array]   [default: []]
   --ignoreErrors        Generate even if the program has errors.                     [boolean] [default: false]
   --excludePrivate      Exclude private members from the schema                      [boolean] [default: false]
   --uniqueNames         Use unique names for type symbols.                           [boolean] [default: false]
@@ -58,7 +64,10 @@ const compilerOptions: TJS.CompilerOptions = {
     strictNullChecks: true
 }
 
-const program = TJS.getProgramFromFiles([resolve("my-file.ts")], compilerOptions);
+// optionally pass a base path
+const basePath = "./my-dir";
+
+const program = TJS.getProgramFromFiles([resolve("my-file.ts")], compilerOptions, basePath);
 
 // We can either get the schema for one file and one type...
 const schema = TJS.generateSchema(program, "MyType", settings);
@@ -131,7 +140,7 @@ will be translated to
 ```json
 {
     "$ref": "#/definitions/Shape",
-    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$schema": "http://json-schema.org/draft-06/schema#",
     "definitions": {
         "Shape": {
             "properties": {

@@ -969,6 +969,7 @@ export class JsonSchemaGenerator {
     }
 
     public getSymbols(): SymbolRef[];
+    public getSymbols(name?: string): SymbolRef[];
 
     public getSymbols(name?: string): SymbolRef[] {
       if (name === void 0) {

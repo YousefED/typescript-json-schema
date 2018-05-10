@@ -38,6 +38,35 @@ export function assertSchema(group: string, type: string, settings: TJS.PartialA
     });
 }
 
+export function assertSchemas(group: string, type: string, settings: TJS.PartialArgs = {}, compilerOptions?: TJS.CompilerOptions) {
+    it(group + " should create correct schema", () => {
+        if (!("required" in settings)) {
+            settings.required = true;
+        }
+
+        const generator = TJS.buildGenerator(TJS.getProgramFromFiles([resolve(BASE + group + "/main.ts")], compilerOptions), settings);
+        const symbols = generator!.getSymbols(type);
+
+        for (let symbol of symbols) {
+          const actual = generator!.getSchemaForSymbol(symbol.name);
+
+          // writeFileSync(BASE + group + `/schema.${symbol.name}.json`, JSON.stringify(actual, null, 4) + "\n\n");
+
+          const file = readFileSync(BASE + group + `/schema.${symbol.name}.json`, "utf8");
+          const expected = JSON.parse(file);
+
+          assert.isObject(actual);
+          assert.deepEqual(actual, expected, "The schema is not as expected");
+
+          // test against the meta schema
+          if (actual !== null) {
+              ajv.validateSchema(actual);
+              assert.equal(ajv.errors, null, "The schema is not valid");
+          }
+        }
+    });
+}
+
 describe("interfaces", () => {
     it("should return an instance of JsonSchemaGenerator", () => {
         const program = TJS.getProgramFromFiles([resolve(BASE + "comments/main.ts")]);
@@ -240,6 +269,11 @@ describe("schema", () => {
         assertSchema("private-members", "MyObject", {
             excludePrivate: true
         });
+
+        assertSchemas("unique-names", "MyObject", {
+            uniqueNames: true
+        });
+
         assertSchema("builtin-names", "Ext.Foo");
     });
 });

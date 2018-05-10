@@ -32,6 +32,10 @@ export function run() {
             .describe("out", "The output file, defaults to using stdout")
         .array("validationKeywords").default("validationKeywords", defaultArgs.validationKeywords)
             .describe("validationKeywords", "Provide additional validation keywords to include.")
+        .boolean("excludePrivate").default("excludePrivate", defaultArgs.excludePrivate)
+            .describe("excludePrivate", "Exclude private members from the schema.")
+        .boolean("uniqueNames").default("uniqueNames", defaultArgs.uniqueNames)
+            .describe("uniqueNames", "Use unique names for type symbols.")
         .array("include").default("*", defaultArgs.include)
             .describe("include", "Further limit tsconfig to include only matching files.")
         .argv;
@@ -52,6 +56,7 @@ export function run() {
         validationKeywords: args.validationKeywords,
         include: args.include,
         excludePrivate: args.excludePrivate,
+        uniqueNames: args.uniqueNames,
     });
 }
 

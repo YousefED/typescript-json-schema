@@ -968,9 +968,6 @@ export class JsonSchemaGenerator {
         return root;
     }
 
-    public getSymbols(): SymbolRef[];
-    public getSymbols(name?: string): SymbolRef[];
-
     public getSymbols(name?: string): SymbolRef[] {
       if (name === void 0) {
         return this.symbols;

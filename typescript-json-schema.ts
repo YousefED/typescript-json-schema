@@ -813,6 +813,11 @@ export class JsonSchemaGenerator {
     private getTypeDefinition(typ: ts.Type, asRef = this.args.ref, unionModifier: string = "anyOf", prop?: ts.Symbol, reffedType?: ts.Symbol, pairedSymbol?: ts.Symbol): Definition {
         const definition: Definition = {}; // real definition
 
+        while (typ.aliasSymbol && (typ.aliasSymbol.escapedName === "Readonly" || typ.aliasSymbol.escapedName === "Mutable") && typ.aliasTypeArguments && typ.aliasTypeArguments[0]) {
+            typ = typ.aliasTypeArguments[0];
+            reffedType = undefined;
+        }
+
         if (this.args.typeOfKeyword && (typ.flags & ts.TypeFlags.Object) && ((<ts.ObjectType>typ).objectFlags & ts.ObjectFlags.Anonymous)) {
             definition.typeof = "function";
             return definition;

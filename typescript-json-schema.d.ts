@@ -1,5 +1,5 @@
 import * as ts from "typescript";
-export { Program, CompilerOptions } from "typescript";
+export { Program, CompilerOptions, Symbol } from "typescript";
 export declare function getDefaultArgs(): Args;
 export declare type ValidationKeywords = {
     [prop: string]: boolean;
@@ -20,6 +20,7 @@ export declare type Args = {
     validationKeywords: string[];
     include: string[];
     excludePrivate: boolean;
+    uniqueNames: boolean;
 };
 export declare type PartialArgs = Partial<Args>;
 export declare type PrimitiveType = number | boolean | string | null;
@@ -52,9 +53,16 @@ export declare type Definition = {
     defaultProperties?: string[];
     typeof?: "function";
 };
+export declare type SymbolRef = {
+    name: string;
+    typeName: string;
+    fullyQualifiedName: string;
+    symbol: ts.Symbol;
+};
 export declare class JsonSchemaGenerator {
     private args;
     private tc;
+    private symbols;
     private allSymbols;
     private userSymbols;
     private inheritingTypes;
@@ -62,7 +70,7 @@ export declare class JsonSchemaGenerator {
     private userValidationKeywords;
     private typeNamesById;
     private typeNamesUsed;
-    constructor(allSymbols: {
+    constructor(symbols: SymbolRef[], allSymbols: {
         [name: string]: ts.Type;
     }, userSymbols: {
         [name: string]: ts.Symbol;
@@ -85,6 +93,7 @@ export declare class JsonSchemaGenerator {
     setSchemaOverride(symbolName: string, schema: Definition): void;
     getSchemaForSymbol(symbolName: string, includeReffedDefinitions?: boolean): Definition;
     getSchemaForSymbols(symbolNames: string[], includeReffedDefinitions?: boolean): Definition;
+    getSymbols(name?: string): SymbolRef[];
     getUserSymbols(): string[];
     getMainFileSymbols(program: ts.Program, onlyIncludeFiles?: string[]): string[];
 }

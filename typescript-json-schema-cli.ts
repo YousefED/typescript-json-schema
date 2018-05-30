@@ -40,6 +40,8 @@ export function run() {
             .describe("include", "Further limit tsconfig to include only matching files.")
         .array("plugins").default("plugins", defaultArgs.plugins)
             .describe("plugins", "List of plugins to run.")
+        .boolean("filterMethods").default("filterMethods", defaultArgs.filterMethods)
+            .describe("filterMethods", "Filter methods from generated schema (turn off for plugins that require it).")
         .argv;
 
     exec(args._[0], args._[1], {
@@ -60,8 +62,8 @@ export function run() {
         excludePrivate: args.excludePrivate,
         uniqueNames: args.uniqueNames,
         plugins: args.plugins.map((mod: string) => new (require(mod).Plugin)()),
+        filterMethods: args.filterMethods,
     });
-
 }
 
 if (typeof window === "undefined" && require.main === module) {

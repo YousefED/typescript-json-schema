@@ -30,6 +30,7 @@ export function getDefaultArgs(): Args {
         excludePrivate: false,
         uniqueNames: false,
         plugins: [],
+        filterMethods: true,
     };
 }
 
@@ -59,6 +60,7 @@ export type Args = {
     excludePrivate: boolean;
     uniqueNames: boolean;
     plugins: Plugin[];
+    filterMethods: boolean;
 };
 
 export type PartialArgs = Partial<Args>;
@@ -451,6 +453,9 @@ export class JsonSchemaGenerator {
     }
 
     private getDefinitionForProperty(prop: ts.Symbol, node: ts.Node) {
+        if (this.args.filterMethods && prop.flags & ts.SymbolFlags.Method) {
+            return null;
+        }
         const propertyName = prop.getName();
         const propertyType = this.tc.getTypeOfSymbolAtLocation(prop, node);
 

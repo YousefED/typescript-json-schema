@@ -1029,11 +1029,14 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
         }
     }
 
-    const typeChecker = program.getTypeChecker();
+    let diagnostics: Array<ts.Diagnostic> = [];
 
-    var diagnostics = ts.getPreEmitDiagnostics(program);
+    if (!args.ignoreErrors) {
+        diagnostics = ts.getPreEmitDiagnostics(program);
+    }
 
-    if (diagnostics.length === 0 || args.ignoreErrors) {
+    if (diagnostics.length === 0) {
+        const typeChecker = program.getTypeChecker();
 
         const symbols: SymbolRef[] = [];
         const allSymbols: { [name: string]: ts.Type } = {};

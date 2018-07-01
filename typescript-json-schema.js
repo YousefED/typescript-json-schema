@@ -196,8 +196,8 @@ var JsonSchemaGenerator = (function () {
         this.inheritingTypes = inheritingTypes;
         this.tc = tc;
         this.userValidationKeywords = args.validationKeywords.reduce(function (acc, word) {
-            var _a;
             return (__assign({}, acc, (_a = {}, _a[word] = true, _a)));
+            var _a;
         }, {});
     }
     Object.defineProperty(JsonSchemaGenerator.prototype, "ReffedDefinitions", {
@@ -945,7 +945,6 @@ function normalizeFileName(fn) {
 }
 function exec(filePattern, fullTypeName, args) {
     if (args === void 0) { args = getDefaultArgs(); }
-    var _a;
     var program;
     var onlyIncludeFiles = undefined;
     if (REGEX_TSCONFIG_NAME.test(path.basename(filePattern))) {
@@ -977,6 +976,7 @@ function exec(filePattern, fullTypeName, args) {
     else {
         process.stdout.write(json);
     }
+    var _a;
 }
 exports.exec = exec;
 //# sourceMappingURL=typescript-json-schema.js.map

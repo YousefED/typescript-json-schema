@@ -80,16 +80,16 @@ export declare class JsonSchemaGenerator {
     readonly ReffedDefinitions: {
         [key: string]: Definition;
     };
-    private parseCommentsIntoDefinition;
-    private getDefinitionForRootType;
-    private getReferencedTypeSymbol;
-    private getDefinitionForProperty;
-    private getEnumDefinition;
-    private getUnionDefinition;
-    private getIntersectionDefinition;
-    private getClassDefinition;
-    private getTypeName;
-    private getTypeDefinition;
+    private parseCommentsIntoDefinition(symbol, definition, otherAnnotations);
+    private getDefinitionForRootType(propertyType, reffedType, definition);
+    private getReferencedTypeSymbol(prop);
+    private getDefinitionForProperty(prop, node);
+    private getEnumDefinition(clazzType, definition);
+    private getUnionDefinition(unionType, prop, unionModifier, definition);
+    private getIntersectionDefinition(intersectionType, definition);
+    private getClassDefinition(clazzType, definition);
+    private getTypeName(typ);
+    private getTypeDefinition(typ, asRef?, unionModifier?, prop?, reffedType?, pairedSymbol?);
     setSchemaOverride(symbolName: string, schema: Definition): void;
     getSchemaForSymbol(symbolName: string, includeReffedDefinitions?: boolean): Definition;
     getSchemaForSymbols(symbolNames: string[], includeReffedDefinitions?: boolean): Definition;

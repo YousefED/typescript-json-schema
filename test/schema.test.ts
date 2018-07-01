@@ -33,7 +33,6 @@ export function assertSchema(group: string, type: string, settings: TJS.PartialA
         // test against the meta schema
         if (actual !== null) {
             ajv.validateSchema(actual);
-            console.warn(ajv.errors);
             assert.equal(ajv.errors, null, "The schema is not valid");
         }
     });

@@ -19,7 +19,8 @@ export function assertSchema(group: string, type: string, settings: TJS.PartialA
             settings.required = true;
         }
 
-        const actual = TJS.generateSchema(TJS.getProgramFromFiles([resolve(BASE + group + "/main.ts")], compilerOptions), type, settings);
+        const files = [resolve(BASE + group + "/main.ts")];
+        const actual = TJS.generateSchema(TJS.getProgramFromFiles(files, compilerOptions), type, settings, files);
 
         // writeFileSync(BASE + group + "/schema.json", stringify(actual, {space: 4}) + "\n\n");
 
@@ -275,6 +276,8 @@ describe("schema", () => {
         });
 
         assertSchema("builtin-names", "Ext.Foo");
+
+        assertSchema("user-symbols", "*");
     });
 });
 

@@ -196,8 +196,8 @@ var JsonSchemaGenerator = (function () {
         this.inheritingTypes = inheritingTypes;
         this.tc = tc;
         this.userValidationKeywords = args.validationKeywords.reduce(function (acc, word) {
-            return (__assign({}, acc, (_a = {}, _a[word] = true, _a)));
             var _a;
+            return (__assign({}, acc, (_a = {}, _a[word] = true, _a)));
         }, {});
     }
     Object.defineProperty(JsonSchemaGenerator.prototype, "ReffedDefinitions", {
@@ -825,7 +825,7 @@ function getProgramFromFiles(files, jsonCompilerOptions, basePath) {
     if (basePath === void 0) { basePath = "./"; }
     var compilerOptions = ts.convertCompilerOptionsFromJson(jsonCompilerOptions, basePath).options;
     var options = {
-        noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS
+        noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS, allowUnusedLabels: true,
     };
     for (var k in compilerOptions) {
         if (compilerOptions.hasOwnProperty(k)) {
@@ -835,17 +835,26 @@ function getProgramFromFiles(files, jsonCompilerOptions, basePath) {
     return ts.createProgram(files, options);
 }
 exports.getProgramFromFiles = getProgramFromFiles;
-function buildGenerator(program, args) {
+function buildGenerator(program, args, onlyIncludeFiles) {
     if (args === void 0) { args = {}; }
+    function isUserFile(file) {
+        if (onlyIncludeFiles === undefined) {
+            return !file.hasNoDefaultLib;
+        }
+        return onlyIncludeFiles.indexOf(file.fileName) >= 0;
+    }
     var settings = getDefaultArgs();
     for (var pref in args) {
         if (args.hasOwnProperty(pref)) {
             settings[pref] = args[pref];
         }
     }
-    var typeChecker = program.getTypeChecker();
-    var diagnostics = ts.getPreEmitDiagnostics(program);
-    if (diagnostics.length === 0 || args.ignoreErrors) {
+    var diagnostics = [];
+    if (!args.ignoreErrors) {
+        diagnostics = ts.getPreEmitDiagnostics(program);
+    }
+    if (diagnostics.length === 0) {
+        var typeChecker_1 = program.getTypeChecker();
         var symbols_1 = [];
         var allSymbols_1 = {};
         var userSymbols_1 = {};
@@ -862,8 +871,10 @@ function buildGenerator(program, args) {
                     var typeName = fullyQualifiedName.replace(/".*"\./, "");
                     var name_1 = !args.uniqueNames ? typeName : typeName + "." + symbol.id;
                     symbols_1.push({ name: name_1, typeName: typeName, fullyQualifiedName: fullyQualifiedName, symbol: symbol });
-                    allSymbols_1[name_1] = nodeType;
-                    if (!sourceFile.hasNoDefaultLib) {
+                    if (!userSymbols_1[name_1]) {
+                        allSymbols_1[name_1] = nodeType;
+                    }
+                    if (isUserFile(sourceFile)) {
                         userSymbols_1[name_1] = symbol;
                     }
                     var baseTypes = nodeType.getBaseTypes() || [];
@@ -879,9 +890,9 @@ function buildGenerator(program, args) {
                     ts.forEachChild(node, function (n) { return inspect(n, tc); });
                 }
             }
-            inspect(sourceFile, typeChecker);
+            inspect(sourceFile, typeChecker_1);
         });
-        return new JsonSchemaGenerator(symbols_1, allSymbols_1, userSymbols_1, inheritingTypes_1, typeChecker, settings);
+        return new JsonSchemaGenerator(symbols_1, allSymbols_1, userSymbols_1, inheritingTypes_1, typeChecker_1, settings);
     }
     else {
         diagnostics.forEach(function (diagnostic) {
@@ -900,7 +911,7 @@ function buildGenerator(program, args) {
 exports.buildGenerator = buildGenerator;
 function generateSchema(program, fullTypeName, args, onlyIncludeFiles) {
     if (args === void 0) { args = {}; }
-    var generator = buildGenerator(program, args);
+    var generator = buildGenerator(program, args, onlyIncludeFiles);
     if (generator === null) {
         return null;
     }
@@ -934,10 +945,11 @@ function normalizeFileName(fn) {
 }
 function exec(filePattern, fullTypeName, args) {
     if (args === void 0) { args = getDefaultArgs(); }
+    var _a;
     var program;
     var onlyIncludeFiles = undefined;
     if (REGEX_TSCONFIG_NAME.test(path.basename(filePattern))) {
-        if (args.include.length > 0) {
+        if (args.include && args.include.length > 0) {
             var globs = args.include.map(function (f) { return glob.sync(f); });
             onlyIncludeFiles = (_a = []).concat.apply(_a, globs).map(normalizeFileName);
         }
@@ -965,7 +977,6 @@ function exec(filePattern, fullTypeName, args) {
     else {
         process.stdout.write(json);
     }
-    var _a;
 }
 exports.exec = exec;
 //# sourceMappingURL=typescript-json-schema.js.map

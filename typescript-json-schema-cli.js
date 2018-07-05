@@ -39,6 +39,8 @@ function run() {
         .describe("uniqueNames", "Use unique names for type symbols.")
         .array("include").default("*", defaultArgs.include)
         .describe("include", "Further limit tsconfig to include only matching files.")
+        .boolean("rejectDateType").default("rejectDateType", defaultArgs.rejectDateType)
+        .describe("rejectDateType", "Rejects Date fields in type definitions.")
         .argv;
     typescript_json_schema_1.exec(args._[0], args._[1], {
         ref: args.refs,
@@ -57,6 +59,7 @@ function run() {
         include: args.include,
         excludePrivate: args.excludePrivate,
         uniqueNames: args.uniqueNames,
+        rejectDateType: args.rejectDateType,
     });
 }
 exports.run = run;

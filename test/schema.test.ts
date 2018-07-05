@@ -246,6 +246,10 @@ describe("schema", () => {
         assertSchema("string-literals-inline", "MyObject");
     });
 
+    describe("dates", () => {
+        assertSchema("dates", "MyObject");
+    });
+
     describe("namespaces", () => {
         assertSchema("namespace", "Type");
         assertSchema("namespace-deep-1", "RootNamespace.Def");

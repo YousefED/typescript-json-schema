@@ -848,7 +848,7 @@ export class JsonSchemaGenerator {
                 reffedType!.getFlags() & ts.SymbolFlags.Alias ?
                     this.tc.getAliasedSymbol(reffedType!) :
                     reffedType!
-            )
+            );
         } else if (asRef) {
             fullTypeName = this.getTypeName(typ);
         }

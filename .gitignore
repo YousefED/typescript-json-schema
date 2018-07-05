@@ -4,6 +4,7 @@ test/*.d.ts
 test/*.map
 .vscode/*.*
 npm-debug.log
+yarn-error.log
 .idea
 *~
 .#*

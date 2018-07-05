@@ -1014,7 +1014,7 @@ export function getProgramFromFiles(files: string[], jsonCompilerOptions: any = 
     // use built-in default options
     const compilerOptions = ts.convertCompilerOptionsFromJson(jsonCompilerOptions, basePath).options;
     const options: ts.CompilerOptions = {
-        noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS
+        noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS, allowUnusedLabels: true,
     };
     for (const k in compilerOptions) {
         if (compilerOptions.hasOwnProperty(k)) {
@@ -1024,7 +1024,13 @@ export function getProgramFromFiles(files: string[], jsonCompilerOptions: any = 
     return ts.createProgram(files, options);
 }
 
-export function buildGenerator(program: ts.Program, args: PartialArgs = {}): JsonSchemaGenerator|null {
+export function buildGenerator(program: ts.Program, args: PartialArgs = {}, onlyIncludeFiles?: string[]): JsonSchemaGenerator|null {
+    function isUserFile(file: ts.SourceFile): boolean {
+        if (onlyIncludeFiles === undefined) {
+            return !file.hasNoDefaultLib;
+        }
+        return onlyIncludeFiles.indexOf(file.fileName) >= 0;
+    }
     // Use defaults unles otherwise specified
     const settings = getDefaultArgs();
 
@@ -1034,11 +1040,14 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
         }
     }
 
-    const typeChecker = program.getTypeChecker();
+    let diagnostics: Array<ts.Diagnostic> = [];
 
-    var diagnostics = ts.getPreEmitDiagnostics(program);
+    if (!args.ignoreErrors) {
+        diagnostics = ts.getPreEmitDiagnostics(program);
+    }
 
-    if (diagnostics.length === 0 || args.ignoreErrors) {
+    if (diagnostics.length === 0) {
+        const typeChecker = program.getTypeChecker();
 
         const symbols: SymbolRef[] = [];
         const allSymbols: { [name: string]: ts.Type } = {};
@@ -1060,10 +1069,11 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
                     const name = !args.uniqueNames ? typeName : `${typeName}.${(<any>symbol).id}`;
 
                     symbols.push({ name, typeName, fullyQualifiedName, symbol });
-                    allSymbols[name] = nodeType;
+                    if (!userSymbols[name]) {
+                        allSymbols[name] = nodeType;
+                    }
 
-                    // if (sourceFileIdx === 1) {
-                    if (!sourceFile.hasNoDefaultLib) {
+                    if (isUserFile(sourceFile)) {
                         userSymbols[name] = symbol;
                     }
 
@@ -1099,7 +1109,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}): Jso
 }
 
 export function generateSchema(program: ts.Program, fullTypeName: string, args: PartialArgs = {}, onlyIncludeFiles?: string[]): Definition|null {
-    const generator = buildGenerator(program, args);
+    const generator = buildGenerator(program, args, onlyIncludeFiles);
 
     if (generator === null) {
         return null;
@@ -1140,7 +1150,7 @@ export function exec(filePattern: string, fullTypeName: string, args = getDefaul
     let program: ts.Program;
     let onlyIncludeFiles: string[] | undefined = undefined;
     if (REGEX_TSCONFIG_NAME.test(path.basename(filePattern))) {
-        if (args.include.length > 0) {
+        if (args.include && args.include.length > 0) {
             const globs: string[][] = args.include.map(f => glob.sync(f));
             onlyIncludeFiles = ([] as string[]).concat(...globs).map(normalizeFileName);
         }

@@ -31,7 +31,9 @@ function getDefaultArgs() {
         ignoreErrors: false,
         out: "",
         validationKeywords: [],
+        include: [],
         excludePrivate: false,
+        uniqueNames: false,
     };
 }
 exports.getDefaultArgs = getDefaultArgs;
@@ -182,12 +184,13 @@ var validationKeywords = {
     id: true
 };
 var JsonSchemaGenerator = (function () {
-    function JsonSchemaGenerator(allSymbols, userSymbols, inheritingTypes, tc, args) {
+    function JsonSchemaGenerator(symbols, allSymbols, userSymbols, inheritingTypes, tc, args) {
         if (args === void 0) { args = getDefaultArgs(); }
         this.args = args;
         this.reffedDefinitions = {};
         this.typeNamesById = {};
         this.typeNamesUsed = {};
+        this.symbols = symbols;
         this.allSymbols = allSymbols;
         this.userSymbols = userSymbols;
         this.inheritingTypes = inheritingTypes;
@@ -262,6 +265,11 @@ var JsonSchemaGenerator = (function () {
             else if (propertyTypeString === "Date") {
                 definition.type = "string";
                 definition.format = "date-time";
+            }
+            else if (propertyTypeString === "object") {
+                definition.type = "object";
+                definition.properties = {};
+                definition.additionalProperties = true;
             }
             else {
                 var value = extractLiteralValue(propertyType);
@@ -776,6 +784,12 @@ var JsonSchemaGenerator = (function () {
         }
         return root;
     };
+    JsonSchemaGenerator.prototype.getSymbols = function (name) {
+        if (name === void 0) {
+            return this.symbols;
+        }
+        return this.symbols.filter(function (symbol) { return symbol.typeName === name; });
+    };
     JsonSchemaGenerator.prototype.getUserSymbols = function () {
         return Object.keys(this.userSymbols);
     };
@@ -811,7 +825,7 @@ function getProgramFromFiles(files, jsonCompilerOptions, basePath) {
     if (basePath === void 0) { basePath = "./"; }
     var compilerOptions = ts.convertCompilerOptionsFromJson(jsonCompilerOptions, basePath).options;
     var options = {
-        noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS
+        noEmit: true, emitDecoratorMetadata: true, experimentalDecorators: true, target: ts.ScriptTarget.ES5, module: ts.ModuleKind.CommonJS, allowUnusedLabels: true,
     };
     for (var k in compilerOptions) {
         if (compilerOptions.hasOwnProperty(k)) {
@@ -821,17 +835,27 @@ function getProgramFromFiles(files, jsonCompilerOptions, basePath) {
     return ts.createProgram(files, options);
 }
 exports.getProgramFromFiles = getProgramFromFiles;
-function buildGenerator(program, args) {
+function buildGenerator(program, args, onlyIncludeFiles) {
     if (args === void 0) { args = {}; }
+    function isUserFile(file) {
+        if (onlyIncludeFiles === undefined) {
+            return !file.hasNoDefaultLib;
+        }
+        return onlyIncludeFiles.indexOf(file.fileName) >= 0;
+    }
     var settings = getDefaultArgs();
     for (var pref in args) {
         if (args.hasOwnProperty(pref)) {
             settings[pref] = args[pref];
         }
     }
-    var typeChecker = program.getTypeChecker();
-    var diagnostics = ts.getPreEmitDiagnostics(program);
-    if (diagnostics.length === 0 || args.ignoreErrors) {
+    var diagnostics = [];
+    if (!args.ignoreErrors) {
+        diagnostics = ts.getPreEmitDiagnostics(program);
+    }
+    if (diagnostics.length === 0) {
+        var typeChecker_1 = program.getTypeChecker();
+        var symbols_1 = [];
         var allSymbols_1 = {};
         var userSymbols_1 = {};
         var inheritingTypes_1 = {};
@@ -843,10 +867,15 @@ function buildGenerator(program, args) {
                     || node.kind === ts.SyntaxKind.TypeAliasDeclaration) {
                     var symbol = node.symbol;
                     var nodeType = tc.getTypeAtLocation(node);
-                    var fullName_1 = tc.getFullyQualifiedName(symbol).replace(/".*"\./, "");
-                    allSymbols_1[fullName_1] = nodeType;
-                    if (!sourceFile.hasNoDefaultLib) {
-                        userSymbols_1[fullName_1] = symbol;
+                    var fullyQualifiedName = tc.getFullyQualifiedName(symbol);
+                    var typeName = fullyQualifiedName.replace(/".*"\./, "");
+                    var name_1 = !args.uniqueNames ? typeName : typeName + "." + symbol.id;
+                    symbols_1.push({ name: name_1, typeName: typeName, fullyQualifiedName: fullyQualifiedName, symbol: symbol });
+                    if (!userSymbols_1[name_1]) {
+                        allSymbols_1[name_1] = nodeType;
+                    }
+                    if (isUserFile(sourceFile)) {
+                        userSymbols_1[name_1] = symbol;
                     }
                     var baseTypes = nodeType.getBaseTypes() || [];
                     baseTypes.forEach(function (baseType) {
@@ -854,16 +883,16 @@ function buildGenerator(program, args) {
                         if (!inheritingTypes_1[baseName]) {
                             inheritingTypes_1[baseName] = [];
                         }
-                        inheritingTypes_1[baseName].push(fullName_1);
+                        inheritingTypes_1[baseName].push(name_1);
                     });
                 }
                 else {
                     ts.forEachChild(node, function (n) { return inspect(n, tc); });
                 }
             }
-            inspect(sourceFile, typeChecker);
+            inspect(sourceFile, typeChecker_1);
         });
-        return new JsonSchemaGenerator(allSymbols_1, userSymbols_1, inheritingTypes_1, typeChecker, settings);
+        return new JsonSchemaGenerator(symbols_1, allSymbols_1, userSymbols_1, inheritingTypes_1, typeChecker_1, settings);
     }
     else {
         diagnostics.forEach(function (diagnostic) {
@@ -882,7 +911,7 @@ function buildGenerator(program, args) {
 exports.buildGenerator = buildGenerator;
 function generateSchema(program, fullTypeName, args, onlyIncludeFiles) {
     if (args === void 0) { args = {}; }
-    var generator = buildGenerator(program, args);
+    var generator = buildGenerator(program, args, onlyIncludeFiles);
     if (generator === null) {
         return null;
     }
@@ -894,7 +923,7 @@ function generateSchema(program, fullTypeName, args, onlyIncludeFiles) {
     }
 }
 exports.generateSchema = generateSchema;
-function programFromConfig(configFileName) {
+function programFromConfig(configFileName, onlyIncludeFiles) {
     var result = ts.parseConfigFileTextToJson(configFileName, ts.sys.readFile(configFileName));
     var configObject = result.config;
     var configParseResult = ts.parseJsonConfigFileContent(configObject, ts.sys, path.dirname(configFileName), {}, path.basename(configFileName));
@@ -904,7 +933,7 @@ function programFromConfig(configFileName) {
     delete options.outDir;
     delete options.outFile;
     delete options.declaration;
-    var program = ts.createProgram(configParseResult.fileNames, options);
+    var program = ts.createProgram(onlyIncludeFiles || configParseResult.fileNames, options);
     return program;
 }
 exports.programFromConfig = programFromConfig;
@@ -919,7 +948,11 @@ function exec(filePattern, fullTypeName, args) {
     var program;
     var onlyIncludeFiles = undefined;
     if (REGEX_TSCONFIG_NAME.test(path.basename(filePattern))) {
-        program = programFromConfig(filePattern);
+        if (args.include && args.include.length > 0) {
+            var globs = args.include.map(function (f) { return glob.sync(f); });
+            onlyIncludeFiles = (_a = []).concat.apply(_a, globs).map(normalizeFileName);
+        }
+        program = programFromConfig(filePattern, onlyIncludeFiles);
     }
     else {
         onlyIncludeFiles = glob.sync(filePattern);
@@ -943,6 +976,7 @@ function exec(filePattern, fullTypeName, args) {
     else {
         process.stdout.write(json);
     }
+    var _a;
 }
 exports.exec = exec;
 //# sourceMappingURL=typescript-json-schema.js.map

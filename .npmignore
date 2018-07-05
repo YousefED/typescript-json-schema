@@ -1,4 +1,9 @@
-node_modules
+.gitattributes
+.github
+.travis.yml
 .vscode/*.*
+example/
+node_modules
+test/
 typings/
-test/schema.test.ts
+yarn-error.log

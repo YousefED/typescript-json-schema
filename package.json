@@ -48,7 +48,7 @@
   "dependencies": {
     "glob": "~7.1.2",
     "json-stable-stringify": "^1.0.1",
-    "typescript": "~2.8.3",
+    "typescript": "~2.9.2",
     "yargs": "^11.0.0"
   },
   "devDependencies": {

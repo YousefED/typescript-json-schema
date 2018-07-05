@@ -67,6 +67,21 @@ export function assertSchemas(group: string, type: string, settings: TJS.Partial
     });
 }
 
+export function assertRejection(group: string, type: string, settings: TJS.PartialArgs = {}, compilerOptions?: TJS.CompilerOptions) {
+    it(group + " should reject input", () => {
+        let schema = null;
+        assert.throws(() => {
+            if (!("required" in settings)) {
+                settings.required = true;
+            }
+
+            const files = [resolve(BASE + group + "/main.ts")];
+            schema = TJS.generateSchema(TJS.getProgramFromFiles(files, compilerOptions), type, settings, files);
+        });
+        assert.equal(schema, null, "Expected no schema to be generated");
+    });
+}
+
 describe("interfaces", () => {
     it("should return an instance of JsonSchemaGenerator", () => {
         const program = TJS.getProgramFromFiles([resolve(BASE + "comments/main.ts")]);
@@ -248,6 +263,9 @@ describe("schema", () => {
 
     describe("dates", () => {
         assertSchema("dates", "MyObject");
+        assertRejection("dates", "MyObject", {
+            rejectDateType: true
+        });
     });
 
     describe("namespaces", () => {

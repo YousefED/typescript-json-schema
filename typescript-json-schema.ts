@@ -413,11 +413,9 @@ export class JsonSchemaGenerator {
                     definition.items = this.getTypeDefinition(arrayType);
                 } else {
                     // Report that type could not be processed
-                    let info: any = propertyType;
-                    try {
-                        info = JSON.stringify(propertyType);
-                    } catch(err) {}
-                    console.error("Unsupported type: ", info);
+                    const error = new TypeError("Unsupported type: " + propertyTypeString);
+                    (error as any).type = propertyType;
+                    throw error;
                     // definition = this.getTypeDefinition(propertyType, tc);
                 }
             }

@@ -7,7 +7,7 @@ export { Program, CompilerOptions, Symbol } from "typescript";
 
 const vm = require("vm");
 
-const REGEX_FILE_NAME = /(".*"|import\(".*"\))\./;
+const REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;
 const REGEX_TSCONFIG_NAME = /^.*\.json$/;
 const REGEX_TJS_JSDOC = /^-([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
 
@@ -794,7 +794,7 @@ export class JsonSchemaGenerator {
             return this.typeNamesById[id];
         }
 
-        const baseName = this.tc.typeToString(typ, undefined, ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseFullyQualifiedType);
+        const baseName = this.tc.typeToString(typ, undefined, ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseFullyQualifiedType).replace(REGEX_FILE_NAME_OR_SPACE, "");
         let name = baseName;
         if (this.typeNamesUsed[name]) { // If a type with same name exists
             for (let i = 1; true; ++i) { // Try appending "_1", "_2", etc.
@@ -848,12 +848,10 @@ export class JsonSchemaGenerator {
                 reffedType!.getFlags() & ts.SymbolFlags.Alias ?
                     this.tc.getAliasedSymbol(reffedType!) :
                     reffedType!
-            );
+            ).replace(REGEX_FILE_NAME_OR_SPACE, "");
         } else if (asRef) {
             fullTypeName = this.getTypeName(typ);
         }
-
-        fullTypeName = fullTypeName.replace(REGEX_FILE_NAME, "").replace(" ", "");
 
         if (asRef) {
             // We don't return the full definition, but we put it into

@@ -29,6 +29,7 @@ export function getDefaultArgs(): Args {
         include: [],
         excludePrivate: false,
         uniqueNames: false,
+        rejectDateType: false,
     };
 }
 
@@ -53,6 +54,7 @@ export type Args = {
     include: string[];
     excludePrivate: boolean;
     uniqueNames: boolean;
+    rejectDateType: boolean;
 };
 
 export type PartialArgs = Partial<Args>;
@@ -394,7 +396,7 @@ export class JsonSchemaGenerator {
                 definition.type = "undefined";
             } else if (flags & ts.TypeFlags.Any) {
                 // no type restriction, so that anything will match
-            } else if (propertyTypeString === "Date") {
+            } else if (propertyTypeString === "Date" && !this.args.rejectDateType) {
                 definition.type = "string";
                 definition.format = "date-time";
             }  else if (propertyTypeString === "object") {

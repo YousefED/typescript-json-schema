@@ -6,8 +6,6 @@ import { resolve } from "path";
 import * as TJS from "../typescript-json-schema";
 
 const ajv = new Ajv();
-const metaSchema = require("ajv/lib/refs/json-schema-draft-06.json");
-ajv.addMetaSchema(metaSchema);
 
 const BASE = "test/programs/";
 

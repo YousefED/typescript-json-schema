@@ -766,13 +766,13 @@ var JsonSchemaGenerator = (function () {
         if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
             def.definitions = this.reffedDefinitions;
         }
-        def["$schema"] = "http://json-schema.org/draft-06/schema#";
+        def["$schema"] = "http://json-schema.org/draft-07/schema#";
         return def;
     };
     JsonSchemaGenerator.prototype.getSchemaForSymbols = function (symbolNames, includeReffedDefinitions) {
         if (includeReffedDefinitions === void 0) { includeReffedDefinitions = true; }
         var root = {
-            $schema: "http://json-schema.org/draft-06/schema#",
+            $schema: "http://json-schema.org/draft-07/schema#",
             definitions: {}
         };
         for (var _i = 0, symbolNames_1 = symbolNames; _i < symbolNames_1.length; _i++) {

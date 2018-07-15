@@ -140,7 +140,7 @@ will be translated to
 ```json
 {
     "$ref": "#/definitions/Shape",
-    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
         "Shape": {
             "properties": {

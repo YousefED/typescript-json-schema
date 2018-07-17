@@ -1,0 +1,33 @@
+{
+    "$id": "someSchemaId",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "ReferenceType": {
+            "properties": {
+                "reference": {
+                    "enum": [
+                        true
+                    ],
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "reference"
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "referenceType": {
+            "$ref": "someSchemaId#/definitions/ReferenceType"
+        },
+        "someProp": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "referenceType",
+        "someProp"
+    ],
+    "type": "object"
+}

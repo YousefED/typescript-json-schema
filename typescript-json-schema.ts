@@ -954,16 +954,24 @@ export class JsonSchemaGenerator {
             def.definitions = this.reffedDefinitions;
         }
         def["$schema"] = "http://json-schema.org/draft-07/schema#";
-        def["$id"] = this.args.id;
+        const id = this.args.id;
+        if(id) {
+            def["$id"] = this.args.id;
+        }
         return def;
     }
 
     public getSchemaForSymbols(symbolNames: string[], includeReffedDefinitions: boolean = true): Definition {
         const root = {
             $schema: "http://json-schema.org/draft-07/schema#",
-            $id: this.args.id,
             definitions: {}
         };
+        const id = this.args.id;
+
+        if(id) {
+            root["$id"] = id;
+        }
+
         for (const symbolName of symbolNames) {
             root.definitions[symbolName] = this.getTypeDefinition(this.allSymbols[symbolName], this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName]);
         }

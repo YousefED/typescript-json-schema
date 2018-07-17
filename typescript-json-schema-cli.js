@@ -39,6 +39,8 @@ function run() {
         .describe("uniqueNames", "Use unique names for type symbols.")
         .array("include").default("*", defaultArgs.include)
         .describe("include", "Further limit tsconfig to include only matching files.")
+        .string("id").default("id", defaultArgs.id)
+        .describe("id", "ID of schema.")
         .argv;
     typescript_json_schema_1.exec(args._[0], args._[1], {
         ref: args.refs,
@@ -57,6 +59,7 @@ function run() {
         include: args.include,
         excludePrivate: args.excludePrivate,
         uniqueNames: args.uniqueNames,
+        id: args.id
     });
 }
 exports.run = run;

@@ -34,6 +34,7 @@ function getDefaultArgs() {
         include: [],
         excludePrivate: false,
         uniqueNames: false,
+        id: ""
     };
 }
 exports.getDefaultArgs = getDefaultArgs;
@@ -680,7 +681,7 @@ var JsonSchemaGenerator = (function () {
         fullTypeName = fullTypeName.replace(" ", "");
         if (asRef) {
             returnedDefinition = {
-                $ref: "#/definitions/" + fullTypeName
+                $ref: this.args.id + "#/definitions/" + fullTypeName
             };
         }
         var otherAnnotations = {};
@@ -767,6 +768,10 @@ var JsonSchemaGenerator = (function () {
             def.definitions = this.reffedDefinitions;
         }
         def["$schema"] = "http://json-schema.org/draft-07/schema#";
+        var id = this.args.id;
+        if (id) {
+            def["$id"] = this.args.id;
+        }
         return def;
     };
     JsonSchemaGenerator.prototype.getSchemaForSymbols = function (symbolNames, includeReffedDefinitions) {
@@ -775,6 +780,10 @@ var JsonSchemaGenerator = (function () {
             $schema: "http://json-schema.org/draft-07/schema#",
             definitions: {}
         };
+        var id = this.args.id;
+        if (id) {
+            root["$id"] = id;
+        }
         for (var _i = 0, symbolNames_1 = symbolNames; _i < symbolNames_1.length; _i++) {
             var symbolName = symbolNames_1[_i];
             root.definitions[symbolName] = this.getTypeDefinition(this.allSymbols[symbolName], this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName]);

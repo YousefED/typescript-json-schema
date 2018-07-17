@@ -29,6 +29,7 @@ export function getDefaultArgs(): Args {
         include: [],
         excludePrivate: false,
         uniqueNames: false,
+        id: ""
     };
 }
 
@@ -53,6 +54,7 @@ export type Args = {
     include: string[];
     excludePrivate: boolean;
     uniqueNames: boolean;
+    id: string;
 };
 
 export type PartialArgs = Partial<Args>;
@@ -62,6 +64,7 @@ export type PrimitiveType = number | boolean | string | null;
 export type Definition = {
     $ref?: string,
     $schema?: string,
+    $id?: string,
     description?: string,
     allOf?: Definition[],
     oneOf?: Definition[],
@@ -859,7 +862,7 @@ export class JsonSchemaGenerator {
             // We don't return the full definition, but we put it into
             // reffedDefinitions below.
             returnedDefinition = {
-                $ref:  "#/definitions/" + fullTypeName
+                $ref:  `${this.args.id}#/definitions/` + fullTypeName
             };
         }
 
@@ -951,12 +954,14 @@ export class JsonSchemaGenerator {
             def.definitions = this.reffedDefinitions;
         }
         def["$schema"] = "http://json-schema.org/draft-07/schema#";
+        def["$id"] = this.args.id;
         return def;
     }
 
     public getSchemaForSymbols(symbolNames: string[], includeReffedDefinitions: boolean = true): Definition {
         const root = {
             $schema: "http://json-schema.org/draft-07/schema#",
+            $id: this.args.id,
             definitions: {}
         };
         for (const symbolName of symbolNames) {

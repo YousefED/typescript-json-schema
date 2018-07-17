@@ -275,6 +275,10 @@ describe("schema", () => {
         assertSchema("builtin-names", "Ext.Foo");
 
         assertSchema("user-symbols", "*");
+
+        assertSchemas("argument-id", "MyObject", {
+            id: "someSchemaId"
+        });
     });
 });
 

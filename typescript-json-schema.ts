@@ -432,7 +432,11 @@ export class JsonSchemaGenerator {
         if (decl && decl.length) {
             const type = (<ts.TypeReferenceNode> (<any> decl[0]).type);
             if (type && (type.kind & ts.SyntaxKind.TypeReference) && type.typeName) {
-                return this.tc.getSymbolAtLocation(type.typeName);
+                const symbol = this.tc.getSymbolAtLocation(type.typeName);
+                if (symbol && (symbol.flags & ts.SymbolFlags.Alias)) {
+                    return this.tc.getAliasedSymbol(symbol);
+                }
+                return symbol;
             }
         }
         return undefined;

@@ -194,6 +194,9 @@ describe("schema", () => {
     describe("comments", () => {
         assertSchema("comments", "MyObject");
         assertSchema("comments-override", "MyObject");
+        assertSchema("comments-imports", "MyObject", {
+            aliasRef: true
+        });
     });
 
     describe("types", () => {

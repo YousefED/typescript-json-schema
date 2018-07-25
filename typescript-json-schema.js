@@ -299,7 +299,11 @@ var JsonSchemaGenerator = (function () {
         if (decl && decl.length) {
             var type = decl[0].type;
             if (type && (type.kind & ts.SyntaxKind.TypeReference) && type.typeName) {
-                return this.tc.getSymbolAtLocation(type.typeName);
+                var symbol = this.tc.getSymbolAtLocation(type.typeName);
+                if (symbol && (symbol.flags & ts.SymbolFlags.Alias)) {
+                    return this.tc.getAliasedSymbol(symbol);
+                }
+                return symbol;
             }
         }
         return undefined;

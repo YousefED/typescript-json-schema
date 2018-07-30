@@ -378,7 +378,8 @@ export class JsonSchemaGenerator {
             const fixedTypes = elemTypes.map(elType => this.getTypeDefinition(elType as any));
             definition.type = "array";
             definition.items = fixedTypes;
-            definition.minItems = fixedTypes.length;
+            const targetTupleType = (propertyType as ts.TupleTypeReference).target;
+            definition.minItems = targetTupleType.minLength;
             definition.additionalItems = {
                 anyOf: fixedTypes
             };

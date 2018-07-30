@@ -45,6 +45,7 @@ Options:
   --ignoreErrors        Generate even if the program has errors.                     [boolean] [default: false]
   --excludePrivate      Exclude private members from the schema                      [boolean] [default: false]
   --uniqueNames         Use unique names for type symbols.                           [boolean] [default: false]
+  --rejectDateType      Rejects Date fields in type definitions.                     [boolean] [default: false]
   --id                  Set schema id.                                               [string] [default: ""]
 ```
 

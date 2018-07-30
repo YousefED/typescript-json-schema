@@ -1,13 +1,14 @@
 import * as glob from "glob";
 import * as stringify from "json-stable-stringify";
 import * as path from "path";
+import { createHash } from "crypto";
 import * as ts from "typescript";
 export { Program, CompilerOptions, Symbol } from "typescript";
 
 
 const vm = require("vm");
 
-const REGEX_FILE_NAME = /".*"\./;
+const REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;
 const REGEX_TSCONFIG_NAME = /^.*\.json$/;
 const REGEX_TJS_JSDOC = /^-([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
 
@@ -801,7 +802,7 @@ export class JsonSchemaGenerator {
             return this.typeNamesById[id];
         }
 
-        const baseName = this.tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+        const baseName = this.tc.typeToString(typ, undefined, ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseFullyQualifiedType).replace(REGEX_FILE_NAME_OR_SPACE, "");
         let name = baseName;
         if (this.typeNamesUsed[name]) { // If a type with same name exists
             for (let i = 1; true; ++i) { // Try appending "_1", "_2", etc.
@@ -855,12 +856,10 @@ export class JsonSchemaGenerator {
                 reffedType!.getFlags() & ts.SymbolFlags.Alias ?
                     this.tc.getAliasedSymbol(reffedType!) :
                     reffedType!
-            ).replace(REGEX_FILE_NAME, "");
+            ).replace(REGEX_FILE_NAME_OR_SPACE, "");
         } else if (asRef) {
             fullTypeName = this.getTypeName(typ);
         }
-
-        fullTypeName = fullTypeName.replace(" ", "");
 
         if (asRef) {
             // We don't return the full definition, but we put it into
@@ -1036,6 +1035,10 @@ export function getProgramFromFiles(files: string[], jsonCompilerOptions: any = 
     return ts.createProgram(files, options);
 }
 
+function generateHashOfNode(node: ts.Node, relativePath: string) {
+    return createHash("md5").update(relativePath).update(node.pos.toString()).digest("hex").substring(0, 8);
+}
+
 export function buildGenerator(program: ts.Program, args: PartialArgs = {}, onlyIncludeFiles?: string[]): JsonSchemaGenerator|null {
     function isUserFile(file: ts.SourceFile): boolean {
         if (onlyIncludeFiles === undefined) {
@@ -1065,8 +1068,11 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}, only
         const allSymbols: { [name: string]: ts.Type } = {};
         const userSymbols: { [name: string]: ts.Symbol } = {};
         const inheritingTypes: { [baseName: string]: string[] } = {};
+        const workingDir = program.getCurrentDirectory();
 
         program.getSourceFiles().forEach((sourceFile, _sourceFileIdx) => {
+            const relativePath = path.relative(workingDir, sourceFile.fileName);
+
             function inspect(node: ts.Node, tc: ts.TypeChecker) {
 
                 if (node.kind === ts.SyntaxKind.ClassDeclaration
@@ -1078,7 +1084,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}, only
                     const nodeType = tc.getTypeAtLocation(node);
                     const fullyQualifiedName = tc.getFullyQualifiedName(symbol);
                     const typeName = fullyQualifiedName.replace(/".*"\./, "");
-                    const name = !args.uniqueNames ? typeName : `${typeName}.${(<any>symbol).id}`;
+                    const name = !args.uniqueNames ? typeName : `${typeName}.${generateHashOfNode(node, relativePath)}`;
 
                     symbols.push({ name, typeName, fullyQualifiedName, symbol });
                     if (!userSymbols[name]) {

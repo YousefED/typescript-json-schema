@@ -161,6 +161,7 @@ describe("schema", () => {
         assertSchema("type-aliases-recursive-export", "MyObject");
         */
         assertSchema("type-aliases-tuple-of-variable-length", "MyTuple");
+        assertSchema("type-aliases-tuple-with-rest-element", "MyTuple");
     });
 
     describe("enums", () => {

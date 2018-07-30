@@ -80,7 +80,7 @@ export type Definition = {
     minItems?: number,
     additionalItems?: {
         anyOf: Definition[]
-    },
+    } | Definition,
     enum?: PrimitiveType[] | Definition[],
     default?: PrimitiveType | Object,
     additionalProperties?: Definition | boolean,
@@ -380,9 +380,14 @@ export class JsonSchemaGenerator {
             definition.items = fixedTypes;
             const targetTupleType = (propertyType as ts.TupleTypeReference).target;
             definition.minItems = targetTupleType.minLength;
-            definition.additionalItems = {
-                anyOf: fixedTypes
-            };
+            if (targetTupleType.hasRestElement) {
+                definition.additionalItems = fixedTypes[fixedTypes.length - 1];
+                fixedTypes.splice(fixedTypes.length - 1, 1);
+            } else {
+                definition.additionalItems = {
+                    anyOf: fixedTypes
+                };
+            }
         } else {
             const propertyTypeString = this.tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
             const flags = propertyType.flags;

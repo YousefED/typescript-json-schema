@@ -21,12 +21,14 @@ export declare type Args = {
     include: string[];
     excludePrivate: boolean;
     uniqueNames: boolean;
+    id: string;
 };
 export declare type PartialArgs = Partial<Args>;
 export declare type PrimitiveType = number | boolean | string | null;
 export declare type Definition = {
     $ref?: string;
     $schema?: string;
+    $id?: string;
     description?: string;
     allOf?: Definition[];
     oneOf?: Definition[];

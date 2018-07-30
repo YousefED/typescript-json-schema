@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "additionalProperties": false,
     "description": "Description of MyObject, a top level object,\nwhich also has a comment that spans\nmultiple lines",
     "properties": {

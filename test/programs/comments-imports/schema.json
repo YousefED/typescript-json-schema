@@ -1,0 +1,44 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "Color": {
+            "description": "Description of Color.",
+            "pattern": "^[0-9a-f]{6}$",
+            "type": "string"
+        },
+        "Text": {
+            "description": "Description of Text interface.",
+            "properties": {
+                "color": {
+                    "$ref": "#/definitions/Color",
+                    "description": "Description of text color property."
+                },
+                "text": {
+                    "description": "Description of text property.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "color",
+                "text"
+            ],
+            "type": "object"
+        }
+    },
+    "description": "Description of MyObject",
+    "properties": {
+        "color": {
+            "$ref": "#/definitions/Color",
+            "description": "Description of MyObject color property."
+        },
+        "text": {
+            "$ref": "#/definitions/Text",
+            "description": "Description of MyObject text property."
+        }
+    },
+    "required": [
+        "color",
+        "text"
+    ],
+    "type": "object"
+}

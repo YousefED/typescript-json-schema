@@ -31,6 +31,7 @@ export function getDefaultArgs(): Args {
         include: [],
         excludePrivate: false,
         uniqueNames: false,
+        id: ""
     };
 }
 
@@ -55,6 +56,7 @@ export type Args = {
     include: string[];
     excludePrivate: boolean;
     uniqueNames: boolean;
+    id: string;
 };
 
 export type PartialArgs = Partial<Args>;
@@ -64,6 +66,7 @@ export type PrimitiveType = number | boolean | string | null;
 export type Definition = {
     $ref?: string,
     $schema?: string,
+    $id?: string,
     description?: string,
     allOf?: Definition[],
     oneOf?: Definition[],
@@ -431,7 +434,11 @@ export class JsonSchemaGenerator {
         if (decl && decl.length) {
             const type = (<ts.TypeReferenceNode> (<any> decl[0]).type);
             if (type && (type.kind & ts.SyntaxKind.TypeReference) && type.typeName) {
-                return this.tc.getSymbolAtLocation(type.typeName);
+                const symbol = this.tc.getSymbolAtLocation(type.typeName);
+                if (symbol && (symbol.flags & ts.SymbolFlags.Alias)) {
+                    return this.tc.getAliasedSymbol(symbol);
+                }
+                return symbol;
             }
         }
         return undefined;
@@ -859,7 +866,7 @@ export class JsonSchemaGenerator {
             // We don't return the full definition, but we put it into
             // reffedDefinitions below.
             returnedDefinition = {
-                $ref:  "#/definitions/" + fullTypeName
+                $ref:  `${this.args.id}#/definitions/` + fullTypeName
             };
         }
 
@@ -950,15 +957,25 @@ export class JsonSchemaGenerator {
         if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
             def.definitions = this.reffedDefinitions;
         }
-        def["$schema"] = "http://json-schema.org/draft-06/schema#";
+        def["$schema"] = "http://json-schema.org/draft-07/schema#";
+        const id = this.args.id;
+        if(id) {
+            def["$id"] = this.args.id;
+        }
         return def;
     }
 
     public getSchemaForSymbols(symbolNames: string[], includeReffedDefinitions: boolean = true): Definition {
         const root = {
-            $schema: "http://json-schema.org/draft-06/schema#",
+            $schema: "http://json-schema.org/draft-07/schema#",
             definitions: {}
         };
+        const id = this.args.id;
+
+        if(id) {
+            root["$id"] = id;
+        }
+
         for (const symbolName of symbolNames) {
             root.definitions[symbolName] = this.getTypeDefinition(this.allSymbols[symbolName], this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName]);
         }

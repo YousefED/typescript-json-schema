@@ -34,6 +34,7 @@ function getDefaultArgs() {
         include: [],
         excludePrivate: false,
         uniqueNames: false,
+        id: ""
     };
 }
 exports.getDefaultArgs = getDefaultArgs;
@@ -298,7 +299,11 @@ var JsonSchemaGenerator = (function () {
         if (decl && decl.length) {
             var type = decl[0].type;
             if (type && (type.kind & ts.SyntaxKind.TypeReference) && type.typeName) {
-                return this.tc.getSymbolAtLocation(type.typeName);
+                var symbol = this.tc.getSymbolAtLocation(type.typeName);
+                if (symbol && (symbol.flags & ts.SymbolFlags.Alias)) {
+                    return this.tc.getAliasedSymbol(symbol);
+                }
+                return symbol;
             }
         }
         return undefined;
@@ -680,7 +685,7 @@ var JsonSchemaGenerator = (function () {
         fullTypeName = fullTypeName.replace(" ", "");
         if (asRef) {
             returnedDefinition = {
-                $ref: "#/definitions/" + fullTypeName
+                $ref: this.args.id + "#/definitions/" + fullTypeName
             };
         }
         var otherAnnotations = {};
@@ -766,15 +771,23 @@ var JsonSchemaGenerator = (function () {
         if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
             def.definitions = this.reffedDefinitions;
         }
-        def["$schema"] = "http://json-schema.org/draft-06/schema#";
+        def["$schema"] = "http://json-schema.org/draft-07/schema#";
+        var id = this.args.id;
+        if (id) {
+            def["$id"] = this.args.id;
+        }
         return def;
     };
     JsonSchemaGenerator.prototype.getSchemaForSymbols = function (symbolNames, includeReffedDefinitions) {
         if (includeReffedDefinitions === void 0) { includeReffedDefinitions = true; }
         var root = {
-            $schema: "http://json-schema.org/draft-06/schema#",
+            $schema: "http://json-schema.org/draft-07/schema#",
             definitions: {}
         };
+        var id = this.args.id;
+        if (id) {
+            root["$id"] = id;
+        }
         for (var _i = 0, symbolNames_1 = symbolNames; _i < symbolNames_1.length; _i++) {
             var symbolName = symbolNames_1[_i];
             root.definitions[symbolName] = this.getTypeDefinition(this.allSymbols[symbolName], this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName]);

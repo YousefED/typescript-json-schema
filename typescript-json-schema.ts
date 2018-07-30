@@ -2,7 +2,6 @@ import * as glob from "glob";
 import * as stringify from "json-stable-stringify";
 import * as path from "path";
 import { createHash } from "crypto";
-import { cwd } from "process";
 import * as ts from "typescript";
 export { Program, CompilerOptions, Symbol } from "typescript";
 
@@ -1069,7 +1068,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}, only
         const allSymbols: { [name: string]: ts.Type } = {};
         const userSymbols: { [name: string]: ts.Symbol } = {};
         const inheritingTypes: { [baseName: string]: string[] } = {};
-        const workingDir = cwd();
+        const workingDir = program.getCurrentDirectory();
 
         program.getSourceFiles().forEach((sourceFile, _sourceFileIdx) => {
             const relativePath = path.relative(workingDir, sourceFile.fileName);

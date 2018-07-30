@@ -1,6 +1,6 @@
 {
   "name": "typescript-json-schema",
-  "version": "0.25.1",
+  "version": "0.30.0",
   "description": "typescript-json-schema generates JSON Schema files from your Typescript sources",
   "main": "typescript-json-schema.js",
   "typings": "typescript-json-schema.d.ts",
@@ -48,7 +48,7 @@
   "dependencies": {
     "glob": "~7.1.2",
     "json-stable-stringify": "^1.0.1",
-    "typescript": "~2.8.3",
+    "typescript": "~2.9.2",
     "yargs": "^11.0.0"
   },
   "devDependencies": {
@@ -62,7 +62,7 @@
     "chai": "^4.1.2",
     "mocha": "^5.1.1",
     "source-map-support": "^0.5.5",
-    "ts-node": "^6.0.1",
+    "ts-node": "^7.0.0",
     "tslint": "^5.9.1"
   },
   "scripts": {

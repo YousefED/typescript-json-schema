@@ -38,6 +38,10 @@ export function run() {
             .describe("uniqueNames", "Use unique names for type symbols.")
         .array("include").default("*", defaultArgs.include)
             .describe("include", "Further limit tsconfig to include only matching files.")
+        .boolean("rejectDateType").default("rejectDateType", defaultArgs.rejectDateType)
+            .describe("rejectDateType", "Rejects Date fields in type definitions.")
+        .string("id").default("id", defaultArgs.id)
+            .describe("id", "ID of schema.")
         .argv;
 
     exec(args._[0], args._[1], {
@@ -57,6 +61,8 @@ export function run() {
         include: args.include,
         excludePrivate: args.excludePrivate,
         uniqueNames: args.uniqueNames,
+        rejectDateType: args.rejectDateType,
+        id: args.id,
     });
 }
 

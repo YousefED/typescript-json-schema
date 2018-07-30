@@ -6,8 +6,6 @@ import { resolve } from "path";
 import * as TJS from "../typescript-json-schema";
 
 const ajv = new Ajv();
-const metaSchema = require("ajv/lib/refs/json-schema-draft-06.json");
-ajv.addMetaSchema(metaSchema);
 
 const BASE = "test/programs/";
 
@@ -64,6 +62,21 @@ export function assertSchemas(group: string, type: string, settings: TJS.Partial
               assert.equal(ajv.errors, null, "The schema is not valid");
           }
         }
+    });
+}
+
+export function assertRejection(group: string, type: string, settings: TJS.PartialArgs = {}, compilerOptions?: TJS.CompilerOptions) {
+    it(group + " should reject input", () => {
+        let schema = null;
+        assert.throws(() => {
+            if (!("required" in settings)) {
+                settings.required = true;
+            }
+
+            const files = [resolve(BASE + group + "/main.ts")];
+            schema = TJS.generateSchema(TJS.getProgramFromFiles(files, compilerOptions), type, settings, files);
+        });
+        assert.equal(schema, null, "Expected no schema to be generated");
     });
 }
 
@@ -196,6 +209,9 @@ describe("schema", () => {
     describe("comments", () => {
         assertSchema("comments", "MyObject");
         assertSchema("comments-override", "MyObject");
+        assertSchema("comments-imports", "MyObject", {
+            aliasRef: true
+        });
     });
 
     describe("types", () => {
@@ -246,6 +262,13 @@ describe("schema", () => {
         assertSchema("string-literals-inline", "MyObject");
     });
 
+    describe("dates", () => {
+        assertSchema("dates", "MyObject");
+        assertRejection("dates", "MyObject", {
+            rejectDateType: true
+        });
+    });
+
     describe("namespaces", () => {
         assertSchema("namespace", "Type");
         assertSchema("namespace-deep-1", "RootNamespace.Def");
@@ -277,6 +300,10 @@ describe("schema", () => {
         assertSchema("builtin-names", "Ext.Foo");
 
         assertSchema("user-symbols", "*");
+
+        assertSchemas("argument-id", "MyObject", {
+            id: "someSchemaId"
+        });
     });
 });
 

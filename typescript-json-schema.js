@@ -11,9 +11,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var glob = require("glob");
 var stringify = require("json-stable-stringify");
 var path = require("path");
+var crypto_1 = require("crypto");
 var ts = require("typescript");
 var vm = require("vm");
-var REGEX_FILE_NAME = /".*"\./;
+var REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;
 var REGEX_TSCONFIG_NAME = /^.*\.json$/;
 var REGEX_TJS_JSDOC = /^-([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
 function getDefaultArgs() {
@@ -197,8 +198,8 @@ var JsonSchemaGenerator = (function () {
         this.inheritingTypes = inheritingTypes;
         this.tc = tc;
         this.userValidationKeywords = args.validationKeywords.reduce(function (acc, word) {
-            return (__assign({}, acc, (_a = {}, _a[word] = true, _a)));
             var _a;
+            return (__assign({}, acc, (_a = {}, _a[word] = true, _a)));
         }, {});
     }
     Object.defineProperty(JsonSchemaGenerator.prototype, "ReffedDefinitions", {
@@ -635,7 +636,7 @@ var JsonSchemaGenerator = (function () {
         if (this.typeNamesById[id]) {
             return this.typeNamesById[id];
         }
-        var baseName = this.tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+        var baseName = this.tc.typeToString(typ, undefined, ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseFullyQualifiedType).replace(REGEX_FILE_NAME_OR_SPACE, "");
         var name = baseName;
         if (this.typeNamesUsed[name]) {
             for (var i = 1; true; ++i) {
@@ -677,12 +678,11 @@ var JsonSchemaGenerator = (function () {
         if (asTypeAliasRef) {
             fullTypeName = this.tc.getFullyQualifiedName(reffedType.getFlags() & ts.SymbolFlags.Alias ?
                 this.tc.getAliasedSymbol(reffedType) :
-                reffedType).replace(REGEX_FILE_NAME, "");
+                reffedType).replace(REGEX_FILE_NAME_OR_SPACE, "");
         }
         else if (asRef) {
             fullTypeName = this.getTypeName(typ);
         }
-        fullTypeName = fullTypeName.replace(" ", "");
         if (asRef) {
             returnedDefinition = {
                 $ref: this.args.id + "#/definitions/" + fullTypeName
@@ -848,6 +848,9 @@ function getProgramFromFiles(files, jsonCompilerOptions, basePath) {
     return ts.createProgram(files, options);
 }
 exports.getProgramFromFiles = getProgramFromFiles;
+function generateHashOfNode(node, relativePath) {
+    return crypto_1.createHash("md5").update(relativePath).update(node.pos.toString()).digest("hex").substring(0, 8);
+}
 function buildGenerator(program, args, onlyIncludeFiles) {
     if (args === void 0) { args = {}; }
     function isUserFile(file) {
@@ -872,7 +875,9 @@ function buildGenerator(program, args, onlyIncludeFiles) {
         var allSymbols_1 = {};
         var userSymbols_1 = {};
         var inheritingTypes_1 = {};
+        var workingDir_1 = program.getCurrentDirectory();
         program.getSourceFiles().forEach(function (sourceFile, _sourceFileIdx) {
+            var relativePath = path.relative(workingDir_1, sourceFile.fileName);
             function inspect(node, tc) {
                 if (node.kind === ts.SyntaxKind.ClassDeclaration
                     || node.kind === ts.SyntaxKind.InterfaceDeclaration
@@ -882,7 +887,7 @@ function buildGenerator(program, args, onlyIncludeFiles) {
                     var nodeType = tc.getTypeAtLocation(node);
                     var fullyQualifiedName = tc.getFullyQualifiedName(symbol);
                     var typeName = fullyQualifiedName.replace(/".*"\./, "");
-                    var name_1 = !args.uniqueNames ? typeName : typeName + "." + symbol.id;
+                    var name_1 = !args.uniqueNames ? typeName : typeName + "." + generateHashOfNode(node, relativePath);
                     symbols_1.push({ name: name_1, typeName: typeName, fullyQualifiedName: fullyQualifiedName, symbol: symbol });
                     if (!userSymbols_1[name_1]) {
                         allSymbols_1[name_1] = nodeType;
@@ -958,6 +963,7 @@ function normalizeFileName(fn) {
 }
 function exec(filePattern, fullTypeName, args) {
     if (args === void 0) { args = getDefaultArgs(); }
+    var _a;
     var program;
     var onlyIncludeFiles = undefined;
     if (REGEX_TSCONFIG_NAME.test(path.basename(filePattern))) {
@@ -989,7 +995,6 @@ function exec(filePattern, fullTypeName, args) {
     else {
         process.stdout.write(json);
     }
-    var _a;
 }
 exports.exec = exec;
 //# sourceMappingURL=typescript-json-schema.js.map

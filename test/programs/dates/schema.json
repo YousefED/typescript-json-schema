@@ -1,0 +1,21 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "var1": {
+            "description": "Enables basic storage and retrieval of dates and times.",
+            "format": "date-time",
+            "type": "string"
+        },
+        "var2": {
+            "description": "Enables basic storage and retrieval of dates and times.",
+            "format": "date-time",
+            "type": "string"
+        }
+    },
+    "required": [
+        "var1",
+        "var2"
+    ],
+    "type": "object"
+}
+

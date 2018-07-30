@@ -30,7 +30,8 @@ export function getDefaultArgs(): Args {
         include: [],
         excludePrivate: false,
         uniqueNames: false,
-        id: ""
+        rejectDateType: false,
+        id: "",
     };
 }
 
@@ -55,6 +56,7 @@ export type Args = {
     include: string[];
     excludePrivate: boolean;
     uniqueNames: boolean;
+    rejectDateType: boolean;
     id: string;
 };
 
@@ -398,7 +400,7 @@ export class JsonSchemaGenerator {
                 definition.type = "undefined";
             } else if (flags & ts.TypeFlags.Any) {
                 // no type restriction, so that anything will match
-            } else if (propertyTypeString === "Date") {
+            } else if (propertyTypeString === "Date" && !this.args.rejectDateType) {
                 definition.type = "string";
                 definition.format = "date-time";
             }  else if (propertyTypeString === "object") {
@@ -415,11 +417,9 @@ export class JsonSchemaGenerator {
                     definition.items = this.getTypeDefinition(arrayType);
                 } else {
                     // Report that type could not be processed
-                    let info: any = propertyType;
-                    try {
-                        info = JSON.stringify(propertyType);
-                    } catch(err) {}
-                    console.error("Unsupported type: ", info);
+                    const error = new TypeError("Unsupported type: " + propertyTypeString);
+                    (error as any).type = propertyType;
+                    throw error;
                     // definition = this.getTypeDefinition(propertyType, tc);
                 }
             }

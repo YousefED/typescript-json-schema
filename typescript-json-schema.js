@@ -35,7 +35,8 @@ function getDefaultArgs() {
         include: [],
         excludePrivate: false,
         uniqueNames: false,
-        id: ""
+        rejectDateType: false,
+        id: "",
     };
 }
 exports.getDefaultArgs = getDefaultArgs;
@@ -264,7 +265,7 @@ var JsonSchemaGenerator = (function () {
             }
             else if (flags & ts.TypeFlags.Any) {
             }
-            else if (propertyTypeString === "Date") {
+            else if (propertyTypeString === "Date" && !this.args.rejectDateType) {
                 definition.type = "string";
                 definition.format = "date-time";
             }
@@ -284,12 +285,9 @@ var JsonSchemaGenerator = (function () {
                     definition.items = this.getTypeDefinition(arrayType);
                 }
                 else {
-                    var info = propertyType;
-                    try {
-                        info = JSON.stringify(propertyType);
-                    }
-                    catch (err) { }
-                    console.error("Unsupported type: ", info);
+                    var error = new TypeError("Unsupported type: " + propertyTypeString);
+                    error.type = propertyType;
+                    throw error;
                 }
             }
         }

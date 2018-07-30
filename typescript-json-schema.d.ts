@@ -21,6 +21,7 @@ export declare type Args = {
     include: string[];
     excludePrivate: boolean;
     uniqueNames: boolean;
+    rejectDateType: boolean;
     id: string;
 };
 export declare type PartialArgs = Partial<Args>;

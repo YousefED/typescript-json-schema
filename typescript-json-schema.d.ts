@@ -21,13 +21,14 @@ export declare type Args = {
     include: string[];
     excludePrivate: boolean;
     uniqueNames: boolean;
-    rejectDateType: boolean;
+    id: string;
 };
 export declare type PartialArgs = Partial<Args>;
 export declare type PrimitiveType = number | boolean | string | null;
 export declare type Definition = {
     $ref?: string;
     $schema?: string;
+    $id?: string;
     description?: string;
     allOf?: Definition[];
     oneOf?: Definition[];
@@ -81,16 +82,16 @@ export declare class JsonSchemaGenerator {
     readonly ReffedDefinitions: {
         [key: string]: Definition;
     };
-    private parseCommentsIntoDefinition(symbol, definition, otherAnnotations);
-    private getDefinitionForRootType(propertyType, reffedType, definition);
-    private getReferencedTypeSymbol(prop);
-    private getDefinitionForProperty(prop, node);
-    private getEnumDefinition(clazzType, definition);
-    private getUnionDefinition(unionType, prop, unionModifier, definition);
-    private getIntersectionDefinition(intersectionType, definition);
-    private getClassDefinition(clazzType, definition);
-    private getTypeName(typ);
-    private getTypeDefinition(typ, asRef?, unionModifier?, prop?, reffedType?, pairedSymbol?);
+    private parseCommentsIntoDefinition;
+    private getDefinitionForRootType;
+    private getReferencedTypeSymbol;
+    private getDefinitionForProperty;
+    private getEnumDefinition;
+    private getUnionDefinition;
+    private getIntersectionDefinition;
+    private getClassDefinition;
+    private getTypeName;
+    private getTypeDefinition;
     setSchemaOverride(symbolName: string, schema: Definition): void;
     getSchemaForSymbol(symbolName: string, includeReffedDefinitions?: boolean): Definition;
     getSchemaForSymbols(symbolNames: string[], includeReffedDefinitions?: boolean): Definition;

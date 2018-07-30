@@ -11,9 +11,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var glob = require("glob");
 var stringify = require("json-stable-stringify");
 var path = require("path");
+var crypto_1 = require("crypto");
 var ts = require("typescript");
 var vm = require("vm");
-var REGEX_FILE_NAME = /".*"\./;
+var REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;
 var REGEX_TSCONFIG_NAME = /^.*\.json$/;
 var REGEX_TJS_JSDOC = /^-([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
 function getDefaultArgs() {
@@ -34,6 +35,7 @@ function getDefaultArgs() {
         include: [],
         excludePrivate: false,
         uniqueNames: false,
+        id: ""
     };
 }
 exports.getDefaultArgs = getDefaultArgs;
@@ -196,8 +198,8 @@ var JsonSchemaGenerator = (function () {
         this.inheritingTypes = inheritingTypes;
         this.tc = tc;
         this.userValidationKeywords = args.validationKeywords.reduce(function (acc, word) {
-            return (__assign({}, acc, (_a = {}, _a[word] = true, _a)));
             var _a;
+            return (__assign({}, acc, (_a = {}, _a[word] = true, _a)));
         }, {});
     }
     Object.defineProperty(JsonSchemaGenerator.prototype, "ReffedDefinitions", {
@@ -298,7 +300,11 @@ var JsonSchemaGenerator = (function () {
         if (decl && decl.length) {
             var type = decl[0].type;
             if (type && (type.kind & ts.SyntaxKind.TypeReference) && type.typeName) {
-                return this.tc.getSymbolAtLocation(type.typeName);
+                var symbol = this.tc.getSymbolAtLocation(type.typeName);
+                if (symbol && (symbol.flags & ts.SymbolFlags.Alias)) {
+                    return this.tc.getAliasedSymbol(symbol);
+                }
+                return symbol;
             }
         }
         return undefined;
@@ -630,7 +636,7 @@ var JsonSchemaGenerator = (function () {
         if (this.typeNamesById[id]) {
             return this.typeNamesById[id];
         }
-        var baseName = this.tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+        var baseName = this.tc.typeToString(typ, undefined, ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseFullyQualifiedType).replace(REGEX_FILE_NAME_OR_SPACE, "");
         var name = baseName;
         if (this.typeNamesUsed[name]) {
             for (var i = 1; true; ++i) {
@@ -672,15 +678,14 @@ var JsonSchemaGenerator = (function () {
         if (asTypeAliasRef) {
             fullTypeName = this.tc.getFullyQualifiedName(reffedType.getFlags() & ts.SymbolFlags.Alias ?
                 this.tc.getAliasedSymbol(reffedType) :
-                reffedType).replace(REGEX_FILE_NAME, "");
+                reffedType).replace(REGEX_FILE_NAME_OR_SPACE, "");
         }
         else if (asRef) {
             fullTypeName = this.getTypeName(typ);
         }
-        fullTypeName = fullTypeName.replace(" ", "");
         if (asRef) {
             returnedDefinition = {
-                $ref: "#/definitions/" + fullTypeName
+                $ref: this.args.id + "#/definitions/" + fullTypeName
             };
         }
         var otherAnnotations = {};
@@ -766,15 +771,23 @@ var JsonSchemaGenerator = (function () {
         if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
             def.definitions = this.reffedDefinitions;
         }
-        def["$schema"] = "http://json-schema.org/draft-06/schema#";
+        def["$schema"] = "http://json-schema.org/draft-07/schema#";
+        var id = this.args.id;
+        if (id) {
+            def["$id"] = this.args.id;
+        }
         return def;
     };
     JsonSchemaGenerator.prototype.getSchemaForSymbols = function (symbolNames, includeReffedDefinitions) {
         if (includeReffedDefinitions === void 0) { includeReffedDefinitions = true; }
         var root = {
-            $schema: "http://json-schema.org/draft-06/schema#",
+            $schema: "http://json-schema.org/draft-07/schema#",
             definitions: {}
         };
+        var id = this.args.id;
+        if (id) {
+            root["$id"] = id;
+        }
         for (var _i = 0, symbolNames_1 = symbolNames; _i < symbolNames_1.length; _i++) {
             var symbolName = symbolNames_1[_i];
             root.definitions[symbolName] = this.getTypeDefinition(this.allSymbols[symbolName], this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName]);
@@ -835,6 +848,9 @@ function getProgramFromFiles(files, jsonCompilerOptions, basePath) {
     return ts.createProgram(files, options);
 }
 exports.getProgramFromFiles = getProgramFromFiles;
+function generateHashOfNode(node, relativePath) {
+    return crypto_1.createHash("md5").update(relativePath).update(node.pos.toString()).digest("hex").substring(0, 8);
+}
 function buildGenerator(program, args, onlyIncludeFiles) {
     if (args === void 0) { args = {}; }
     function isUserFile(file) {
@@ -859,7 +875,9 @@ function buildGenerator(program, args, onlyIncludeFiles) {
         var allSymbols_1 = {};
         var userSymbols_1 = {};
         var inheritingTypes_1 = {};
+        var workingDir_1 = program.getCurrentDirectory();
         program.getSourceFiles().forEach(function (sourceFile, _sourceFileIdx) {
+            var relativePath = path.relative(workingDir_1, sourceFile.fileName);
             function inspect(node, tc) {
                 if (node.kind === ts.SyntaxKind.ClassDeclaration
                     || node.kind === ts.SyntaxKind.InterfaceDeclaration
@@ -869,7 +887,7 @@ function buildGenerator(program, args, onlyIncludeFiles) {
                     var nodeType = tc.getTypeAtLocation(node);
                     var fullyQualifiedName = tc.getFullyQualifiedName(symbol);
                     var typeName = fullyQualifiedName.replace(/".*"\./, "");
-                    var name_1 = !args.uniqueNames ? typeName : typeName + "." + symbol.id;
+                    var name_1 = !args.uniqueNames ? typeName : typeName + "." + generateHashOfNode(node, relativePath);
                     symbols_1.push({ name: name_1, typeName: typeName, fullyQualifiedName: fullyQualifiedName, symbol: symbol });
                     if (!userSymbols_1[name_1]) {
                         allSymbols_1[name_1] = nodeType;
@@ -945,6 +963,7 @@ function normalizeFileName(fn) {
 }
 function exec(filePattern, fullTypeName, args) {
     if (args === void 0) { args = getDefaultArgs(); }
+    var _a;
     var program;
     var onlyIncludeFiles = undefined;
     if (REGEX_TSCONFIG_NAME.test(path.basename(filePattern))) {
@@ -976,7 +995,6 @@ function exec(filePattern, fullTypeName, args) {
     else {
         process.stdout.write(json);
     }
-    var _a;
 }
 exports.exec = exec;
 //# sourceMappingURL=typescript-json-schema.js.map

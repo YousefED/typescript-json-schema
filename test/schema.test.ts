@@ -6,8 +6,6 @@ import { resolve } from "path";
 import * as TJS from "../typescript-json-schema";
 
 const ajv = new Ajv();
-const metaSchema = require("ajv/lib/refs/json-schema-draft-06.json");
-ajv.addMetaSchema(metaSchema);
 
 const BASE = "test/programs/";
 
@@ -211,6 +209,9 @@ describe("schema", () => {
     describe("comments", () => {
         assertSchema("comments", "MyObject");
         assertSchema("comments-override", "MyObject");
+        assertSchema("comments-imports", "MyObject", {
+            aliasRef: true
+        });
     });
 
     describe("types", () => {
@@ -299,6 +300,10 @@ describe("schema", () => {
         assertSchema("builtin-names", "Ext.Foo");
 
         assertSchema("user-symbols", "*");
+
+        assertSchemas("argument-id", "MyObject", {
+            id: "someSchemaId"
+        });
     });
 });
 

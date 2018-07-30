@@ -1,13 +1,14 @@
 import * as glob from "glob";
 import * as stringify from "json-stable-stringify";
 import * as path from "path";
+import { createHash } from "crypto";
 import * as ts from "typescript";
 export { Program, CompilerOptions, Symbol } from "typescript";
 
 
 const vm = require("vm");
 
-const REGEX_FILE_NAME = /".*"\./;
+const REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;
 const REGEX_TSCONFIG_NAME = /^.*\.json$/;
 const REGEX_TJS_JSDOC = /^-([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
 
@@ -30,6 +31,7 @@ export function getDefaultArgs(): Args {
         excludePrivate: false,
         uniqueNames: false,
         rejectDateType: false,
+        id: "",
     };
 }
 
@@ -55,6 +57,7 @@ export type Args = {
     excludePrivate: boolean;
     uniqueNames: boolean;
     rejectDateType: boolean;
+    id: string;
 };
 
 export type PartialArgs = Partial<Args>;
@@ -64,6 +67,7 @@ export type PrimitiveType = number | boolean | string | null;
 export type Definition = {
     $ref?: string,
     $schema?: string,
+    $id?: string,
     description?: string,
     allOf?: Definition[],
     oneOf?: Definition[],
@@ -429,7 +433,11 @@ export class JsonSchemaGenerator {
         if (decl && decl.length) {
             const type = (<ts.TypeReferenceNode> (<any> decl[0]).type);
             if (type && (type.kind & ts.SyntaxKind.TypeReference) && type.typeName) {
-                return this.tc.getSymbolAtLocation(type.typeName);
+                const symbol = this.tc.getSymbolAtLocation(type.typeName);
+                if (symbol && (symbol.flags & ts.SymbolFlags.Alias)) {
+                    return this.tc.getAliasedSymbol(symbol);
+                }
+                return symbol;
             }
         }
         return undefined;
@@ -794,7 +802,7 @@ export class JsonSchemaGenerator {
             return this.typeNamesById[id];
         }
 
-        const baseName = this.tc.typeToString(typ, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
+        const baseName = this.tc.typeToString(typ, undefined, ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseFullyQualifiedType).replace(REGEX_FILE_NAME_OR_SPACE, "");
         let name = baseName;
         if (this.typeNamesUsed[name]) { // If a type with same name exists
             for (let i = 1; true; ++i) { // Try appending "_1", "_2", etc.
@@ -848,18 +856,16 @@ export class JsonSchemaGenerator {
                 reffedType!.getFlags() & ts.SymbolFlags.Alias ?
                     this.tc.getAliasedSymbol(reffedType!) :
                     reffedType!
-            ).replace(REGEX_FILE_NAME, "");
+            ).replace(REGEX_FILE_NAME_OR_SPACE, "");
         } else if (asRef) {
             fullTypeName = this.getTypeName(typ);
         }
-
-        fullTypeName = fullTypeName.replace(" ", "");
 
         if (asRef) {
             // We don't return the full definition, but we put it into
             // reffedDefinitions below.
             returnedDefinition = {
-                $ref:  "#/definitions/" + fullTypeName
+                $ref:  `${this.args.id}#/definitions/` + fullTypeName
             };
         }
 
@@ -950,15 +956,25 @@ export class JsonSchemaGenerator {
         if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
             def.definitions = this.reffedDefinitions;
         }
-        def["$schema"] = "http://json-schema.org/draft-06/schema#";
+        def["$schema"] = "http://json-schema.org/draft-07/schema#";
+        const id = this.args.id;
+        if(id) {
+            def["$id"] = this.args.id;
+        }
         return def;
     }
 
     public getSchemaForSymbols(symbolNames: string[], includeReffedDefinitions: boolean = true): Definition {
         const root = {
-            $schema: "http://json-schema.org/draft-06/schema#",
+            $schema: "http://json-schema.org/draft-07/schema#",
             definitions: {}
         };
+        const id = this.args.id;
+
+        if(id) {
+            root["$id"] = id;
+        }
+
         for (const symbolName of symbolNames) {
             root.definitions[symbolName] = this.getTypeDefinition(this.allSymbols[symbolName], this.args.topRef, undefined, undefined, undefined, this.userSymbols[symbolName]);
         }
@@ -1019,6 +1035,10 @@ export function getProgramFromFiles(files: string[], jsonCompilerOptions: any = 
     return ts.createProgram(files, options);
 }
 
+function generateHashOfNode(node: ts.Node, relativePath: string) {
+    return createHash("md5").update(relativePath).update(node.pos.toString()).digest("hex").substring(0, 8);
+}
+
 export function buildGenerator(program: ts.Program, args: PartialArgs = {}, onlyIncludeFiles?: string[]): JsonSchemaGenerator|null {
     function isUserFile(file: ts.SourceFile): boolean {
         if (onlyIncludeFiles === undefined) {
@@ -1048,8 +1068,11 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}, only
         const allSymbols: { [name: string]: ts.Type } = {};
         const userSymbols: { [name: string]: ts.Symbol } = {};
         const inheritingTypes: { [baseName: string]: string[] } = {};
+        const workingDir = program.getCurrentDirectory();
 
         program.getSourceFiles().forEach((sourceFile, _sourceFileIdx) => {
+            const relativePath = path.relative(workingDir, sourceFile.fileName);
+
             function inspect(node: ts.Node, tc: ts.TypeChecker) {
 
                 if (node.kind === ts.SyntaxKind.ClassDeclaration
@@ -1061,7 +1084,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}, only
                     const nodeType = tc.getTypeAtLocation(node);
                     const fullyQualifiedName = tc.getFullyQualifiedName(symbol);
                     const typeName = fullyQualifiedName.replace(/".*"\./, "");
-                    const name = !args.uniqueNames ? typeName : `${typeName}.${(<any>symbol).id}`;
+                    const name = !args.uniqueNames ? typeName : `${typeName}.${generateHashOfNode(node, relativePath)}`;
 
                     symbols.push({ name, typeName, fullyQualifiedName, symbol });
                     if (!userSymbols[name]) {

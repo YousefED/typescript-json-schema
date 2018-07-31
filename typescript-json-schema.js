@@ -1,11 +1,14 @@
 "use strict";
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var glob = require("glob");
@@ -238,10 +241,17 @@ var JsonSchemaGenerator = (function () {
             var fixedTypes = elemTypes.map(function (elType) { return _this.getTypeDefinition(elType); });
             definition.type = "array";
             definition.items = fixedTypes;
-            definition.minItems = fixedTypes.length;
-            definition.additionalItems = {
-                anyOf: fixedTypes
-            };
+            var targetTupleType = propertyType.target;
+            definition.minItems = targetTupleType.minLength;
+            if (targetTupleType.hasRestElement) {
+                definition.additionalItems = fixedTypes[fixedTypes.length - 1];
+                fixedTypes.splice(fixedTypes.length - 1, 1);
+            }
+            else {
+                definition.additionalItems = {
+                    anyOf: fixedTypes
+                };
+            }
         }
         else {
             var propertyTypeString = this.tc.typeToString(propertyType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
@@ -652,6 +662,10 @@ var JsonSchemaGenerator = (function () {
         if (asRef === void 0) { asRef = this.args.ref; }
         if (unionModifier === void 0) { unionModifier = "anyOf"; }
         var definition = {};
+        while (typ.aliasSymbol && (typ.aliasSymbol.escapedName === "Readonly" || typ.aliasSymbol.escapedName === "Mutable") && typ.aliasTypeArguments && typ.aliasTypeArguments[0]) {
+            typ = typ.aliasTypeArguments[0];
+            reffedType = undefined;
+        }
         if (this.args.typeOfKeyword && (typ.flags & ts.TypeFlags.Object) && (typ.objectFlags & ts.ObjectFlags.Anonymous)) {
             definition.typeof = "function";
             return definition;
@@ -695,7 +709,7 @@ var JsonSchemaGenerator = (function () {
         if (!asRef || !this.reffedDefinitions[fullTypeName]) {
             if (asRef) {
                 var reffedDefinition = void 0;
-                if (asTypeAliasRef && reffedType.getFlags() & (ts.TypeFlags.IndexedAccess | ts.TypeFlags.Index) && symbol) {
+                if (asTypeAliasRef && reffedType.getFlags() & (ts.TypeFlags.IndexedAccess | ts.TypeFlags.Index | ts.TypeFlags.Intersection) && symbol) {
                     reffedDefinition = this.getTypeDefinition(typ, true, undefined, symbol, symbol);
                 }
                 else {

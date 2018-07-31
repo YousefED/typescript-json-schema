@@ -44,7 +44,7 @@ export declare type Definition = {
     minItems?: number;
     additionalItems?: {
         anyOf: Definition[];
-    };
+    } | Definition;
     enum?: PrimitiveType[] | Definition[];
     default?: PrimitiveType | Object;
     additionalProperties?: Definition | boolean;

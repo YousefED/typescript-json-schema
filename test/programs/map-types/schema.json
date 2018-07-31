@@ -27,11 +27,15 @@
         },
         "map2": {
             "$ref": "#/definitions/MyMap2"
+        },
+        "map3": {
+            "$ref": "#/definitions/MyMap2"
         }
     },
     "required": [
         "map1",
-        "map2"
+        "map2",
+        "map3"
     ],
     "type": "object"
 }

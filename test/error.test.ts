@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { exec, getDefaultArgs } from "../typescript-json-schema";
-import * as path from 'path';
+import * as path from "path";
 
 describe("error", () => {
     it("error-check", () => {

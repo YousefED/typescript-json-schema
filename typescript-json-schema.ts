@@ -1195,14 +1195,14 @@ export function exec(filePattern: string, fullTypeName: string, args = getDefaul
 
     const definition = generateSchema(program, fullTypeName, args, onlyIncludeFiles);
     if (definition === null) {
-        return;
+        throw new Error("No output definition. Probably caused by errors prior to this?");
     }
 
     const json = stringify(definition, {space: 4}) + "\n\n";
     if (args.out) {
         require("fs").writeFile(args.out, json, function(err: Error) {
             if (err) {
-                console.error("Unable to write output file: " + err.message);
+                throw new Error("Unable to write output file: " + err.message);
             }
         });
     } else {

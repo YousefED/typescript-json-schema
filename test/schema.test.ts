@@ -19,7 +19,6 @@ export function assertSchema(group: string, type: string, settings: TJS.PartialA
 
         const files = [resolve(BASE + group + "/main.ts")];
         const actual = TJS.generateSchema(TJS.getProgramFromFiles(files, compilerOptions), type, settings, files);
-
         // writeFileSync(BASE + group + "/schema.json", stringify(actual, {space: 4}) + "\n\n");
 
         const file = readFileSync(BASE + group + "/schema.json", "utf8");
@@ -190,6 +189,7 @@ describe("schema", () => {
         assertSchema("annotation-id", "MyObject");
 
         assertSchema("typeof-keyword", "MyObject", {typeOfKeyword: true});
+        assertSchema("typeof-keyword-methods", "MyObject", {typeOfKeyword: true});
 
         assertSchema("user-validation-keywords", "MyObject", {
             validationKeywords: [ "chance", "important" ]

@@ -54,9 +54,6 @@ export declare type Definition = {
         [key: string]: any;
     };
     defaultProperties?: string[];
-    patternProperties?: {
-        [pattern: string]: Definition;
-    };
     typeof?: "function";
 };
 export declare type SymbolRef = {

@@ -20,7 +20,6 @@ var vm = require("vm");
 var REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;
 var REGEX_TSCONFIG_NAME = /^.*\.json$/;
 var REGEX_TJS_JSDOC = /^-([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
-var NUMERIC_INDEX_PATTERN = "^[0-9]+$";
 function getDefaultArgs() {
     return {
         ref: true,
@@ -236,7 +235,6 @@ var JsonSchemaGenerator = (function () {
     };
     JsonSchemaGenerator.prototype.getDefinitionForRootType = function (propertyType, reffedType, definition) {
         var _this = this;
-        var _a;
         var tupleType = resolveTupleType(propertyType);
         if (tupleType) {
             var elemTypes = tupleType.elementTypes || propertyType.typeArguments;
@@ -293,18 +291,8 @@ var JsonSchemaGenerator = (function () {
                     definition.enum = [value];
                 }
                 else if (arrayType !== undefined) {
-                    if ((propertyType.flags & ts.TypeFlags.Object) &&
-                        (propertyType.objectFlags & (ts.ObjectFlags.Anonymous | ts.ObjectFlags.Interface))) {
-                        definition.type = "object";
-                        definition.additionalProperties = false;
-                        definition.patternProperties = (_a = {},
-                            _a[NUMERIC_INDEX_PATTERN] = this.getTypeDefinition(arrayType),
-                            _a);
-                    }
-                    else {
-                        definition.type = "array";
-                        definition.items = this.getTypeDefinition(arrayType);
-                    }
+                    definition.type = "array";
+                    definition.items = this.getTypeDefinition(arrayType);
                 }
                 else {
                     var error = new TypeError("Unsupported type: " + propertyTypeString);

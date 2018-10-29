@@ -307,6 +307,11 @@ describe("schema", () => {
             id: "someSchemaId"
         });
     });
+
+    describe("object index", () => {
+        assertSchema("object-numeric-index", "IndexInterface");
+        assertSchema("object-numeric-index-as-property", "Target", { required: false });
+    });
 });
 
 describe("tsconfig.json", () => {

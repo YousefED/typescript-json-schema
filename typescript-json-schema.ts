@@ -11,6 +11,7 @@ const vm = require("vm");
 const REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;
 const REGEX_TSCONFIG_NAME = /^.*\.json$/;
 const REGEX_TJS_JSDOC = /^-([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
+const NUMERIC_INDEX_PATTERN = "^[0-9]+$";
 
 export function getDefaultArgs(): Args {
     return {
@@ -88,7 +89,7 @@ export type Definition = {
     propertyOrder?: string[],
     properties?: {[key: string]: any},
     defaultProperties?: string[],
-
+    patternProperties?: {[pattern: string]: Definition},
     typeof?: "function"
 };
 
@@ -419,8 +420,17 @@ export class JsonSchemaGenerator {
                     definition.type = typeof value;
                     definition.enum = [ value ];
                 } else if (arrayType !== undefined) {
-                    definition.type = "array";
-                    definition.items = this.getTypeDefinition(arrayType);
+                    if ((propertyType.flags & ts.TypeFlags.Object) &&
+                        ((propertyType as ts.ObjectType).objectFlags & (ts.ObjectFlags.Anonymous | ts.ObjectFlags.Interface))) {
+                        definition.type = "object";
+                        definition.additionalProperties = false;
+                        definition.patternProperties = {
+                            [NUMERIC_INDEX_PATTERN]: this.getTypeDefinition(arrayType)
+                        };
+                    } else {
+                        definition.type = "array";
+                        definition.items = this.getTypeDefinition(arrayType);
+                    }
                 } else {
                     // Report that type could not be processed
                     const error = new TypeError("Unsupported type: " + propertyTypeString);

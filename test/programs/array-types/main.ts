@@ -1,3 +1,1 @@
-interface MyArray {
-    [index: number]: string | number;
-}
+type MyArray = Array<string | number>;

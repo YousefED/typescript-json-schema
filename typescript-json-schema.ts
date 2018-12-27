@@ -154,13 +154,13 @@ function extractLiteralValue(typ: ts.Type): PrimitiveType | undefined {
         str = (typ as any).text;
     }
     if (typ.flags & ts.TypeFlags.StringLiteral) {
-        return str;
+        return str as string;
     } else if (typ.flags & ts.TypeFlags.BooleanLiteral) {
         return (typ as any).intrinsicName === "true";
     } else if (typ.flags & ts.TypeFlags.EnumLiteral) {
         // or .text for old TS
         const num = parseFloat(str as string);
-        return isNaN(num) ? str : num;
+        return isNaN(num) ? str as string : num;
     } else if (typ.flags & ts.TypeFlags.NumberLiteral) {
         return parseFloat(str as string);
     }
@@ -1077,7 +1077,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}, only
         }
     }
 
-    let diagnostics: Array<ts.Diagnostic> = [];
+    let diagnostics: ReadonlyArray<ts.Diagnostic> = [];
 
     if (!args.ignoreErrors) {
         diagnostics = ts.getPreEmitDiagnostics(program);

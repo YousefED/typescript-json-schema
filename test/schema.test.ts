@@ -230,6 +230,8 @@ describe("schema", () => {
     describe("class and interface", () => {
         assertSchema("class-single", "MyObject");
         assertSchema("class-extends", "MyObject");
+        assertSchema("abstract-class", "AbstractBase");
+        assertSchema("abstract-extends", "MyObjectFromAbstract");
 
         assertSchema("interface-single", "MyObject");
         assertSchema("interface-multi", "MyObject");

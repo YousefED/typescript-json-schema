@@ -723,7 +723,7 @@ export class JsonSchemaGenerator {
 
         const modifierFlags = ts.getCombinedModifierFlags(node);
 
-        if (modifierFlags & ts.ModifierFlags.Abstract) {
+        if (modifierFlags & ts.ModifierFlags.Abstract && this.inheritingTypes[fullName]) {
             const oneOf = this.inheritingTypes[fullName].map((typename) => {
                 return this.getTypeDefinition(this.allSymbols[typename]);
             });

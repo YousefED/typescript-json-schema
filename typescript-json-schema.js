@@ -576,7 +576,7 @@ var JsonSchemaGenerator = (function () {
         });
         var fullName = this.tc.typeToString(clazzType, undefined, ts.TypeFormatFlags.UseFullyQualifiedType);
         var modifierFlags = ts.getCombinedModifierFlags(node);
-        if (modifierFlags & ts.ModifierFlags.Abstract) {
+        if (modifierFlags & ts.ModifierFlags.Abstract && this.inheritingTypes[fullName]) {
             var oneOf = this.inheritingTypes[fullName].map(function (typename) {
                 return _this.getTypeDefinition(_this.allSymbols[typename]);
             });

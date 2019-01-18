@@ -70,6 +70,7 @@ export type Definition = {
     $schema?: string,
     $id?: string,
     description?: string,
+    examples?: string[],
     allOf?: Definition[],
     oneOf?: Definition[],
     anyOf?: Definition[],
@@ -268,6 +269,7 @@ const validationKeywords = {
     // anyOf: true,                    // 6.27.
     // oneOf: true,                    // 6.28.
     // not: true,                      // 6.29.
+    examples:true,                     // Draft 6 (draft-handrews-json-schema-validation-01)
 
     ignore: true,
     description: true,

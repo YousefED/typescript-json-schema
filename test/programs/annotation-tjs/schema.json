@@ -12,7 +12,7 @@
         "examples": {
             "examples": [
                 "foo",
-                "bar"
+                1
             ],
             "type": "string"
         },        

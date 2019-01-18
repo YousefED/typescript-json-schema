@@ -61,7 +61,7 @@ interface MyObject {
     oneCharacter: number;
 
     /**
-     * @TJS-examples ["foo", "bar"]
+     * @TJS-examples ["foo", 1]
      */
     examples: string;
 }

@@ -70,7 +70,7 @@ export type Definition = {
     $schema?: string,
     $id?: string,
     description?: string,
-    examples?: string[],
+    examples?: any[],
     allOf?: Definition[],
     oneOf?: Definition[],
     anyOf?: Definition[],

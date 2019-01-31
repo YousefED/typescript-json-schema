@@ -1,0 +1,17 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "propA": {
+            "type": "number"
+        },
+        "propB": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "propA",
+        "propB"
+    ],
+    "type": "object"
+}
+

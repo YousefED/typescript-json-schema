@@ -70,6 +70,7 @@ export type Definition = {
     $schema?: string,
     $id?: string,
     description?: string,
+    examples?: any[],
     allOf?: Definition[],
     oneOf?: Definition[],
     anyOf?: Definition[],
@@ -154,13 +155,13 @@ function extractLiteralValue(typ: ts.Type): PrimitiveType | undefined {
         str = (typ as any).text;
     }
     if (typ.flags & ts.TypeFlags.StringLiteral) {
-        return str;
+        return str as string;
     } else if (typ.flags & ts.TypeFlags.BooleanLiteral) {
         return (typ as any).intrinsicName === "true";
     } else if (typ.flags & ts.TypeFlags.EnumLiteral) {
         // or .text for old TS
         const num = parseFloat(str as string);
-        return isNaN(num) ? str : num;
+        return isNaN(num) ? str as string : num;
     } else if (typ.flags & ts.TypeFlags.NumberLiteral) {
         return parseFloat(str as string);
     }
@@ -268,6 +269,7 @@ const validationKeywords = {
     // anyOf: true,                    // 6.27.
     // oneOf: true,                    // 6.28.
     // not: true,                      // 6.29.
+    examples: true,                    // Draft 6 (draft-handrews-json-schema-validation-01)
 
     ignore: true,
     description: true,
@@ -723,7 +725,7 @@ export class JsonSchemaGenerator {
 
         const modifierFlags = ts.getCombinedModifierFlags(node);
 
-        if (modifierFlags & ts.ModifierFlags.Abstract) {
+        if (modifierFlags & ts.ModifierFlags.Abstract && this.inheritingTypes[fullName]) {
             const oneOf = this.inheritingTypes[fullName].map((typename) => {
                 return this.getTypeDefinition(this.allSymbols[typename]);
             });
@@ -1077,7 +1079,7 @@ export function buildGenerator(program: ts.Program, args: PartialArgs = {}, only
         }
     }
 
-    let diagnostics: Array<ts.Diagnostic> = [];
+    let diagnostics: ReadonlyArray<ts.Diagnostic> = [];
 
     if (!args.ignoreErrors) {
         diagnostics = ts.getPreEmitDiagnostics(program);

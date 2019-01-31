@@ -59,4 +59,9 @@ interface MyObject {
      * @TJS-minimum 5
      */
     oneCharacter: number;
+
+    /**
+     * @TJS-examples ["foo", 1]
+     */
+    examples: string;
 }

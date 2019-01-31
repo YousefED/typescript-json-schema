@@ -9,6 +9,13 @@
             "format": "email",
             "type": "string"
         },
+        "examples": {
+            "examples": [
+                "foo",
+                1
+            ],
+            "type": "string"
+        },        
         "hostname": {
             "format": "hostname",
             "type": "string"
@@ -53,6 +60,7 @@
     "required": [
         "dateTime",
         "email",
+        "examples",
         "hostname",
         "ipv4",
         "ipv6",

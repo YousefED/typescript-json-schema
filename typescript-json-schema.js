@@ -183,6 +183,7 @@ var validationKeywords = {
     additionalProperties: true,
     enum: true,
     type: true,
+    examples: true,
     ignore: true,
     description: true,
     format: true,
@@ -975,6 +976,7 @@ function programFromConfig(configFileName, onlyIncludeFiles) {
     delete options.outDir;
     delete options.outFile;
     delete options.declaration;
+    delete options.declarationMap;
     var program = ts.createProgram(onlyIncludeFiles || configParseResult.fileNames, options);
     return program;
 }

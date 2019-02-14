@@ -319,7 +319,7 @@ export class JsonSchemaGenerator {
      * Whenever a type is assigned its name, its entry in this dictionary is set,
      * so that we don't give the same name to two separate types.
      */
-    private typeNamesUsed: { [name: string]: boolean } = {};
+    private typeIdsByName: { [name: string]: number } = {};
 
     constructor(
       symbols: SymbolRef[],
@@ -819,20 +819,24 @@ export class JsonSchemaGenerator {
         if (this.typeNamesById[id]) { // Name already assigned?
             return this.typeNamesById[id];
         }
+        return this.makeTypeNameUnique(
+            typ,
+            this.tc.typeToString(typ, undefined, ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseFullyQualifiedType).replace(REGEX_FILE_NAME_OR_SPACE, "")
+        );
+    }
 
-        const baseName = this.tc.typeToString(typ, undefined, ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseFullyQualifiedType).replace(REGEX_FILE_NAME_OR_SPACE, "");
+    private makeTypeNameUnique(typ: ts.Type, baseName: string) {
+        const id = (typ as any).id as number;
+
         let name = baseName;
-        if (this.typeNamesUsed[name]) { // If a type with same name exists
-            for (let i = 1; true; ++i) { // Try appending "_1", "_2", etc.
-                name = baseName + "_" + i;
-                if (!this.typeNamesUsed[name]) {
-                    break;
-                }
-            }
+        // If a type with same name exists
+        // Try appending "_1", "_2", etc.
+        for (let i = 1; this.typeIdsByName[name] !== undefined && this.typeIdsByName[name] !== id; ++i) {
+            name = baseName + "_" + i;
         }
 
         this.typeNamesById[id] = name;
-        this.typeNamesUsed[name] = true;
+        this.typeIdsByName[name] = id;
         return name;
     }
 
@@ -876,11 +880,14 @@ export class JsonSchemaGenerator {
 
         let fullTypeName = "";
         if (asTypeAliasRef) {
-            fullTypeName = this.tc.getFullyQualifiedName(
-                reffedType!.getFlags() & ts.SymbolFlags.Alias ?
-                    this.tc.getAliasedSymbol(reffedType!) :
-                    reffedType!
-            ).replace(REGEX_FILE_NAME_OR_SPACE, "");
+            fullTypeName = this.makeTypeNameUnique(
+                typ,
+                this.tc.getFullyQualifiedName(
+                    reffedType!.getFlags() & ts.SymbolFlags.Alias ?
+                        this.tc.getAliasedSymbol(reffedType!) :
+                        reffedType!
+                ).replace(REGEX_FILE_NAME_OR_SPACE, "")
+            );
         } else if (asRef) {
             fullTypeName = this.getTypeName(typ);
         }

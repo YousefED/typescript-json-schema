@@ -121,6 +121,10 @@ describe("schema", () => {
         assertSchema("type-aliases-fixed-size-array", "MyFixedSizeArray");
         assertSchema("type-aliases-multitype-array", "MyArray");
         assertSchema("type-aliases-local-namsepace", "MyObject", {
+            aliasRef: true,
+            strictNullChecks: true,
+        });
+        assertSchema("type-aliases-partial", "MyObject", {
             aliasRef: true
         });
 

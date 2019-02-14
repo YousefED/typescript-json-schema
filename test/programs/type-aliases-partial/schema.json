@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "properties": {
+    "foo": {
+      "$ref": "#/definitions/Partial"
+    },
+    "bar": {
+      "$ref": "#/definitions/Partial_1"
+    }
+  },
+  "required": [
+    "bar",
+    "foo"
+  ],
+  "definitions": {
+    "__type": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      }
+    },
+    "Partial": {
+      "$ref": "#/definitions/__type"
+    },
+    "__type_1": {
+      "type": "object",
+      "properties": {
+        "a": {
+          "type": "number"
+        },
+        "b": {
+          "type": "number"
+        }
+      }
+    },
+    "Partial_1": {
+      "$ref": "#/definitions/__type_1"
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

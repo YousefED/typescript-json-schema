@@ -16,6 +16,11 @@
         }
     },
     "properties": {
+        "date": {
+            "description": "Date property description",
+            "format": "date-time",
+            "type": "string"
+        },
         "list": {
             "items": {
                 "$ref": "#/definitions/MySubObject"
@@ -32,6 +37,7 @@
         }
     },
     "required": [
+        "date",
         "list",
         "sub1",
         "sub2"

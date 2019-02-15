@@ -17,4 +17,9 @@ export interface MyObject {
      * @additionalProperties false
      */
     sub2: MySubObject;
+
+    /**
+     * Date property description
+     */
+    date: Date;
 }

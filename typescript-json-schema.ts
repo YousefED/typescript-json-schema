@@ -896,10 +896,10 @@ export class JsonSchemaGenerator {
         // Parse comments
         const otherAnnotations = {};
         this.parseCommentsIntoDefinition(reffedType!, definition, otherAnnotations); // handle comments in the type alias declaration
+        this.parseCommentsIntoDefinition(symbol!, definition, otherAnnotations);
         if (prop) {
             this.parseCommentsIntoDefinition(prop, returnedDefinition, otherAnnotations);
         }
-        this.parseCommentsIntoDefinition(symbol!, definition, otherAnnotations);
 
         // Create the actual definition only if is an inline definition, or
         // if it will be a $ref and it is not yet created

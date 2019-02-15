@@ -197,7 +197,7 @@ var JsonSchemaGenerator = (function () {
         this.args = args;
         this.reffedDefinitions = {};
         this.typeNamesById = {};
-        this.typeNamesUsed = {};
+        this.typeIdsByName = {};
         this.symbols = symbols;
         this.allSymbols = allSymbols;
         this.userSymbols = userSymbols;
@@ -657,18 +657,16 @@ var JsonSchemaGenerator = (function () {
         if (this.typeNamesById[id]) {
             return this.typeNamesById[id];
         }
-        var baseName = this.tc.typeToString(typ, undefined, ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseFullyQualifiedType).replace(REGEX_FILE_NAME_OR_SPACE, "");
+        return this.makeTypeNameUnique(typ, this.tc.typeToString(typ, undefined, ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseFullyQualifiedType).replace(REGEX_FILE_NAME_OR_SPACE, ""));
+    };
+    JsonSchemaGenerator.prototype.makeTypeNameUnique = function (typ, baseName) {
+        var id = typ.id;
         var name = baseName;
-        if (this.typeNamesUsed[name]) {
-            for (var i = 1; true; ++i) {
-                name = baseName + "_" + i;
-                if (!this.typeNamesUsed[name]) {
-                    break;
-                }
-            }
+        for (var i = 1; this.typeIdsByName[name] !== undefined && this.typeIdsByName[name] !== id; ++i) {
+            name = baseName + "_" + i;
         }
         this.typeNamesById[id] = name;
-        this.typeNamesUsed[name] = true;
+        this.typeIdsByName[name] = id;
         return name;
     };
     JsonSchemaGenerator.prototype.getTypeDefinition = function (typ, asRef, unionModifier, prop, reffedType, pairedSymbol) {
@@ -701,9 +699,9 @@ var JsonSchemaGenerator = (function () {
         }
         var fullTypeName = "";
         if (asTypeAliasRef) {
-            fullTypeName = this.tc.getFullyQualifiedName(reffedType.getFlags() & ts.SymbolFlags.Alias ?
+            fullTypeName = this.makeTypeNameUnique(typ, this.tc.getFullyQualifiedName(reffedType.getFlags() & ts.SymbolFlags.Alias ?
                 this.tc.getAliasedSymbol(reffedType) :
-                reffedType).replace(REGEX_FILE_NAME_OR_SPACE, "");
+                reffedType).replace(REGEX_FILE_NAME_OR_SPACE, ""));
         }
         else if (asRef) {
             fullTypeName = this.getTypeName(typ);
@@ -715,10 +713,10 @@ var JsonSchemaGenerator = (function () {
         }
         var otherAnnotations = {};
         this.parseCommentsIntoDefinition(reffedType, definition, otherAnnotations);
+        this.parseCommentsIntoDefinition(symbol, definition, otherAnnotations);
         if (prop) {
             this.parseCommentsIntoDefinition(prop, returnedDefinition, otherAnnotations);
         }
-        this.parseCommentsIntoDefinition(symbol, definition, otherAnnotations);
         if (!asRef || !this.reffedDefinitions[fullTypeName]) {
             if (asRef) {
                 var reffedDefinition = void 0;

@@ -76,7 +76,7 @@ export declare class JsonSchemaGenerator {
     private reffedDefinitions;
     private userValidationKeywords;
     private typeNamesById;
-    private typeNamesUsed;
+    private typeIdsByName;
     constructor(symbols: SymbolRef[], allSymbols: {
         [name: string]: ts.Type;
     }, userSymbols: {
@@ -96,6 +96,7 @@ export declare class JsonSchemaGenerator {
     private getIntersectionDefinition;
     private getClassDefinition;
     private getTypeName;
+    private makeTypeNameUnique;
     private getTypeDefinition;
     setSchemaOverride(symbolName: string, schema: Definition): void;
     getSchemaForSymbol(symbolName: string, includeReffedDefinitions?: boolean): Definition;

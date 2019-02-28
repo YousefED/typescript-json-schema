@@ -1185,7 +1185,11 @@ export function programFromConfig(configFileName: string, onlyIncludeFiles?: str
     delete options.declaration;
     delete options.declarationMap;
 
-    const program = ts.createProgram(onlyIncludeFiles || configParseResult.fileNames, options);
+    const program = ts.createProgram({
+      rootNames: onlyIncludeFiles || configParseResult.fileNames,
+      options,
+      projectReferences: configParseResult.projectReferences
+    });
     return program;
 }
 

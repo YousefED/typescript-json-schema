@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "foo.Date": {
+      "properties": {
+        "day": {
+          "type": "number"
+        },
+        "month": {
+          "type": "number"
+        },
+        "year": {
+          "type": "number"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "properties": {
+     "date": {
+       "$ref": "#/definitions/foo.Date"
+     }
+  },
+  "required": [
+      "date"
+  ],
+  "type": "object"
+}

@@ -858,7 +858,7 @@ export class JsonSchemaGenerator {
 
         const symbol = typ.getSymbol();
         // FIXME: We can't just compare the name of the symbol - it ignores the namespace
-        const isRawType = (!symbol || symbol.name === "Date" || symbol.name === "integer" || this.tc.getIndexInfoOfType(typ, ts.IndexKind.Number) !== undefined);
+        const isRawType = (!symbol || this.tc.getFullyQualifiedName(symbol) === "Date" || symbol.name === "integer" || this.tc.getIndexInfoOfType(typ, ts.IndexKind.Number) !== undefined);
 
         // special case: an union where all child are string literals -> make an enum instead
         let isStringEnum = false;

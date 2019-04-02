@@ -683,7 +683,7 @@ var JsonSchemaGenerator = (function () {
         }
         var returnedDefinition = definition;
         var symbol = typ.getSymbol();
-        var isRawType = (!symbol || symbol.name === "Date" || symbol.name === "integer" || this.tc.getIndexInfoOfType(typ, ts.IndexKind.Number) !== undefined);
+        var isRawType = (!symbol || this.tc.getFullyQualifiedName(symbol) === "Date" || symbol.name === "integer" || this.tc.getIndexInfoOfType(typ, ts.IndexKind.Number) !== undefined);
         var isStringEnum = false;
         if (typ.flags & ts.TypeFlags.Union) {
             var unionType = typ;
@@ -975,7 +975,11 @@ function programFromConfig(configFileName, onlyIncludeFiles) {
     delete options.outFile;
     delete options.declaration;
     delete options.declarationMap;
-    var program = ts.createProgram(onlyIncludeFiles || configParseResult.fileNames, options);
+    var program = ts.createProgram({
+        rootNames: onlyIncludeFiles || configParseResult.fileNames,
+        options: options,
+        projectReferences: configParseResult.projectReferences
+    });
     return program;
 }
 exports.programFromConfig = programFromConfig;

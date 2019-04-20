@@ -1183,6 +1183,7 @@ export function programFromConfig(configFileName: string, onlyIncludeFiles?: str
     delete options.outDir;
     delete options.outFile;
     delete options.declaration;
+    delete options.declarationDir;
     delete options.declarationMap;
 
     const program = ts.createProgram({

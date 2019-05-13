@@ -423,7 +423,7 @@ export class JsonSchemaGenerator {
                     definition.enum = [ value ];
                 } else if (arrayType !== undefined) {
                     if ((propertyType.flags & ts.TypeFlags.Object) &&
-                        ((propertyType as ts.ObjectType).objectFlags & (ts.ObjectFlags.Anonymous | ts.ObjectFlags.Interface))) {
+                        ((propertyType as ts.ObjectType).objectFlags & (ts.ObjectFlags.Anonymous | ts.ObjectFlags.Interface | ts.ObjectFlags.Mapped))) {
                         definition.type = "object";
                         definition.additionalProperties = false;
                         definition.patternProperties = {

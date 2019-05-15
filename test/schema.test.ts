@@ -229,6 +229,7 @@ describe("schema", () => {
         assertSchema("type-nullable", "MyObject");
         // see https://github.com/epoberezkin/ajv/issues/725
         // assertSchema("type-function", "MyObject");
+        assertSchema("any-unknown", "MyObject");
     });
 
     describe("class and interface", () => {

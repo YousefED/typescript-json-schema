@@ -276,7 +276,7 @@ var JsonSchemaGenerator = (function () {
             else if (flags & ts.TypeFlags.Undefined) {
                 definition.type = "undefined";
             }
-            else if (flags & ts.TypeFlags.Any) {
+            else if ((flags & ts.TypeFlags.Any) || (flags & ts.TypeFlags.Unknown)) {
             }
             else if (propertyTypeString === "Date" && !this.args.rejectDateType) {
                 definition.type = "string";
@@ -295,7 +295,7 @@ var JsonSchemaGenerator = (function () {
                 }
                 else if (arrayType !== undefined) {
                     if ((propertyType.flags & ts.TypeFlags.Object) &&
-                        (propertyType.objectFlags & (ts.ObjectFlags.Anonymous | ts.ObjectFlags.Interface))) {
+                        (propertyType.objectFlags & (ts.ObjectFlags.Anonymous | ts.ObjectFlags.Interface | ts.ObjectFlags.Mapped))) {
                         definition.type = "object";
                         definition.additionalProperties = false;
                         definition.patternProperties = (_a = {},
@@ -720,7 +720,7 @@ var JsonSchemaGenerator = (function () {
         if (!asRef || !this.reffedDefinitions[fullTypeName]) {
             if (asRef) {
                 var reffedDefinition = void 0;
-                if (asTypeAliasRef && reffedType.getFlags() & (ts.TypeFlags.IndexedAccess | ts.TypeFlags.Index | ts.TypeFlags.Intersection) && symbol) {
+                if (asTypeAliasRef && reffedType && typ.symbol !== reffedType && symbol) {
                     reffedDefinition = this.getTypeDefinition(typ, true, undefined, symbol, symbol);
                 }
                 else {
@@ -974,6 +974,7 @@ function programFromConfig(configFileName, onlyIncludeFiles) {
     delete options.outDir;
     delete options.outFile;
     delete options.declaration;
+    delete options.declarationDir;
     delete options.declarationMap;
     var program = ts.createProgram({
         rootNames: onlyIncludeFiles || configParseResult.fileNames,
@@ -990,8 +991,8 @@ function normalizeFileName(fn) {
     return fn;
 }
 function exec(filePattern, fullTypeName, args) {
-    if (args === void 0) { args = getDefaultArgs(); }
     var _a;
+    if (args === void 0) { args = getDefaultArgs(); }
     var program;
     var onlyIncludeFiles = undefined;
     if (REGEX_TSCONFIG_NAME.test(path.basename(filePattern))) {

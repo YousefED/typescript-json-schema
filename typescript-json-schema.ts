@@ -407,7 +407,7 @@ export class JsonSchemaGenerator {
                 definition.type = "null";
             } else if (flags & ts.TypeFlags.Undefined) {
                 definition.type = "undefined";
-            } else if (flags & ts.TypeFlags.Any) {
+            } else if ((flags & ts.TypeFlags.Any) || (flags & ts.TypeFlags.Unknown)) {
                 // no type restriction, so that anything will match
             } else if (propertyTypeString === "Date" && !this.args.rejectDateType) {
                 definition.type = "string";

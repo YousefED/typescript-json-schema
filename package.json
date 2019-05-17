@@ -34,8 +34,7 @@
   },
   "licenses": [
     {
-      "type": "Apache",
-      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+      "type": "BSD-3-Clause"
     }
   ],
   "keywords": [

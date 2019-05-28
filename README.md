@@ -23,7 +23,7 @@ In case no `tsconfig.json` is available for your project, you can directly speci
 
 * Generate schema from a typescript type: `typescript-json-schema "project/directory/**/*.ts" TYPE`
 
-The `TYPE` can either be a single, fully qualified type or `*` to generate the schema for all types. 
+The `TYPE` can either be a single, fully qualified type or `'*'` (with quotes) to generate the schema for all types. 
 
 ```
 Usage: typescript-json-schema <path-to-typescript-files-or-tsconfig> <type>

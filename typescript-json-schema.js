@@ -236,8 +236,8 @@ var JsonSchemaGenerator = (function () {
         });
     };
     JsonSchemaGenerator.prototype.getDefinitionForRootType = function (propertyType, reffedType, definition) {
-        var _this = this;
         var _a;
+        var _this = this;
         var tupleType = resolveTupleType(propertyType);
         if (tupleType) {
             var elemTypes = tupleType.elementTypes || propertyType.typeArguments;

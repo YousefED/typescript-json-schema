@@ -55,14 +55,14 @@
     "@types/chai": "^4.1.7",
     "@types/glob": "^7.1.1",
     "@types/json-stable-stringify": "^1.0.32",
-    "@types/mocha": "^5.2.6",
-    "@types/node": "^12.0.3",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^12.0.4",
     "ajv": "^6.10.0",
     "chai": "^4.2.0",
     "mocha": "^6.1.4",
     "source-map-support": "^0.5.12",
     "ts-node": "^8.2.0",
-    "tslint": "^5.16.0"
+    "tslint": "^5.17.0"
   },
   "scripts": {
     "prepublishOnly": "npm run build",

@@ -2,8 +2,8 @@
   "name": "typescript-json-schema",
   "version": "0.38.1",
   "description": "typescript-json-schema generates JSON Schema files from your Typescript sources",
-  "main": "typescript-json-schema.js",
-  "typings": "typescript-json-schema.d.ts",
+  "main": "dist/typescript-json-schema.js",
+  "typings": "dist/typescript-json-schema.d.ts",
   "bin": {
     "typescript-json-schema": "./bin/typescript-json-schema"
   },
@@ -65,7 +65,8 @@
     "tslint": "^5.16.0"
   },
   "scripts": {
-    "test": "npm run build && mocha -t 5000 --require source-map-support/register test",
+    "prepublishOnly": "npm run build",
+    "test": "npm run build && mocha -t 5000 --require source-map-support/register dist/test",
     "debug": "ts-node --inspect=19248 --debug-brk typescript-json-schema-cli.ts",
     "run": "ts-node typescript-json-schema-cli.ts",
     "build": "tsc -p .",

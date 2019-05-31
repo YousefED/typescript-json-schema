@@ -3,6 +3,7 @@
         "target": "es5",
         "module": "commonjs",
         "moduleResolution": "node",
+        "outDir": "dist",
         "isolatedModules": false,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
@@ -28,7 +29,8 @@
     "exclude": [
         "node_modules",
         "example",
-        "test/programs"
+        "test/programs",
+        "dist"
     ],
     "compileOnSave": true,
     "buildOnSave": false

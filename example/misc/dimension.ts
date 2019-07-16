@@ -1,6 +1,8 @@
 // Typescript-JSON-Schema can handle defaults in classes as illustrated below
 class Dimension {
-    /** Width in cm */
+    /** Width in cm
+     *  @TJS-ui:autofocus: true
+     */
         width: number = 10;
 
     /** Height in cm */

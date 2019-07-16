@@ -10,7 +10,7 @@ const vm = require("vm");
 
 const REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;
 const REGEX_TSCONFIG_NAME = /^.*\.json$/;
-const REGEX_TJS_JSDOC = /^-([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
+const REGEX_TJS_JSDOC = /^-([:\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
 const NUMERIC_INDEX_PATTERN = "^[0-9]+$";
 
 export function getDefaultArgs(): Args {
@@ -276,7 +276,8 @@ const validationKeywords = {
     format: true,
     default: true,
     $ref: true,
-    id: true
+    id: true,
+    "ui:*": true                    // glob match @TJS-ui:anything
 };
 
 export class JsonSchemaGenerator {
@@ -364,7 +365,14 @@ export class JsonSchemaGenerator {
         jsdocs.forEach(doc => {
             // if we have @TJS-... annotations, we have to parse them
             const [name, text] = (doc.name === "TJS" ? new RegExp(REGEX_TJS_JSDOC).exec(doc.text!)!.slice(1,3) : [doc.name, doc.text]) as string[];
-            if (validationKeywords[name] || this.userValidationKeywords[name]) {
+            if (validationKeywords[name] || this.userValidationKeywords[name]
+                || ((Object.keys(this.userValidationKeywords).concat(Object.keys(validationKeywords)))
+                    .filter(keyword=>keyword.match(/\*|\?/))
+                    .map(glob=>glob.replace(/\*/g, ".*")
+                                   .replace(/\?/g, "."))
+                    .filter(glob=>name.match(glob))
+                    .length)
+               ) {
                 definition[name] = text === undefined ? "" : parseValue(text);
             } else {
                 // special annotations

@@ -19,7 +19,7 @@ export function getDefaultArgs(): Args {
         aliasRef: false,
         topRef: false,
         titles: false,
-        desctitles: true,
+        desctitles: false,
         defaultProps: false,
         noExtraProps: false,
         propOrder: false,
@@ -363,11 +363,11 @@ export class JsonSchemaGenerator {
             if (this.args.desctitles) {
                 let head = description.splice(0, 1)[0];
                 definition.title = head;
-                // console.error(`setting title to the first line of description: ${definition.title}`)
+              console.error(`setting title to the first line of description: ${definition.title}`)
             }
 
             if (description.length) {
-                definition.description = description.join("");
+                definition.description = description.join(" ");
             }
         }
 

@@ -711,6 +711,11 @@ export class JsonSchemaGenerator {
 
         const clazz = <ts.ClassDeclaration>node;
         const props = this.tc.getPropertiesOfType(clazzType).filter(prop => {
+            // filter never
+            const propertyType = this.tc.getTypeOfSymbolAtLocation(prop, node);
+            if (ts.TypeFlags.Never === propertyType.getFlags()) {
+                return false;
+            }
             if (!this.args.excludePrivate) {
                 return true;
             }

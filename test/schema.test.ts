@@ -230,6 +230,7 @@ describe("schema", () => {
         // see https://github.com/epoberezkin/ajv/issues/725
         // assertSchema("type-function", "MyObject");
         assertSchema("any-unknown", "MyObject");
+        assertSchema("never", "Never");
     });
 
     describe("class and interface", () => {

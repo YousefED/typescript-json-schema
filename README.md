@@ -132,6 +132,7 @@ export interface Shape {
      *
      * @minimum 0
      * @TJS-type integer
+     * @TJS-ui:autofocus true
      */
     size: number;
 }
@@ -149,7 +150,8 @@ will be translated to
                 "size": {
                     "description": "The size of the shape.",
                     "minimum": 0,
-                    "type": "integer"
+                    "type": "integer",
+                    "ui:autofocus": true
                 }
             },
             "type": "object"
@@ -159,6 +161,19 @@ will be translated to
 ```
 
 Note that we needed to use `@TJS-type` instead of just `@type` because of an [issue with the typescript compiler](https://github.com/Microsoft/TypeScript/issues/13498).
+
+Validation keywords are defined here: http://json-schema.org/latest/json-schema-validation.html
+
+By default, `ui:*` annotations are also recognized;
+this is intended to be useful for downstream extraction toward
+packages such as [react-jsonschema-form](https://github.com/mozilla-services/react-jsonschema-form).
+Annotations of the form `@TJS-ui:foo bar` take advantage of this feature.
+
+You can define new validation keywords at the command line.
+Wildcards are supported. For example, passing
+`--validationKeywords foo:*` will cause the annotation
+`@TJS-foo:bar baz quux` to match, so the property
+`foo:bar` will take the value `baz quux`.
 
 ## Background
 

@@ -3,6 +3,7 @@ import * as stringify from "json-stable-stringify";
 import * as path from "path";
 import { createHash } from "crypto";
 import * as ts from "typescript";
+import { JSONSchema7 } from "json-schema";
 export { Program, CompilerOptions, Symbol } from "typescript";
 
 
@@ -65,34 +66,43 @@ export type PartialArgs = Partial<Args>;
 
 export type PrimitiveType = number | boolean | string | null;
 
-export type Definition = {
-    $ref?: string,
-    $schema?: string,
-    $id?: string,
-    description?: string,
-    examples?: any[],
-    allOf?: Definition[],
-    oneOf?: Definition[],
-    anyOf?: Definition[],
-    title?: string,
-    type?: string | string[],
-    definitions?: {[key: string]: any},
-    format?: string,
-    items?: Definition | Definition[],
-    minItems?: number,
-    additionalItems?: {
-        anyOf: Definition[]
-    } | Definition,
-    enum?: PrimitiveType[] | Definition[],
-    default?: PrimitiveType | Object,
-    additionalProperties?: Definition | boolean,
-    required?: string[],
-    propertyOrder?: string[],
-    properties?: {[key: string]: any},
-    defaultProperties?: string[],
-    patternProperties?: {[pattern: string]: Definition},
-    typeof?: "function"
-};
+type RedifinedFields = "type" | "items" | "additionalItems" | "contains" | "properties" | "patternProperties" | "additionalProperties" | "dependencies" | "propertyNames" | "if" | "then" | "else" | "allOf" | "anyOf" | "oneOf" | "not" | "definitions";
+export type DefinitionOrBoolean = Definition | boolean;
+export interface Definition extends Omit<JSONSchema7, RedifinedFields> {
+    // The type field here is incompatible with the standard definition
+    type?: string | string[];
+
+    // Non-standard fields
+    propertyOrder?: string[];
+    defaultProperties?: string[];
+    typeof?: "function";
+
+    // Fields that must be redifined because they make use of this definition itself
+    items?: DefinitionOrBoolean | DefinitionOrBoolean[];
+    additionalItems?: DefinitionOrBoolean;
+    contains?: JSONSchema7;
+    properties?: {
+        [key: string]: DefinitionOrBoolean;
+    };
+    patternProperties?: {
+        [key: string]: DefinitionOrBoolean;
+    };
+    additionalProperties?: DefinitionOrBoolean;
+    dependencies?: {
+        [key: string]: DefinitionOrBoolean | string[];
+    };
+    propertyNames?: DefinitionOrBoolean;
+    if?: DefinitionOrBoolean;
+    then?: DefinitionOrBoolean;
+    else?: DefinitionOrBoolean;
+    allOf?: DefinitionOrBoolean[];
+    anyOf?: DefinitionOrBoolean[];
+    oneOf?: DefinitionOrBoolean[];
+    not?: DefinitionOrBoolean;
+    definitions?: {
+        [key: string]: DefinitionOrBoolean;
+    };
+}
 
 export type SymbolRef = {
   name: string;

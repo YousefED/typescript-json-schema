@@ -70,12 +70,12 @@ type RedifinedFields = "type" | "items" | "additionalItems" | "contains" | "prop
 export type DefinitionOrBoolean = Definition | boolean;
 export interface Definition extends Omit<JSONSchema7, RedifinedFields> {
     // The type field here is incompatible with the standard definition
-    type?: string | string[],
+    type?: string | string[];
 
     // Non-standard fields
-    propertyOrder?: string[],
-    defaultProperties?: string[],
-    typeof?: "function",
+    propertyOrder?: string[];
+    defaultProperties?: string[];
+    typeof?: "function";
 
     // Fields that must be redifined because they make use of this definition itself
     items?: DefinitionOrBoolean | DefinitionOrBoolean[];
@@ -102,7 +102,7 @@ export interface Definition extends Omit<JSONSchema7, RedifinedFields> {
     definitions?: {
         [key: string]: DefinitionOrBoolean;
     };
-};
+}
 
 export type SymbolRef = {
   name: string;

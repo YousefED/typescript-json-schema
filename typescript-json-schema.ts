@@ -3,7 +3,7 @@ import * as stringify from "json-stable-stringify";
 import * as path from "path";
 import { createHash } from "crypto";
 import * as ts from "typescript";
-import { JSONSchema7 } from "json-schema";
+import { JSONSchema7, JSONSchema7TypeName } from "json-schema";
 export { Program, CompilerOptions, Symbol } from "typescript";
 
 
@@ -66,12 +66,9 @@ export type PartialArgs = Partial<Args>;
 
 export type PrimitiveType = number | boolean | string | null;
 
-type RedifinedFields = "type" | "items" | "additionalItems" | "contains" | "properties" | "patternProperties" | "additionalProperties" | "dependencies" | "propertyNames" | "if" | "then" | "else" | "allOf" | "anyOf" | "oneOf" | "not" | "definitions";
+type RedifinedFields = "items" | "additionalItems" | "contains" | "properties" | "patternProperties" | "additionalProperties" | "dependencies" | "propertyNames" | "if" | "then" | "else" | "allOf" | "anyOf" | "oneOf" | "not" | "definitions";
 export type DefinitionOrBoolean = Definition | boolean;
 export interface Definition extends Omit<JSONSchema7, RedifinedFields> {
-    // The type field here is incompatible with the standard definition
-    type?: string | string[];
-
     // Non-standard fields
     propertyOrder?: string[];
     defaultProperties?: string[];
@@ -196,7 +193,7 @@ const simpleTypesAllowedProperties = {
     description: true
 };
 
-function addSimpleType(def: Definition, type: string) {
+function addSimpleType(def: Definition, type: JSONSchema7TypeName) {
     for (const k in def) {
         if (!simpleTypesAllowedProperties[k]) {
             return false;
@@ -416,7 +413,7 @@ export class JsonSchemaGenerator {
             } else if (flags & ts.TypeFlags.Null) {
                 definition.type = "null";
             } else if (flags & ts.TypeFlags.Undefined) {
-                definition.type = "undefined";
+                (<any>definition).mayBeUndefined = true;
             } else if ((flags & ts.TypeFlags.Any) || (flags & ts.TypeFlags.Unknown)) {
                 // no type restriction, so that anything will match
             } else if (propertyTypeString === "Date" && !this.args.rejectDateType) {
@@ -429,7 +426,7 @@ export class JsonSchemaGenerator {
             } else {
                 const value = extractLiteralValue(propertyType);
                 if (value !== undefined) {
-                    definition.type = typeof value;
+                    definition.type = (typeof value as JSONSchema7TypeName);
                     definition.enum = [ value ];
                 } else if (arrayType !== undefined) {
                     if ((propertyType.flags & ts.TypeFlags.Object) &&
@@ -530,9 +527,9 @@ export class JsonSchemaGenerator {
             (node as ts.EnumDeclaration).members :
             ts.createNodeArray([node as ts.EnumMember]);
         var enumValues: (number|boolean|string|null)[] = [];
-        const enumTypes: string[] = [];
+        const enumTypes: JSONSchema7TypeName[] = [];
 
-        const addType = (type: string) => {
+        const addType = (type: JSONSchema7TypeName) => {
             if (enumTypes.indexOf(type) === -1) {
                 enumTypes.push(type);
             }
@@ -543,7 +540,7 @@ export class JsonSchemaGenerator {
             const constantValue = this.tc.getConstantValue(member);
             if (constantValue !== undefined) {
                 enumValues.push(constantValue);
-                addType(typeof constantValue);
+                addType(typeof constantValue as JSONSchema7TypeName);
             } else {
                 // try to extract the enums value; it will probably by a cast expression
                 const initial: ts.Expression|undefined = member.initializer;
@@ -586,10 +583,10 @@ export class JsonSchemaGenerator {
 
     private getUnionDefinition(unionType: ts.UnionType, prop: ts.Symbol, unionModifier: string, definition: Definition) {
         const enumValues: PrimitiveType[] = [];
-        const simpleTypes: string[] = [];
+        const simpleTypes: JSONSchema7TypeName[] = [];
         const schemas: Definition[] = [];
 
-        const pushSimpleType = (type: string) => {
+        const pushSimpleType = (type: JSONSchema7TypeName) => {
             if (simpleTypes.indexOf(type) === -1) {
                 simpleTypes.push(type);
             }
@@ -607,9 +604,10 @@ export class JsonSchemaGenerator {
                 pushEnumValue(value);
             } else {
                 const def = this.getTypeDefinition(valueType);
-                if (def.type === "undefined") {
+                if ((<any>def).mayBeUndefined) {
                     if (prop) {
                         (<any>prop).mayBeUndefined = true;
+                        delete (<any>def).mayBeUndefined;
                     }
                 } else {
                     const keys = Object.keys(def);
@@ -668,10 +666,10 @@ export class JsonSchemaGenerator {
     }
 
     private getIntersectionDefinition(intersectionType: ts.IntersectionType, definition: Definition) {
-        const simpleTypes: string[] = [];
+        const simpleTypes: JSONSchema7TypeName[] = [];
         const schemas: Definition[] = [];
 
-        const pushSimpleType = (type: string) => {
+        const pushSimpleType = (type: JSONSchema7TypeName) => {
             if (simpleTypes.indexOf(type) === -1) {
                 simpleTypes.push(type);
             }
@@ -679,7 +677,7 @@ export class JsonSchemaGenerator {
 
         for (const intersectionMember of intersectionType.types) {
             const def = this.getTypeDefinition(intersectionMember);
-            if (def.type === "undefined") {
+            if ((<any>def).mayBeUndefined) {
                 console.error("Undefined in intersection makes no sense.");
             } else {
                 const keys = Object.keys(def);

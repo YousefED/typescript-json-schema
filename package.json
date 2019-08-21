@@ -48,22 +48,21 @@
     "@types/json-schema": "^7.0.3",
     "glob": "~7.1.4",
     "json-stable-stringify": "^1.0.1",
-    "typescript": "^3.5.1",
-    "yargs": "^13.2.4"
+    "typescript": "^3.5.3",
+    "yargs": "^14.0.0"
   },
   "devDependencies": {
-    "@types/assertion-error": "^1.1.0",
-    "@types/chai": "^4.1.7",
+    "@types/chai": "^4.2.0",
     "@types/glob": "^7.1.1",
     "@types/json-stable-stringify": "^1.0.32",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.0.4",
-    "ajv": "^6.10.0",
+    "@types/node": "^12.7.2",
+    "ajv": "^6.10.2",
     "chai": "^4.2.0",
-    "mocha": "^6.1.4",
-    "source-map-support": "^0.5.12",
-    "ts-node": "^8.2.0",
-    "tslint": "^5.17.0"
+    "mocha": "^6.2.0",
+    "source-map-support": "^0.5.13",
+    "ts-node": "^8.3.0",
+    "tslint": "^5.19.0"
   },
   "scripts": {
     "prepublishOnly": "npm run build",

@@ -29,7 +29,6 @@
     "no-string-literal": false,
     "no-trailing-whitespace": true,
     "no-unused-expression": true,
-    "no-use-before-declare": true,
     "one-line": [
       true,
       "check-open-brace",

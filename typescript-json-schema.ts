@@ -373,7 +373,18 @@ export class JsonSchemaGenerator {
         const jsdocs = symbol.getJsDocTags();
         jsdocs.forEach(doc => {
             // if we have @TJS-... annotations, we have to parse them
-            const [name, text] = (doc.name === "TJS" ? new RegExp(REGEX_TJS_JSDOC).exec(doc.text!)!.slice(1,3) : [doc.name, doc.text]) as string[];
+            let [ name, text ] = [doc.name, doc.text as string];
+            if( doc.name === "TJS" ) {
+                let match: string[] | RegExpExecArray | null = new RegExp(REGEX_TJS_JSDOC).exec(doc.text!);
+                if( match ) {
+                    name = match[1];
+                    text = match[2];
+                } else {
+                    // Treat empty text as boolean
+                    name = (text as string).replace(/^[\s\-]+/, "");
+                    text = "true";
+                }
+            }
             if (validationKeywords[name] || this.userValidationKeywords[name]) {
                 definition[name] = text === undefined ? "" : parseValue(text);
             } else {

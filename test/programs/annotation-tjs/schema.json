@@ -82,7 +82,10 @@
         "regexPatternWithWhitespace",
         "uri",
         "uriReference",
-        "uriTemplate"
+        "uriTemplate",
+        "booleanAnnotationDefaultValue",
+        "booleanAnnotationWithTrue",
+        "booleanAnnotationWithFalse"
     ],
     "type": "object"
 }

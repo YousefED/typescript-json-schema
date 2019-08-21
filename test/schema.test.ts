@@ -190,7 +190,9 @@ describe("schema", () => {
     describe("annotations", () => {
         assertSchema("annotation-default", "MyObject");
         assertSchema("annotation-ref", "MyObject");
-        assertSchema("annotation-tjs", "MyObject");
+        assertSchema("annotation-tjs", "MyObject", {
+            validationKeywords: [ "hide" ]
+        });
         assertSchema("annotation-id", "MyObject");
 
         assertSchema("typeof-keyword", "MyObject", {typeOfKeyword: true});

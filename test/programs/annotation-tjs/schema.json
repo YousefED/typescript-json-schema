@@ -70,6 +70,9 @@
         }
     },
     "required": [
+        "booleanAnnotationDefaultValue",
+        "booleanAnnotationWithFalse",
+        "booleanAnnotationWithTrue",
         "dateTime",
         "email",
         "examples",
@@ -82,10 +85,7 @@
         "regexPatternWithWhitespace",
         "uri",
         "uriReference",
-        "uriTemplate",
-        "booleanAnnotationDefaultValue",
-        "booleanAnnotationWithTrue",
-        "booleanAnnotationWithFalse"
+        "uriTemplate"
     ],
     "type": "object"
 }

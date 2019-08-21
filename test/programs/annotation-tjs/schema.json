@@ -55,6 +55,18 @@
         "uriTemplate": {
             "format": "uri-template",
             "type": "string"
+        },
+        "booleanAnnotationDefaultValue": {
+            "hide": true,
+            "type": "string"
+        },
+        "booleanAnnotationWithTrue": {
+            "hide": true,
+            "type": "string"
+        },
+        "booleanAnnotationWithFalse": {
+            "hide": false,
+            "type": "string"
         }
     },
     "required": [

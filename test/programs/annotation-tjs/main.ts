@@ -64,4 +64,19 @@ interface MyObject {
      * @TJS-examples ["foo", 1]
      */
     examples: string;
+
+    /**
+     * @TJS-hide
+     */
+    booleanAnnotationDefaultValue: string;
+
+    /**
+     * @TJS-hide true
+     */
+    booleanAnnotationWithTrue: string;
+
+    /**
+     * @TJS-hide false
+     */
+    booleanAnnotationWithFalse: string;
 }

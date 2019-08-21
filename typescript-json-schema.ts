@@ -380,7 +380,7 @@ export class JsonSchemaGenerator {
                     name = match[1];
                     text = match[2];
                 } else {
-                    // Treat empty text as boolean
+                    // Treat empty text as boolean true
                     name = (text as string).replace(/^[\s\-]+/, "");
                     text = "true";
                 }

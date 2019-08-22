@@ -46,7 +46,8 @@ Options:
   --excludePrivate      Exclude private members from the schema                      [boolean] [default: false]
   --uniqueNames         Use unique names for type symbols.                           [boolean] [default: false]
   --rejectDateType      Rejects Date fields in type definitions.                     [boolean] [default: false]
-  --id                  Set schema id.                                               [string] [default: ""]
+  --id                  Set schema id.                                               [string]  [default: ""]
+  --noSchemaProp        No $schema field in generated definition.                    [boolean] [default: false]
 ```
 
 ### Programmatic use

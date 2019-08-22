@@ -42,6 +42,8 @@ export function run() {
             .describe("rejectDateType", "Rejects Date fields in type definitions.")
         .string("id").default("id", defaultArgs.id)
             .describe("id", "ID of schema.")
+        .string("noSchemaProp").default("noSchemaProp", defaultArgs.noSchemaProp)
+            .describe("noSchemaProp", "No '$schema' field.")
         .argv;
 
     exec(args._[0], args._[1], {
@@ -63,6 +65,7 @@ export function run() {
         uniqueNames: args.uniqueNames,
         rejectDateType: args.rejectDateType,
         id: args.id,
+        noSchemaProp: args.noSchemaProp
     });
 }
 

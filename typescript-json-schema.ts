@@ -34,6 +34,7 @@ export function getDefaultArgs(): Args {
         uniqueNames: false,
         rejectDateType: false,
         id: "",
+        noSchemaProp: false
     };
 }
 
@@ -60,6 +61,7 @@ export type Args = {
     uniqueNames: boolean;
     rejectDateType: boolean;
     id: string;
+    noSchemaProp: boolean;
 };
 
 export type PartialArgs = Partial<Args>;
@@ -1013,7 +1015,9 @@ export class JsonSchemaGenerator {
         if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
             def.definitions = this.reffedDefinitions;
         }
-        def["$schema"] = "http://json-schema.org/draft-07/schema#";
+        if(!this.args.noSchemaProp) {
+            def["$schema"] = "http://json-schema.org/draft-07/schema#";
+        }
         const id = this.args.id;
         if(id) {
             def["$id"] = this.args.id;
@@ -1022,10 +1026,12 @@ export class JsonSchemaGenerator {
     }
 
     public getSchemaForSymbols(symbolNames: string[], includeReffedDefinitions: boolean = true): Definition {
-        const root = {
-            $schema: "http://json-schema.org/draft-07/schema#",
+        const root: Definition & { definitions: { [key: string]: DefinitionOrBoolean } } = {
             definitions: {}
         };
+        if(!this.args.noSchemaProp) {
+            root.$schema = "http://json-schema.org/draft-07/schema#";
+        }
         const id = this.args.id;
 
         if(id) {

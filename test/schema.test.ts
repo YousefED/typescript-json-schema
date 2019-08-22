@@ -320,6 +320,10 @@ describe("schema", () => {
         assertSchemas("argument-id", "MyObject", {
             id: "someSchemaId"
         });
+
+        assertSchemas("argument-noschemaprop", "MyObject", {
+            noSchemaProp: true
+        });
     });
 
     describe("object index", () => {

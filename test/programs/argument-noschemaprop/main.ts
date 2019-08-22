@@ -1,0 +1,3 @@
+interface MyObject {
+    name: string;
+}

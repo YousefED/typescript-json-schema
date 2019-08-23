@@ -34,6 +34,7 @@ export function getDefaultArgs(): Args {
         uniqueNames: false,
         rejectDateType: false,
         id: "",
+        defaultNumberType: "number"
     };
 }
 
@@ -60,6 +61,7 @@ export type Args = {
     uniqueNames: boolean;
     rejectDateType: boolean;
     id: string;
+    defaultNumberType: "number" | "integer";
 };
 
 export type PartialArgs = Partial<Args>;
@@ -394,7 +396,7 @@ export class JsonSchemaGenerator {
         });
     }
 
-    private getDefinitionForRootType(propertyType: ts.Type, reffedType: ts.Symbol, definition: Definition) {
+    private getDefinitionForRootType(propertyType: ts.Type, reffedType: ts.Symbol, definition: Definition, defaultNumberType = this.args.defaultNumberType) {
         const tupleType = resolveTupleType(propertyType);
 
         if (tupleType) { // tuple
@@ -420,7 +422,7 @@ export class JsonSchemaGenerator {
             if (flags & ts.TypeFlags.String) {
                 definition.type = "string";
             } else if (flags & ts.TypeFlags.Number) {
-                const isInteger = (definition.type === "integer" || (reffedType && reffedType.getName() === "integer"));
+                const isInteger = (definition.type === "integer" || (reffedType && reffedType.getName() === "integer")) || defaultNumberType === "integer";
                 definition.type = isInteger ? "integer" : "number";
             } else if (flags & ts.TypeFlags.Boolean) {
                 definition.type = "boolean";

@@ -23,7 +23,7 @@ In case no `tsconfig.json` is available for your project, you can directly speci
 
 * Generate schema from a typescript type: `typescript-json-schema "project/directory/**/*.ts" TYPE`
 
-The `TYPE` can either be a single, fully qualified type or `"*"` to generate the schema for all types. 
+The `TYPE` can either be a single, fully qualified type or `"*"` to generate the schema for all types.
 
 ```
 Usage: typescript-json-schema <path-to-typescript-files-or-tsconfig> <type>
@@ -46,7 +46,8 @@ Options:
   --excludePrivate      Exclude private members from the schema                      [boolean] [default: false]
   --uniqueNames         Use unique names for type symbols.                           [boolean] [default: false]
   --rejectDateType      Rejects Date fields in type definitions.                     [boolean] [default: false]
-  --id                  Set schema id.                                               [string] [default: ""]
+  --id                  Set schema id.                                               [string]  [default: ""]
+  --defaultNumberType   Default number type.                                         [choices: "number", "integer"] [default: "number"]
 ```
 
 ### Programmatic use
@@ -169,4 +170,3 @@ Inspired and builds upon [Typson](https://github.com/lbovet/typson/), but typesc
 `npm run debug -- test/programs/type-alias-single/main.ts --aliasRefs true MyString`
 
 And connect via the debugger protocol.
-

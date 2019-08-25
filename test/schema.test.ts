@@ -320,6 +320,10 @@ describe("schema", () => {
         assertSchemas("argument-id", "MyObject", {
             id: "someSchemaId"
         });
+
+        assertSchemas("type-default-number-as-integer", "*", {
+            defaultNumberType: "integer"
+        });
     });
 
     describe("object index", () => {

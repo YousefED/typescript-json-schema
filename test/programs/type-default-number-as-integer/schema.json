@@ -1,0 +1,16 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "MyObject": {
+            "properties": {
+                "as_integer": {
+                    "type": "integer"
+                },
+                "as_number": {
+                    "type": "number"
+                }
+            },
+            "type": "object"
+        }
+    }
+}

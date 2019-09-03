@@ -33,6 +33,7 @@ Options:
   --aliasRefs           Create shared ref definitions for the type aliases.          [boolean] [default: false]
   --topRef              Create a top-level ref definition.                           [boolean] [default: false]
   --titles              Creates titles in the output schema.                         [boolean] [default: false]
+  --desctitles          Use first line of the description as the title.              [boolean] [default: false]
   --defaultProps        Create default properties definitions.                       [boolean] [default: false]
   --noExtraProps        Disable additional properties in objects by default.         [boolean] [default: false]
   --propOrder           Create property order definitions.                           [boolean] [default: false]

@@ -194,6 +194,7 @@ describe("schema", () => {
             validationKeywords: [ "hide" ]
         });
         assertSchema("annotation-id", "MyObject");
+        assertSchema("annotation-items", "MyObject");
 
         assertSchema("typeof-keyword", "MyObject", {typeOfKeyword: true});
 
@@ -233,6 +234,7 @@ describe("schema", () => {
         // assertSchema("type-function", "MyObject");
         assertSchema("any-unknown", "MyObject");
         assertSchema("never", "Never");
+        assertSchema("integer", "MyObject");
     });
 
     describe("class and interface", () => {

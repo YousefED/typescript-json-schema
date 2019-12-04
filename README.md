@@ -161,6 +161,21 @@ will be translated to
 
 Note that we needed to use `@TJS-type` instead of just `@type` because of an [issue with the typescript compiler](https://github.com/Microsoft/TypeScript/issues/13498).
 
+## `integer` type alias
+
+If you create a type alias `integer` for `number` it will be mapped to the `integer` type in the generated JSON schema.
+
+Example:
+
+```typescript
+type integer = number;
+interface MyObject {
+  n: integer;
+}
+```
+
+Note: this feature doesn't work for generic types & array types, it mainly works in very simple cases.
+
 ## Background
 
 Inspired and builds upon [Typson](https://github.com/lbovet/typson/), but typescript-json-schema is compatible with more recent Typescript versions. Also, since it uses the Typescript compiler internally, more advanced scenarios are possible. If you are looking for a library that uses the AST instead of the type hierarchy and therefore better support for type aliases, have a look at [vega/ts-json-schema-generator](https://github.com/vega/ts-json-schema-generator).

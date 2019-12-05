@@ -12,6 +12,7 @@ const vm = require("vm");
 const REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;
 const REGEX_TSCONFIG_NAME = /^.*\.json$/;
 const REGEX_TJS_JSDOC = /^-([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
+const REGEX_GROUP_JSDOC = /^[.]?([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
 const NUMERIC_INDEX_PATTERN = "^[0-9]+$";
 
 export function getDefaultArgs(): Args {
@@ -260,12 +261,12 @@ const validationKeywords = {
     maxLength: true,                // 6.6.
     minLength: true,                // 6.7.
     pattern: true,                  // 6.8.
-    // items: true,                    // 6.9.
+    items: true,                    // 6.9.
     // additionalItems: true,          // 6.10.
     maxItems: true,                 // 6.11.
     minItems: true,                 // 6.12.
     uniqueItems: true,              // 6.13.
-    // contains: true,                 // 6.14.
+    contains: true,                 // 6.14.
     maxProperties: true,            // 6.15.
     minProperties: true,            // 6.16.
     // required: true,                 // 6.17.  This is not required. It is auto-generated.
@@ -289,6 +290,12 @@ const validationKeywords = {
     default: true,
     $ref: true,
     id: true
+};
+
+const subDefinitions = {
+    items: true,
+    additionalProperties: true,
+    contains: true,
 };
 
 export class JsonSchemaGenerator {
@@ -359,7 +366,7 @@ export class JsonSchemaGenerator {
     /**
      * Parse the comments of a symbol into the definition and other annotations.
      */
-    private parseCommentsIntoDefinition(symbol: ts.Symbol, definition: {description?: string}, otherAnnotations: {}): void {
+    private parseCommentsIntoDefinition(symbol: ts.Symbol, definition: Definition, otherAnnotations: {}): void {
         if (!symbol) {
             return;
         }
@@ -395,6 +402,26 @@ export class JsonSchemaGenerator {
                     // Treat empty text as boolean true
                     name = (text as string).replace(/^[\s\-]+/, "");
                     text = "true";
+                }
+            }
+
+            // In TypeScript ~3.5, the annotation name splits at the dot character so we have
+            // to process the "." and beyond from the value
+            if(subDefinitions[name]) {
+                const match: string[] | RegExpExecArray | null = new RegExp(REGEX_GROUP_JSDOC).exec(text);
+                if(match) {
+                    const k = match[1];
+                    const v = match[2];
+                    definition[name] = {...definition[name], [k]: v ? parseValue(v) : true};
+                    return;
+                }
+            }
+
+            // In TypeScript 3.7+, the "." is kept as part of the annotation name
+            if(name.includes(".")) {
+                const parts = name.split(".");
+                if(parts.length === 2 && subDefinitions[parts[0]]) {
+                    definition[parts[0]] = {...definition[parts[0]], [parts[1]]: text ? parseValue(text) : true};
                 }
             }
 
@@ -465,7 +492,9 @@ export class JsonSchemaGenerator {
                         };
                     } else {
                         definition.type = "array";
-                        definition.items = this.getTypeDefinition(arrayType);
+                        if(!definition.items) {
+                            definition.items = this.getTypeDefinition(arrayType);
+                        }
                     }
                 } else {
                     // Report that type could not be processed
@@ -794,7 +823,9 @@ export class JsonSchemaGenerator {
                         definition.additionalProperties = def;
                     } else {
                         definition.type = "array";
-                        definition.items = def;
+                        if(!definition.items) {
+                            definition.items = def;
+                        }
                     }
                 }
             }

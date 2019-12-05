@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "a": {
+      "items": {
+        "type": "integer"
+      },
+      "type": "array"
+    },
+    "b": {
+      "items": {
+        "minimum": 0,
+        "type": "integer"
+      },
+      "type": "array"
+    },
+    "c": {
+      "items": {
+        "minimum": 0,
+        "type": "integer"
+      },
+      "type": "array"
+    },
+    "d": {
+      "items": {
+        "type": "integer"
+      },
+      "type": "array"
+    },
+    "emails": {
+      "items": {
+        "type": "string",
+        "format": "email"
+      },
+      "type": "array"
+    },
+    "emails2": {
+      "items": {
+        "type": "string",
+        "format": "email"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "a",
+    "b",
+    "c",
+    "d",
+    "emails",
+    "emails2"
+  ],
+  "type": "object"
+}

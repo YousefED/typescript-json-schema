@@ -194,6 +194,7 @@ describe("schema", () => {
             validationKeywords: [ "hide" ]
         });
         assertSchema("annotation-id", "MyObject");
+        assertSchema("annotation-items", "MyObject");
 
         assertSchema("typeof-keyword", "MyObject", {typeOfKeyword: true});
 

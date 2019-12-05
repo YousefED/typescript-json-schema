@@ -161,6 +161,65 @@ will be translated to
 
 Note that we needed to use `@TJS-type` instead of just `@type` because of an [issue with the typescript compiler](https://github.com/Microsoft/TypeScript/issues/13498).
 
+You can also override the type of array items, either listing each field in its own annotation or one
+annotation with the full JSON of the spec (for special cases). This replaces the item types that would
+have been inferred from the TypeScript type of the array elements.  
+
+Example:
+
+```ts
+export interface ShapesData {
+    /**
+     * Specify individual fields in items.
+     *
+     * @items.type integer
+     * @items.minimum 0
+     */
+    sizes: number[];
+
+    /**
+     * Or specify a JSON spec:
+     *
+     * @items {"type":"string","format":"email"}
+     */
+    emails: string[];
+}
+```
+
+Translation:
+
+```json
+{
+    "$ref": "#/definitions/ShapesData",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "Shape": {
+            "properties": {
+                "sizes": {
+                    "description": "Specify individual fields in items.",
+                    "items": {
+                        "minimum": 0,
+                        "type": "integer"
+                    },
+                    "type": "array"
+                },
+                "emails": {
+                    "description": "Specify individual fields in items.",
+                    "items": {
+                        "format": "email",
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "type": "object"
+        }
+    }
+}
+```
+
+This same syntax can be used for `contains` and `additionalProperties`.
+
 ## Background
 
 Inspired and builds upon [Typson](https://github.com/lbovet/typson/), but typescript-json-schema is compatible with more recent Typescript versions. Also, since it uses the Typescript compiler internally, more advanced scenarios are possible. If you are looking for a library that uses the AST instead of the type hierarchy and therefore better support for type aliases, have a look at [vega/ts-json-schema-generator](https://github.com/vega/ts-json-schema-generator).

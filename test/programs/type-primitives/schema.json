@@ -14,6 +14,13 @@
             },
             "type": "array"
         },
+        "array3": {
+            "default": null,
+            "items": {
+                "type": "integer"
+            },
+            "type": "array"
+        },
         "boolean1": {
             "default": true,
             "type": "boolean"

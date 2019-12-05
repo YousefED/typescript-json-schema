@@ -17,6 +17,7 @@ class MyObject {
 
     array1: Array<any>    = null;
     array2: Array<number> = null;
+    array3: integer[]     = null;
 
     object1: any          = null;
     object2: {}           = null;

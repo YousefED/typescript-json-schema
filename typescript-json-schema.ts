@@ -1236,6 +1236,13 @@ export function generateSchema(program: ts.Program, fullTypeName: string, args: 
 
     if (fullTypeName === "*") { // All types in file(s)
         return generator.getSchemaForSymbols(generator.getMainFileSymbols(program, onlyIncludeFiles));
+    } else if (args.uniqueNames) { // Find the hashed type name to use as the root object
+        const matchingSymbols = generator.getSymbols(fullTypeName);
+        if (matchingSymbols.length === 1) {
+            return generator.getSchemaForSymbol(matchingSymbols[0].name);
+        } else {
+            throw new Error(`${matchingSymbols.length} definitions found for requested type "${fullTypeName}".`);
+        }
     } else { // Use specific type as root object
         return generator.getSchemaForSymbol(fullTypeName);
     }

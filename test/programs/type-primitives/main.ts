@@ -3,6 +3,11 @@
 // Special type, should not appear in the schema
 type integer = number;
 
+/**
+ * @type integer
+ */
+type Int = number;
+
 class MyObject {
 
     boolean1: boolean     = true;
@@ -18,6 +23,7 @@ class MyObject {
     array1: Array<any>    = null;
     array2: Array<number> = null;
     array3: integer[]     = null;
+    array4: Int[]     = null;
 
     object1: any          = null;
     object2: {}           = null;

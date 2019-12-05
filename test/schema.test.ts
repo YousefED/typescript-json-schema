@@ -233,6 +233,7 @@ describe("schema", () => {
         // assertSchema("type-function", "MyObject");
         assertSchema("any-unknown", "MyObject");
         assertSchema("never", "Never");
+        assertSchema("type-natural", "MyObject");
     });
 
     describe("class and interface", () => {

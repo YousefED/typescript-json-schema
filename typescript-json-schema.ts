@@ -383,7 +383,17 @@ export class JsonSchemaGenerator {
         jsdocs.forEach(doc => {
             // if we have @TJS-... annotations, we have to parse them
             let [ name, text ] = [doc.name, doc.text as string];
-            if( doc.name === "TJS" ) {
+            // In TypeScript versions prior to 3.7, it stops parsing the annotation
+            // at the first non-alphanumeric character and puts the rest of the line as the
+            // "text" of the annotation, so we have a little hack to check for the name
+            // "TJS" and then we sort of re-parse the annotation to support prior versions
+            // of TypeScript.
+            if(name.startsWith("TJS-")) {
+                name = name.slice(4);
+                if(!text) {
+                    text = "true";
+                }
+            } else if( name === "TJS" && text.startsWith("-")) {
                 let match: string[] | RegExpExecArray | null = new RegExp(REGEX_TJS_JSDOC).exec(doc.text!);
                 if( match ) {
                     name = match[1];

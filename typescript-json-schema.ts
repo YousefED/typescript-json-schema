@@ -990,7 +990,7 @@ export class JsonSchemaGenerator {
                 reffedType!.getFlags() & ts.SymbolFlags.Alias ?
                     this.tc.getAliasedSymbol(reffedType!) :
                     reffedType!
-            ).replace(REGEX_FILE_NAME_OR_SPACE, "")
+            ).replace(REGEX_FILE_NAME_OR_SPACE, "");
             if (this.args.uniqueNames) {
                 const sourceFile = getSourceFile(reffedType!);
                 const relativePath = path.relative(process.cwd(), sourceFile.fileName);

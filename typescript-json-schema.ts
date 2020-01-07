@@ -248,6 +248,42 @@ function makeNullable(def: Definition) {
 }
 
 /**
+ * Given a Symbol, returns a canonical Definition. That can be either:
+ * 1) The Symbol's valueDeclaration parameter if defined, or
+ * 2) The sole entry in the Symbol's declarations array, provided that array has a length of 1.
+ *
+ * valueDeclaration is listed as a required parameter in the definition of a Symbol, but I've
+ * experienced crashes when it's undefined at runtime, which is the reason for this function's
+ * existence. Not sure if that's a compiler API bug or what.
+ */
+function getCanonicalDeclaration(sym: ts.Symbol): ts.Declaration {
+    if (sym.valueDeclaration !== undefined) {
+        return sym.valueDeclaration;
+    } else if (sym.declarations.length === 1) {
+        return sym.declarations[0];
+    }
+
+    throw new Error(`Symbol "${sym.name}" has no valueDeclaration and ${sym.declarations.length} declarations.`);
+}
+
+/**
+ * Given a Symbol, finds the place it was declared and chases parent pointers until we find a
+ * node where SyntaxKind === SourceFile.
+ */
+function getSourceFile(sym: ts.Symbol): ts.SourceFile {
+    let currentDecl: ts.Node = getCanonicalDeclaration(sym);
+
+    while (currentDecl.kind !== ts.SyntaxKind.SourceFile) {
+        if (currentDecl.parent === undefined) {
+            throw new Error(`Unable to locate source file for declaration "${sym.name}".`);
+        }
+        currentDecl = currentDecl.parent;
+    }
+
+    return currentDecl as ts.SourceFile;
+}
+
+/**
  * JSDoc keywords that should be used to annotate the JSON schema.
  *
  * Many of these validation keywords are defined here: http://json-schema.org/latest/json-schema-validation.html
@@ -950,16 +986,30 @@ export class JsonSchemaGenerator {
 
         let fullTypeName = "";
         if (asTypeAliasRef) {
-            fullTypeName = this.makeTypeNameUnique(
-                typ,
-                this.tc.getFullyQualifiedName(
-                    reffedType!.getFlags() & ts.SymbolFlags.Alias ?
-                        this.tc.getAliasedSymbol(reffedType!) :
-                        reffedType!
-                ).replace(REGEX_FILE_NAME_OR_SPACE, "")
-            );
+            const typeName = this.tc.getFullyQualifiedName(
+                reffedType!.getFlags() & ts.SymbolFlags.Alias ?
+                    this.tc.getAliasedSymbol(reffedType!) :
+                    reffedType!
+            ).replace(REGEX_FILE_NAME_OR_SPACE, "");
+            if (this.args.uniqueNames) {
+                const sourceFile = getSourceFile(reffedType!);
+                const relativePath = path.relative(process.cwd(), sourceFile.fileName);
+                fullTypeName = `${typeName}.${generateHashOfNode(getCanonicalDeclaration(reffedType!), relativePath)}`;
+            } else {
+                fullTypeName = this.makeTypeNameUnique(
+                    typ,
+                    typeName
+                );
+            }
         } else if (asRef) {
-            fullTypeName = this.getTypeName(typ);
+            if (this.args.uniqueNames) {
+                const sym = typ.symbol;
+                const sourceFile = getSourceFile(sym);
+                const relativePath = path.relative(process.cwd(), sourceFile.fileName);
+                fullTypeName = `${this.getTypeName(typ)}.${generateHashOfNode(getCanonicalDeclaration(sym), relativePath)}`;
+            } else {
+                fullTypeName = this.getTypeName(typ);
+            }
         }
 
         if (asRef) {
@@ -1236,6 +1286,13 @@ export function generateSchema(program: ts.Program, fullTypeName: string, args: 
 
     if (fullTypeName === "*") { // All types in file(s)
         return generator.getSchemaForSymbols(generator.getMainFileSymbols(program, onlyIncludeFiles));
+    } else if (args.uniqueNames) { // Find the hashed type name to use as the root object
+        const matchingSymbols = generator.getSymbols(fullTypeName);
+        if (matchingSymbols.length === 1) {
+            return generator.getSchemaForSymbol(matchingSymbols[0].name);
+        } else {
+            throw new Error(`${matchingSymbols.length} definitions found for requested type "${fullTypeName}".`);
+        }
     } else { // Use specific type as root object
         return generator.getSchemaForSymbol(fullTypeName);
     }

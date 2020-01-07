@@ -294,6 +294,21 @@ describe("schema", () => {
         assertSchema("namespace-deep-2", "RootNamespace.SubNamespace.HelperA");
     });
 
+    describe("uniqueNames", () => {
+        assertSchemas("unique-names", "MyObject", {
+            uniqueNames: true
+        });
+
+        // It should throw an error if there are two definitions for the top-level ref
+        assertRejection("unique-names", "MyObject", {
+            uniqueNames: true
+        });
+
+        assertSchema("unique-names-multiple-subdefinitions", "MyObject", {
+            uniqueNames: true
+        });
+    });
+
     describe("other", () => {
         assertSchema("array-and-description", "MyObject");
 
@@ -310,10 +325,6 @@ describe("schema", () => {
 
         assertSchema("private-members", "MyObject", {
             excludePrivate: true
-        });
-
-        assertSchemas("unique-names", "MyObject", {
-            uniqueNames: true
         });
 
         assertSchema("builtin-names", "Ext.Foo");

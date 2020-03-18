@@ -358,7 +358,17 @@ export class JsonSchemaGenerator {
      */
     private inheritingTypes: { [baseName: string]: string[] };
 
+    /**
+     * This map holds references to all reffed definition., including schema
+     * overrides and generateddefinitions.
+     */
     private reffedDefinitions: { [key: string]: Definition } = {};
+
+    /**
+     * This map only holds explicit schema overrides. This helps differentiate between
+     * user defined schema overrides and generated definitions.
+     */
+    private schemaOverrides = new Map<string, Definition>();
 
     /**
      * This is a set of all the user-defined validation keywords.
@@ -1007,6 +1017,8 @@ export class JsonSchemaGenerator {
                 const sourceFile = getSourceFile(sym);
                 const relativePath = path.relative(process.cwd(), sourceFile.fileName);
                 fullTypeName = `${this.getTypeName(typ)}.${generateHashOfNode(getCanonicalDeclaration(sym), relativePath)}`;
+            } else if (reffedType && this.schemaOverrides.has(reffedType.escapedName as string)) {
+                fullTypeName = reffedType.escapedName as string;
             } else {
                 fullTypeName = this.getTypeName(typ);
             }
@@ -1096,6 +1108,7 @@ export class JsonSchemaGenerator {
 
     public setSchemaOverride(symbolName: string, schema: Definition) {
         this.reffedDefinitions[symbolName] = schema;
+        this.schemaOverrides.set(symbolName, schema);
     }
 
     public getSchemaForSymbol(symbolName: string, includeReffedDefinitions: boolean = true): Definition {

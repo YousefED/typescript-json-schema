@@ -108,6 +108,32 @@ describe("interfaces", () => {
             assert.deepEqual(schema.definitions!["MySubObject"], schemaOverride);
         }
     });
+    it("should ignore type aliases that have schema overrides", () => {
+        const program = TJS.getProgramFromFiles([resolve(BASE + "type-alias-schema-override/main.ts")]);
+        const generator = TJS.buildGenerator(program);
+        assert(generator !== null);
+        if (generator !== null) {
+            const schemaOverride: TJS.Definition = { type: "string" };
+
+            generator.setSchemaOverride("Some", schemaOverride);
+            const schema = generator.getSchemaForSymbol("MyObject");
+
+            assert.deepEqual(schema, {
+                $schema: "http://json-schema.org/draft-07/schema#",
+                definitions: {
+                    Some: {
+                        type: "string"
+                    }
+                },
+                properties: {
+                    some: {
+                        $ref: "#/definitions/Some"
+                    }
+                },
+                type: "object"
+            });
+        }
+    });
 });
 
 describe("schema", () => {

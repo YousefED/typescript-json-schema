@@ -7,6 +7,10 @@
   "bin": {
     "typescript-json-schema": "./bin/typescript-json-schema"
   },
+  "files": [
+    "bin",
+    "dist"
+  ],
   "author": "Yousef El-Dardiry and Dominik Moritz",
   "contributors": [
     {

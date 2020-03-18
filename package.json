@@ -60,13 +60,12 @@
     "ajv": "^6.10.2",
     "chai": "^4.2.0",
     "mocha": "^7.0.0",
-    "source-map-support": "^0.5.16",
     "ts-node": "^8.5.4",
     "tslint": "^5.20.1"
   },
   "scripts": {
     "prepublishOnly": "npm run build",
-    "test": "npm run build && mocha -t 5000 --require source-map-support/register dist/test",
+    "test": "mocha",
     "debug": "ts-node --inspect=19248 --debug-brk typescript-json-schema-cli.ts",
     "run": "ts-node typescript-json-schema-cli.ts",
     "build": "tsc -p .",

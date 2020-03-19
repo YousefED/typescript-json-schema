@@ -72,6 +72,7 @@
     "test": "mocha",
     "debug": "ts-node --inspect=19248 --debug-brk typescript-json-schema-cli.ts",
     "run": "ts-node typescript-json-schema-cli.ts",
+    "build": "tsc",
     "lint": "tslint --project tsconfig.json -c tslint.json --exclude '**/*.d.ts'"
   }
 }

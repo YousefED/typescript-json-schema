@@ -6,22 +6,22 @@ Generate json-schemas from your Typescript sources.
 
 ## Features
 
-* Compiles your Typescript program to get complete type information.
-* Translates required properties, extends, annotation keywords, property initializers as defaults. You can find examples for these features in the [test examples](https://github.com/YousefED/typescript-json-schema/tree/master/test/programs).
+- Compiles your Typescript program to get complete type information.
+- Translates required properties, extends, annotation keywords, property initializers as defaults. You can find examples for these features in the [api doc](https://github.com/YousefED/typescript-json-schema/tree/master/api.md) or the [test examples](https://github.com/YousefED/typescript-json-schema/tree/master/test/programs).
 
 ## Usage
 
 ### Command line
 
-* Install with `npm install typescript-json-schema -g`
-* Generate schema from a typescript type: `typescript-json-schema project/directory/tsconfig.json TYPE`
+- Install with `npm install typescript-json-schema -g`
+- Generate schema from a typescript type: `typescript-json-schema project/directory/tsconfig.json TYPE`
 
 To generate files for only _some_ types in `tsconfig.json` specify
 filenames or globs with the `--include` option. This is especially useful for large projects.
 
 In case no `tsconfig.json` is available for your project, you can directly specify the .ts files (this in this case we use some built-in compiler presets):
 
-* Generate schema from a typescript type: `typescript-json-schema "project/directory/**/*.ts" TYPE`
+- Generate schema from a typescript type: `typescript-json-schema "project/directory/**/*.ts" TYPE`
 
 The `TYPE` can either be a single, fully qualified type or `"*"` to generate the schema for all types.
 
@@ -53,28 +53,31 @@ Options:
 ### Programmatic use
 
 ```ts
-import {resolve} from "path";
+import { resolve } from "path";
 
 import * as TJS from "typescript-json-schema";
 
 // optionally pass argument to schema generator
 const settings: TJS.PartialArgs = {
-    required: true
+  required: true,
 };
 
 // optionally pass ts compiler options
 const compilerOptions: TJS.CompilerOptions = {
-    strictNullChecks: true
-}
+  strictNullChecks: true,
+};
 
 // optionally pass a base path
 const basePath = "./my-dir";
 
-const program = TJS.getProgramFromFiles([resolve("my-file.ts")], compilerOptions, basePath);
+const program = TJS.getProgramFromFiles(
+  [resolve("my-file.ts")],
+  compilerOptions,
+  basePath
+);
 
 // We can either get the schema for one file and one type...
 const schema = TJS.generateSchema(program, "MyType", settings);
-
 
 // ... or a generator that lets us incrementally get more schemas
 
@@ -92,7 +95,7 @@ generator.getSchemaForSymbol("AnotherType");
 // In larger projects type names may not be unique,
 // while unique names may be enabled.
 const settings: TJS.PartialArgs = {
-    uniqueNames: true
+  uniqueNames: true,
 };
 
 const generator = TJS.buildGenerator(program, settings);
@@ -128,13 +131,13 @@ For example
 
 ```ts
 export interface Shape {
-    /**
-     * The size of the shape.
-     *
-     * @minimum 0
-     * @TJS-type integer
-     */
-    size: number;
+  /**
+   * The size of the shape.
+   *
+   * @minimum 0
+   * @TJS-type integer
+   */
+  size: number;
 }
 ```
 
@@ -142,20 +145,20 @@ will be translated to
 
 ```json
 {
-    "$ref": "#/definitions/Shape",
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "definitions": {
-        "Shape": {
-            "properties": {
-                "size": {
-                    "description": "The size of the shape.",
-                    "minimum": 0,
-                    "type": "integer"
-                }
-            },
-            "type": "object"
+  "$ref": "#/definitions/Shape",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Shape": {
+      "properties": {
+        "size": {
+          "description": "The size of the shape.",
+          "minimum": 0,
+          "type": "integer"
         }
+      },
+      "type": "object"
     }
+  }
 }
 ```
 
@@ -163,26 +166,26 @@ Note that we needed to use `@TJS-type` instead of just `@type` because of an [is
 
 You can also override the type of array items, either listing each field in its own annotation or one
 annotation with the full JSON of the spec (for special cases). This replaces the item types that would
-have been inferred from the TypeScript type of the array elements.  
+have been inferred from the TypeScript type of the array elements.
 
 Example:
 
 ```ts
 export interface ShapesData {
-    /**
-     * Specify individual fields in items.
-     *
-     * @items.type integer
-     * @items.minimum 0
-     */
-    sizes: number[];
+  /**
+   * Specify individual fields in items.
+   *
+   * @items.type integer
+   * @items.minimum 0
+   */
+  sizes: number[];
 
-    /**
-     * Or specify a JSON spec:
-     *
-     * @items {"type":"string","format":"email"}
-     */
-    emails: string[];
+  /**
+   * Or specify a JSON spec:
+   *
+   * @items {"type":"string","format":"email"}
+   */
+  emails: string[];
 }
 ```
 
@@ -190,31 +193,31 @@ Translation:
 
 ```json
 {
-    "$ref": "#/definitions/ShapesData",
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "definitions": {
-        "Shape": {
-            "properties": {
-                "sizes": {
-                    "description": "Specify individual fields in items.",
-                    "items": {
-                        "minimum": 0,
-                        "type": "integer"
-                    },
-                    "type": "array"
-                },
-                "emails": {
-                    "description": "Specify individual fields in items.",
-                    "items": {
-                        "format": "email",
-                        "type": "string"
-                    },
-                    "type": "array"
-                }
-            },
-            "type": "object"
+  "$ref": "#/definitions/ShapesData",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Shape": {
+      "properties": {
+        "sizes": {
+          "description": "Specify individual fields in items.",
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "emails": {
+          "description": "Specify individual fields in items.",
+          "items": {
+            "format": "email",
+            "type": "string"
+          },
+          "type": "array"
         }
+      },
+      "type": "object"
     }
+  }
 }
 ```
 

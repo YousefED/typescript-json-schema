@@ -68,6 +68,7 @@
     "prepublishOnly": "npm run build",
     "test": "npm run build && mocha -t 5000 --require source-map-support/register dist/test",
     "debug": "ts-node --inspect=19248 --debug-brk typescript-json-schema-cli.ts",
+    "docs": "./update-docs.js",
     "run": "ts-node typescript-json-schema-cli.ts",
     "build": "tsc -p .",
     "lint": "tslint --project tsconfig.json -c tslint.json --exclude '**/*.d.ts'"

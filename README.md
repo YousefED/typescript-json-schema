@@ -207,7 +207,7 @@ Translation:
           "type": "array"
         },
         "emails": {
-          "description": "Specify individual fields in items.",
+          "description": "Or specify a JSON spec:",
           "items": {
             "format": "email",
             "type": "string"

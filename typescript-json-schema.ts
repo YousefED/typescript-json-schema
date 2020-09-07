@@ -506,7 +506,7 @@ export class JsonSchemaGenerator {
             if (flags & ts.TypeFlags.String) {
                 definition.type = "string";
             } else if (flags & ts.TypeFlags.Number) {
-                const isInteger = (definition.type === "integer" || (reffedType && reffedType.getName() === "integer")) || defaultNumberType === "integer";
+                const isInteger = (definition.type === "integer" || (reffedType?.getName() === "integer")) || defaultNumberType === "integer";
                 definition.type = isInteger ? "integer" : "number";
             } else if (flags & ts.TypeFlags.Boolean) {
                 definition.type = "boolean";
@@ -557,7 +557,7 @@ export class JsonSchemaGenerator {
 
     private getReferencedTypeSymbol(prop: ts.Symbol): ts.Symbol|undefined {
         const decl = prop.getDeclarations();
-        if (decl && decl.length) {
+        if (decl?.length) {
             const type = (<ts.TypeReferenceNode> (<any> decl[0]).type);
             if (type && (type.kind & ts.SyntaxKind.TypeReference) && type.typeName) {
                 const symbol = this.tc.getSymbolAtLocation(type.typeName);
@@ -591,7 +591,7 @@ export class JsonSchemaGenerator {
 
         // try to get default value
         const valDecl = prop.valueDeclaration as ts.VariableDeclaration;
-        if (valDecl && valDecl.initializer) {
+        if (valDecl?.initializer) {
             let initial = valDecl.initializer;
 
             while (ts.isTypeAssertion(initial)) {
@@ -830,7 +830,7 @@ export class JsonSchemaGenerator {
             }
 
             const decls = prop.declarations;
-            return !(decls && decls.filter(decl => {
+            return !(decls?.filter(decl => {
                 const mods = decl.modifiers;
                 return mods && mods.filter(mod => mod.kind === ts.SyntaxKind.PrivateKeyword).length > 0;
             }).length > 0);
@@ -1055,7 +1055,7 @@ export class JsonSchemaGenerator {
                     definition.title = fullTypeName;
                 }
             }
-            const node = symbol && symbol.getDeclarations() !== undefined ? symbol.getDeclarations()![0] : null;
+            const node = symbol?.getDeclarations() !== undefined ? symbol.getDeclarations()![0] : null;
 
             if (definition.type === undefined) {  // if users override the type, do not try to infer it
                 if (typ.flags & ts.TypeFlags.Union) {
@@ -1175,7 +1175,7 @@ export class JsonSchemaGenerator {
                     return false;
                 }
                 let node: ts.Node = symbol.declarations[0];
-                while (node && node.parent) {
+                while (node?.parent) {
                     node = node.parent;
                 }
                 return files.indexOf(node.getSourceFile()) > -1;

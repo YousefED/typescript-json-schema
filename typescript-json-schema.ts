@@ -359,8 +359,8 @@ export class JsonSchemaGenerator {
     private inheritingTypes: { [baseName: string]: string[] };
 
     /**
-     * This map holds references to all reffed definition., including schema
-     * overrides and generateddefinitions.
+     * This map holds references to all reffed definitions, including schema
+     * overrides and generated definitions.
      */
     private reffedDefinitions: { [key: string]: Definition } = {};
 

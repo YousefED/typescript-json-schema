@@ -1,0 +1,17 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "foo": {
+            "typeof": "function"
+        },
+        "bar": {
+            "typeof": "function"
+        }
+    },
+    "required": [
+        "bar",
+        "foo"
+    ],
+    "type": "object"
+}
+

@@ -571,9 +571,10 @@ export class JsonSchemaGenerator {
     }
 
     private getDefinitionForProperty(prop: ts.Symbol, node: ts.Node) {
-        if (prop.flags & ts.SymbolFlags.Method) {
+        if ((prop.flags & ts.SymbolFlags.Method) && !this.args.typeOfKeyword) {
             return null;
         }
+
         const propertyName = prop.getName();
         const propertyType = this.tc.getTypeOfSymbolAtLocation(prop, node);
 
@@ -913,7 +914,7 @@ export class JsonSchemaGenerator {
                 const requiredProps = props.reduce((required: string[], prop: ts.Symbol) => {
                     const def = {};
                     this.parseCommentsIntoDefinition(prop, def, {});
-                    if (!(prop.flags & ts.SymbolFlags.Optional) && !(prop.flags & ts.SymbolFlags.Method) && !(<any>prop).mayBeUndefined && !def.hasOwnProperty("ignore")) {
+                    if (!(prop.flags & ts.SymbolFlags.Optional) && (this.args.typeOfKeyword || !(prop.flags & ts.SymbolFlags.Method)) && !(<any>prop).mayBeUndefined && !def.hasOwnProperty("ignore")) {
                         required.push(prop.getName());
                     }
                     return required;
@@ -965,7 +966,7 @@ export class JsonSchemaGenerator {
             reffedType = undefined;
         }
 
-        if (this.args.typeOfKeyword && (typ.flags & ts.TypeFlags.Object) && ((<ts.ObjectType>typ).objectFlags & ts.ObjectFlags.Anonymous)) {
+        if (this.args.typeOfKeyword && ((typ.flags & ts.TypeFlags.Object) || typ.symbol.flags & ts.SymbolFlags.Method) && ((<ts.ObjectType>typ).objectFlags & ts.ObjectFlags.Anonymous)) {
             definition.typeof = "function";
             return definition;
         }

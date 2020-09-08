@@ -288,6 +288,7 @@ function getSourceFile(sym: ts.Symbol): ts.SourceFile {
  *
  * Many of these validation keywords are defined here: http://json-schema.org/latest/json-schema-validation.html
  */
+// prettier-ignore
 const validationKeywords = {
     multipleOf: true,               // 6.1.
     maximum: true,                  // 6.2.

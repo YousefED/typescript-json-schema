@@ -9,7 +9,13 @@ const ajv = new Ajv();
 
 const BASE = "test/programs/";
 
-export function assertSchema(group: string, type: string, settings: TJS.PartialArgs = {}, compilerOptions?: TJS.CompilerOptions, only?: boolean) {
+export function assertSchema(
+    group: string,
+    type: string,
+    settings: TJS.PartialArgs = {},
+    compilerOptions?: TJS.CompilerOptions,
+    only?: boolean
+) {
     const run = only ? it.only : it;
 
     run(group + " should create correct schema", () => {
@@ -36,36 +42,49 @@ export function assertSchema(group: string, type: string, settings: TJS.PartialA
     });
 }
 
-export function assertSchemas(group: string, type: string, settings: TJS.PartialArgs = {}, compilerOptions?: TJS.CompilerOptions) {
+export function assertSchemas(
+    group: string,
+    type: string,
+    settings: TJS.PartialArgs = {},
+    compilerOptions?: TJS.CompilerOptions
+) {
     it(group + " should create correct schema", () => {
         if (!("required" in settings)) {
             settings.required = true;
         }
 
-        const generator = TJS.buildGenerator(TJS.getProgramFromFiles([resolve(BASE + group + "/main.ts")], compilerOptions), settings);
+        const generator = TJS.buildGenerator(
+            TJS.getProgramFromFiles([resolve(BASE + group + "/main.ts")], compilerOptions),
+            settings
+        );
         const symbols = generator!.getSymbols(type);
 
         for (let symbol of symbols) {
-          const actual = generator!.getSchemaForSymbol(symbol.name);
+            const actual = generator!.getSchemaForSymbol(symbol.name);
 
-          // writeFileSync(BASE + group + `/schema.${symbol.name}.json`, JSON.stringify(actual, null, 4) + "\n\n");
+            // writeFileSync(BASE + group + `/schema.${symbol.name}.json`, JSON.stringify(actual, null, 4) + "\n\n");
 
-          const file = readFileSync(BASE + group + `/schema.${symbol.name}.json`, "utf8");
-          const expected = JSON.parse(file);
+            const file = readFileSync(BASE + group + `/schema.${symbol.name}.json`, "utf8");
+            const expected = JSON.parse(file);
 
-          assert.isObject(actual);
-          assert.deepEqual(actual, expected, "The schema is not as expected");
+            assert.isObject(actual);
+            assert.deepEqual(actual, expected, "The schema is not as expected");
 
-          // test against the meta schema
-          if (actual !== null) {
-              ajv.validateSchema(actual);
-              assert.equal(ajv.errors, null, "The schema is not valid");
-          }
+            // test against the meta schema
+            if (actual !== null) {
+                ajv.validateSchema(actual);
+                assert.equal(ajv.errors, null, "The schema is not valid");
+            }
         }
     });
 }
 
-export function assertRejection(group: string, type: string, settings: TJS.PartialArgs = {}, compilerOptions?: TJS.CompilerOptions) {
+export function assertRejection(
+    group: string,
+    type: string,
+    settings: TJS.PartialArgs = {},
+    compilerOptions?: TJS.CompilerOptions
+) {
     it(group + " should reject input", () => {
         let schema = null;
         assert.throws(() => {
@@ -122,27 +141,26 @@ describe("interfaces", () => {
                 $schema: "http://json-schema.org/draft-07/schema#",
                 definitions: {
                     Some: {
-                        type: "string"
-                    }
+                        type: "string",
+                    },
                 },
                 properties: {
                     some: {
-                        $ref: "#/definitions/Some"
-                    }
+                        $ref: "#/definitions/Some",
+                    },
                 },
-                type: "object"
+                type: "object",
             });
         }
     });
 });
 
 describe("schema", () => {
-
     describe("type aliases", () => {
         assertSchema("type-alias-single", "MyString");
         assertSchema("type-alias-single-annotated", "MyString");
         assertSchema("type-aliases", "MyObject", {
-            aliasRef: true
+            aliasRef: true,
         });
         assertSchema("type-aliases-fixed-size-array", "MyFixedSizeArray");
         assertSchema("type-aliases-multitype-array", "MyArray");
@@ -151,12 +169,12 @@ describe("schema", () => {
             strictNullChecks: true,
         });
         assertSchema("type-aliases-partial", "MyObject", {
-            aliasRef: true
+            aliasRef: true,
         });
 
         assertSchema("type-aliases-alias-ref", "MyAlias", {
             aliasRef: true,
-            topRef: false
+            topRef: false,
         });
         // disabled beacuse of #80
         // assertSchema("type-aliases-alias-ref-topref", "MyAlias", {
@@ -165,7 +183,7 @@ describe("schema", () => {
         // });
         assertSchema("type-aliases-recursive-object-topref", "MyObject", {
             aliasRef: true,
-            topRef: true
+            topRef: true,
         });
         // disabled beacuse of #80
         // assertSchema("type-aliases-recursive-alias-topref", "MyAlias", {
@@ -174,7 +192,7 @@ describe("schema", () => {
         // });
         assertSchema("type-no-aliases-recursive-topref", "MyAlias", {
             aliasRef: false,
-            topRef: true
+            topRef: true,
         });
 
         assertSchema("type-mapped-types", "MyMappedType");
@@ -206,7 +224,7 @@ describe("schema", () => {
     describe("unions and intersections", () => {
         assertSchema("type-union", "MyObject");
         assertSchema("type-intersection", "MyObject", {
-            noExtraProps: true
+            noExtraProps: true,
         });
         assertSchema("type-union-tagged", "Shape");
         assertSchema("type-aliases-union-namespace", "MyModel");
@@ -217,15 +235,15 @@ describe("schema", () => {
         assertSchema("annotation-default", "MyObject");
         assertSchema("annotation-ref", "MyObject");
         assertSchema("annotation-tjs", "MyObject", {
-            validationKeywords: [ "hide" ]
+            validationKeywords: ["hide"],
         });
         assertSchema("annotation-id", "MyObject");
         assertSchema("annotation-items", "MyObject");
 
-        assertSchema("typeof-keyword", "MyObject", {typeOfKeyword: true});
+        assertSchema("typeof-keyword", "MyObject", { typeOfKeyword: true });
 
         assertSchema("user-validation-keywords", "MyObject", {
-            validationKeywords: [ "chance", "important" ]
+            validationKeywords: ["chance", "important"],
         });
     });
 
@@ -236,9 +254,9 @@ describe("schema", () => {
         assertSchema("generic-multiargs", "MyObject");
         assertSchema("generic-anonymous", "MyObject");
         assertSchema("generic-recursive", "MyObject", {
-            topRef: true
+            topRef: true,
         });
-        if(+typescriptVersionMajorMinor < 3.7) {
+        if (+typescriptVersionMajorMinor < 3.7) {
             assertSchema("generic-hell", "MyObject");
         }
     });
@@ -247,7 +265,7 @@ describe("schema", () => {
         assertSchema("comments", "MyObject");
         assertSchema("comments-override", "MyObject");
         assertSchema("comments-imports", "MyObject", {
-            aliasRef: true
+            aliasRef: true,
         });
     });
 
@@ -275,7 +293,7 @@ describe("schema", () => {
         assertSchema("interface-extends", "MyObject");
 
         assertSchema("interface-recursion", "MyObject", {
-            topRef: true
+            topRef: true,
         });
 
         assertSchema("module-interface-single", "MyObject");
@@ -310,7 +328,7 @@ describe("schema", () => {
     describe("dates", () => {
         assertSchema("dates", "MyObject");
         assertRejection("dates", "MyObject", {
-            rejectDateType: true
+            rejectDateType: true,
         });
     });
 
@@ -322,16 +340,16 @@ describe("schema", () => {
 
     describe("uniqueNames", () => {
         assertSchemas("unique-names", "MyObject", {
-            uniqueNames: true
+            uniqueNames: true,
         });
 
         // It should throw an error if there are two definitions for the top-level ref
         assertRejection("unique-names", "MyObject", {
-            uniqueNames: true
+            uniqueNames: true,
         });
 
         assertSchema("unique-names-multiple-subdefinitions", "MyObject", {
-            uniqueNames: true
+            uniqueNames: true,
         });
     });
 
@@ -342,7 +360,7 @@ describe("schema", () => {
         assertSchema("optionals-derived", "MyDerived");
 
         assertSchema("strict-null-checks", "MyObject", undefined, {
-            strictNullChecks: true
+            strictNullChecks: true,
         });
 
         assertSchema("imports", "MyObject");
@@ -350,7 +368,7 @@ describe("schema", () => {
         assertSchema("generate-all-types", "*");
 
         assertSchema("private-members", "MyObject", {
-            excludePrivate: true
+            excludePrivate: true,
         });
 
         assertSchema("builtin-names", "Ext.Foo");
@@ -358,11 +376,11 @@ describe("schema", () => {
         assertSchema("user-symbols", "*");
 
         assertSchemas("argument-id", "MyObject", {
-            id: "someSchemaId"
+            id: "someSchemaId",
         });
 
         assertSchemas("type-default-number-as-integer", "*", {
-            defaultNumberType: "integer"
+            defaultNumberType: "integer",
         });
     });
 
@@ -385,9 +403,9 @@ describe("tsconfig.json", () => {
         }
     });
     it("should support includeOnlyFiles with tsconfig.json", () => {
-        const program = TJS.programFromConfig(
-            resolve(BASE + "tsconfig/tsconfig.json"), [resolve(BASE + "tsconfig/includedAlways.ts")]
-        );
+        const program = TJS.programFromConfig(resolve(BASE + "tsconfig/tsconfig.json"), [
+            resolve(BASE + "tsconfig/includedAlways.ts"),
+        ]);
         const generator = TJS.buildGenerator(program);
         assert(generator !== null);
         assert.instanceOf(generator, TJS.JsonSchemaGenerator);

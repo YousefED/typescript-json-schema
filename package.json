@@ -60,6 +60,7 @@
     "ajv": "^6.12.4",
     "chai": "^4.2.0",
     "mocha": "^8.1.1",
+    "prettier": "^2.1.1",
     "source-map-support": "^0.5.19",
     "ts-node": "^9.0.0",
     "tslint": "^6.1.3"
@@ -71,6 +72,7 @@
     "docs": "./update-docs.js",
     "run": "ts-node typescript-json-schema-cli.ts",
     "build": "tsc -p .",
-    "lint": "tslint --project tsconfig.json -c tslint.json --exclude '**/*.d.ts'"
+    "lint": "tslint --project tsconfig.json -c tslint.json --exclude '**/*.d.ts'",
+    "style": "yarn prettier --write *.js *.ts test/*.ts"
   }
 }

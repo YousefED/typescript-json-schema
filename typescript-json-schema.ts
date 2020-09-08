@@ -114,7 +114,7 @@ export type SymbolRef = {
   symbol: ts.Symbol;
 };
 
-function extend(target: any, ..._: any[]) {
+function extend(target: any, ..._: any[]): any {
     if (target == null) { // TypeError if undefined or null
       throw new TypeError("Cannot convert undefined or null to object");
     }
@@ -154,7 +154,7 @@ function unique(arr: string[]): string[] {
 /**
  * Try to parse a value and returns the string if it fails.
  */
-function parseValue(value: string) {
+function parseValue(value: string): any {
     try {
         return JSON.parse(value);
     } catch (error) {
@@ -199,7 +199,7 @@ const simpleTypesAllowedProperties = {
     description: true
 };
 
-function addSimpleType(def: Definition, type: string) {
+function addSimpleType(def: Definition, type: string): boolean {
     for (const k in def) {
         if (!simpleTypesAllowedProperties[k]) {
             return false;
@@ -228,7 +228,7 @@ function addSimpleType(def: Definition, type: string) {
     return true;
 }
 
-function makeNullable(def: Definition) {
+function makeNullable(def: Definition): Definition {
     if (!addSimpleType(def, "null")) {
         const union = def.oneOf || def.anyOf;
         if (union) {
@@ -480,7 +480,7 @@ export class JsonSchemaGenerator {
         });
     }
 
-    private getDefinitionForRootType(propertyType: ts.Type, reffedType: ts.Symbol, definition: Definition, defaultNumberType = this.args.defaultNumberType) {
+    private getDefinitionForRootType(propertyType: ts.Type, reffedType: ts.Symbol, definition: Definition, defaultNumberType = this.args.defaultNumberType): Definition {
         const tupleType = resolveTupleType(propertyType);
 
         if (tupleType) { // tuple
@@ -570,7 +570,7 @@ export class JsonSchemaGenerator {
         return undefined;
     }
 
-    private getDefinitionForProperty(prop: ts.Symbol, node: ts.Node) {
+    private getDefinitionForProperty(prop: ts.Symbol, node: ts.Node): Definition|null {
         if (prop.flags & ts.SymbolFlags.Method) {
             return null;
         }
@@ -683,7 +683,7 @@ export class JsonSchemaGenerator {
         return definition;
     }
 
-    private getUnionDefinition(unionType: ts.UnionType, prop: ts.Symbol, unionModifier: string, definition: Definition) {
+    private getUnionDefinition(unionType: ts.UnionType, prop: ts.Symbol, unionModifier: string, definition: Definition): Definition {
         const enumValues: PrimitiveType[] = [];
         const simpleTypes: string[] = [];
         const schemas: Definition[] = [];
@@ -766,7 +766,7 @@ export class JsonSchemaGenerator {
         return definition;
     }
 
-    private getIntersectionDefinition(intersectionType: ts.IntersectionType, definition: Definition) {
+    private getIntersectionDefinition(intersectionType: ts.IntersectionType, definition: Definition): Definition {
         const simpleTypes: string[] = [];
         const schemas: Definition[] = [];
 
@@ -930,7 +930,7 @@ export class JsonSchemaGenerator {
     /**
      * Gets/generates a globally unique type name for the given type
      */
-    private getTypeName(typ: ts.Type) {
+    private getTypeName(typ: ts.Type): string {
         const id = (typ as any).id as number;
         if (this.typeNamesById[id]) { // Name already assigned?
             return this.typeNamesById[id];
@@ -941,7 +941,7 @@ export class JsonSchemaGenerator {
         );
     }
 
-    private makeTypeNameUnique(typ: ts.Type, baseName: string) {
+    private makeTypeNameUnique(typ: ts.Type, baseName: string): string {
         const id = (typ as any).id as number;
 
         let name = baseName;
@@ -1106,7 +1106,7 @@ export class JsonSchemaGenerator {
         return returnedDefinition;
     }
 
-    public setSchemaOverride(symbolName: string, schema: Definition) {
+    public setSchemaOverride(symbolName: string, schema: Definition): void {
         this.reffedDefinitions[symbolName] = schema;
         this.schemaOverrides.set(symbolName, schema);
     }
@@ -1199,7 +1199,7 @@ export function getProgramFromFiles(files: string[], jsonCompilerOptions: any = 
     return ts.createProgram(files, options);
 }
 
-function generateHashOfNode(node: ts.Node, relativePath: string) {
+function generateHashOfNode(node: ts.Node, relativePath: string): string {
     return createHash("md5").update(relativePath).update(node.pos.toString()).digest("hex").substring(0, 8);
 }
 
@@ -1341,7 +1341,7 @@ function normalizeFileName(fn: string): string {
     return fn;
 }
 
-export function exec(filePattern: string, fullTypeName: string, args = getDefaultArgs()) {
+export function exec(filePattern: string, fullTypeName: string, args = getDefaultArgs()): void {
     let program: ts.Program;
     let onlyIncludeFiles: string[] | undefined = undefined;
     if (REGEX_TSCONFIG_NAME.test(path.basename(filePattern))) {

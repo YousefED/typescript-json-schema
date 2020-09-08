@@ -570,7 +570,7 @@ export class JsonSchemaGenerator {
         return undefined;
     }
 
-    private getDefinitionForProperty(prop: ts.Symbol, node: ts.Node): Definition|null {
+    private getDefinitionForProperty(prop: ts.Symbol, node: ts.Node): Definition | null {
         if (prop.flags & ts.SymbolFlags.Method) {
             return null;
         }

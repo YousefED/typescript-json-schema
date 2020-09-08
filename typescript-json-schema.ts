@@ -1071,7 +1071,10 @@ export class JsonSchemaGenerator {
                         for (const member of types) {
                             const other = this.getTypeDefinition(member, false);
                             definition.type = other.type;  // should always be object
-                            definition.properties = extend(definition.properties || {}, other.properties);
+                            definition.properties = {
+                                ...definition.properties,
+                                ...other.properties,
+                            };
                             if (Object.keys(other.default || {}).length > 0) {
                                 definition.default = extend(definition.default || {}, other.default);
                             }

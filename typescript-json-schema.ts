@@ -69,9 +69,9 @@ export type PartialArgs = Partial<Args>;
 
 export type PrimitiveType = number | boolean | string | null;
 
-type RedifinedFields = "type" | "items" | "additionalItems" | "contains" | "properties" | "patternProperties" | "additionalProperties" | "dependencies" | "propertyNames" | "if" | "then" | "else" | "allOf" | "anyOf" | "oneOf" | "not" | "definitions";
+type RedefinedFields = "type" | "items" | "additionalItems" | "contains" | "properties" | "patternProperties" | "additionalProperties" | "dependencies" | "propertyNames" | "if" | "then" | "else" | "allOf" | "anyOf" | "oneOf" | "not" | "definitions";
 export type DefinitionOrBoolean = Definition | boolean;
-export interface Definition extends Omit<JSONSchema7, RedifinedFields> {
+export interface Definition extends Omit<JSONSchema7, RedefinedFields> {
     // The type field here is incompatible with the standard definition
     type?: string | string[];
 

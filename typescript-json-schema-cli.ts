@@ -71,7 +71,7 @@ export function run() {
         rejectDateType: args.rejectDateType,
         id: args.id,
         defaultNumberType: args.defaultNumberType,
-        openapiFormat: args.openapiNullable,
+        openapiFormat: args.openapiFormat,
     });
 }
 

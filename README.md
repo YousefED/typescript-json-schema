@@ -48,6 +48,7 @@ Options:
   --rejectDateType      Rejects Date fields in type definitions.                     [boolean] [default: false]
   --id                  Set schema id.                                               [string]  [default: ""]
   --defaultNumberType   Default number type.                                         [choices: "number", "integer"] [default: "number"]
+  --openapiFormat       Generate OpenAPI variation of JSON schema format.            [boolean] [default: false]
 ```
 
 ### Programmatic use

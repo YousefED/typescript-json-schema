@@ -836,7 +836,7 @@ export class JsonSchemaGenerator {
 
         if (simpleTypes.length > 0) {
             if (this.args.openapiFormat && simpleTypes.length !== 1) {
-                schemas.push({ [unionModifier]: simpleTypes.map(type => ({ type })) })
+                schemas.push({ [unionModifier]: simpleTypes.map((type) => ({ type })) });
             } else {
                 schemas.push({ type: simpleTypes.length === 1 ? simpleTypes[0] : simpleTypes });
             }

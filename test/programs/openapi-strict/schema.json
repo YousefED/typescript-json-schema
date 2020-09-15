@@ -1,0 +1,113 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "enumPrimitiveUnion": {
+            "anyOf": [
+                {
+                    "enum": [
+                        "bar",
+                        "foo"
+                    ],
+                    "type": "string"
+                },
+                {
+                    "type": "number"
+                }
+            ]
+        },
+        "externallyNullableString": {
+            "nullable": true,
+            "type": "string"
+        },
+        "nullableEnumPrimitiveUnion": {
+            "anyOf": [
+                {
+                    "enum": [
+                        "bar",
+                        "foo"
+                    ],
+                    "type": "string"
+                },
+                {
+                    "type": "number"
+                }
+            ],
+            "nullable": true
+        },
+        "nullablePrimitiveUnion": {
+            "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "number"
+                }
+            ],
+            "nullable": true
+        },
+        "nullableStr": {
+            "nullable": true,
+            "type": "string"
+        },
+        "nullableUnion": {
+            "anyOf": [
+                {
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ]
+                }
+            ],
+            "nullable": true
+        },
+        "primitiveUnion": {
+            "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "number"
+                }
+            ]
+        },
+        "str": {
+            "type": "string"
+        },
+        "union": {
+            "anyOf": [
+                {
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "type": "object"
+}
+

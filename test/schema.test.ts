@@ -388,6 +388,20 @@ describe("schema", () => {
         assertSchema("object-numeric-index", "IndexInterface");
         assertSchema("object-numeric-index-as-property", "Target", { required: false });
     });
+
+    describe("openapi", () => {
+        assertSchema("openapi", "ComposedType", { openapiFormat: true, required: false });
+        assertSchema(
+            "openapi-strict",
+            "ComposedType",
+            {
+                openapiFormat: true,
+                strictNullChecks: true,
+                required: false,
+            },
+            { strictNullChecks: true }
+        );
+    });
 });
 
 describe("tsconfig.json", () => {

@@ -1,0 +1,165 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "annotatedEnumPrimitiveUnion": {
+            "anyOf": [
+                {
+                    "enum": [
+                        "bar",
+                        "foo"
+                    ],
+                    "type": "string"
+                },
+                {
+                    "type": "number"
+                }
+            ],
+            "nullable": true
+        },
+        "annotatedPrimitiveUnion": {
+            "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "number"
+                }
+            ],
+            "nullable": true
+        },
+        "annotatedStr": {
+            "nullable": true,
+            "type": "string"
+        },
+        "annotatedUnion": {
+            "anyOf": [
+                {
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ]
+                }
+            ],
+            "nullable": true
+        },
+        "enumPrimitiveUnion": {
+            "anyOf": [
+                {
+                    "enum": [
+                        "bar",
+                        "foo"
+                    ],
+                    "type": "string"
+                },
+                {
+                    "type": "number"
+                }
+            ]
+        },
+        "externallyAnnotatedString": {
+            "nullable": true,
+            "type": "string"
+        },
+        "externallyNullableString": {
+            "type": "string"
+        },
+        "nullableEnumPrimitiveUnion": {
+            "anyOf": [
+                {
+                    "enum": [
+                        "bar",
+                        "foo"
+                    ],
+                    "type": "string"
+                },
+                {
+                    "type": "number"
+                }
+            ]
+        },
+        "nullablePrimitiveUnion": {
+            "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "number"
+                }
+            ]
+        },
+        "nullableStr": {
+            "type": "string"
+        },
+        "nullableUnion": {
+            "anyOf": [
+                {
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ]
+                }
+            ]
+        },
+        "primitiveUnion": {
+            "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "number"
+                }
+            ]
+        },
+        "str": {
+            "type": "string"
+        },
+        "union": {
+            "anyOf": [
+                {
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "type": "object"
+}
+

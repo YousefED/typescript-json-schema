@@ -47,6 +47,8 @@ export function run() {
         .option("defaultNumberType").choices("defaultNumberType", ["number", "integer"])
             .default("defaultNumberType", defaultArgs.defaultNumberType)
             .describe("defaultNumberType", "Default number type.")
+        .boolean("openapiFormat").default("openapiFormat", defaultArgs.openapiFormat)
+            .describe("openapiFormat", "Generate OpenAPI variation of JSON schema format")
         .argv;
 
     exec(args._[0], args._[1], {
@@ -69,6 +71,7 @@ export function run() {
         rejectDateType: args.rejectDateType,
         id: args.id,
         defaultNumberType: args.defaultNumberType,
+        openapiFormat: args.openapiNullable,
     });
 }
 

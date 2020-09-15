@@ -35,6 +35,7 @@ export function getDefaultArgs(): Args {
         rejectDateType: false,
         id: "",
         defaultNumberType: "number",
+        openapiFormat: false,
     };
 }
 
@@ -62,6 +63,7 @@ export type Args = {
     rejectDateType: boolean;
     id: string;
     defaultNumberType: "number" | "integer";
+    openapiFormat: boolean;
 };
 
 export type PartialArgs = Partial<Args>;
@@ -121,6 +123,7 @@ export interface Definition extends Omit<JSONSchema7, RedefinedFields> {
     definitions?: {
         [key: string]: DefinitionOrBoolean;
     };
+    nullable?: boolean;
 }
 
 export type SymbolRef = {
@@ -259,8 +262,10 @@ function addSimpleType(def: Definition, type: string): boolean {
     return true;
 }
 
-function makeNullable(def: Definition): Definition {
-    if (!addSimpleType(def, "null")) {
+function makeNullable(def: Definition, openapiFormat: boolean): Definition {
+    if (openapiFormat) {
+        def.nullable = true;
+    } else if (!addSimpleType(def, "null")) {
         const union = def.oneOf || def.anyOf;
         if (union) {
             union.push({ type: "null" });
@@ -750,6 +755,7 @@ export class JsonSchemaGenerator {
         const enumValues: PrimitiveType[] = [];
         const simpleTypes: string[] = [];
         const schemas: Definition[] = [];
+        let nullable = false;
 
         const pushSimpleType = (type: string) => {
             if (simpleTypes.indexOf(type) === -1) {
@@ -769,7 +775,9 @@ export class JsonSchemaGenerator {
                 pushEnumValue(value);
             } else {
                 const def = this.getTypeDefinition(valueType);
-                if (def.type === "undefined") {
+                if (this.args.openapiFormat && def.type === "null") {
+                    nullable = true;
+                } else if (def.type === "undefined") {
                     if (prop) {
                         (<any>prop).mayBeUndefined = true;
                     }
@@ -827,7 +835,11 @@ export class JsonSchemaGenerator {
         }
 
         if (simpleTypes.length > 0) {
-            schemas.push({ type: simpleTypes.length === 1 ? simpleTypes[0] : simpleTypes });
+            if (this.args.openapiFormat && simpleTypes.length !== 1) {
+                schemas.push({ [unionModifier]: simpleTypes })
+            } else {
+                schemas.push({ type: simpleTypes.length === 1 ? simpleTypes[0] : simpleTypes });
+            }
         }
 
         if (schemas.length === 1) {
@@ -839,6 +851,11 @@ export class JsonSchemaGenerator {
         } else {
             definition[unionModifier] = schemas;
         }
+
+        if (this.args.openapiFormat && nullable) {
+            definition.nullable = true;
+        }
+
         return definition;
     }
 
@@ -1228,7 +1245,7 @@ export class JsonSchemaGenerator {
         }
 
         if (otherAnnotations["nullable"]) {
-            makeNullable(returnedDefinition);
+            makeNullable(returnedDefinition, this.args.openapiFormat);
         }
 
         return returnedDefinition;

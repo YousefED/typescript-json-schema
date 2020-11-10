@@ -888,6 +888,13 @@ export class JsonSchemaGenerator {
 
     private getClassDefinition(clazzType: ts.Type, definition: Definition): Definition {
         const node = clazzType.getSymbol()!.getDeclarations()![0];
+
+        // Example: typeof globalThis may not have any declaration
+        if (!node) {
+            definition.type = "object";
+            return definition;
+        }
+
         if (this.args.typeOfKeyword && node.kind === ts.SyntaxKind.FunctionType) {
             definition.typeof = "function";
             return definition;
@@ -1048,6 +1055,8 @@ export class JsonSchemaGenerator {
         return name;
     }
 
+    private recursiveTypeRef = new Map();
+
     private getTypeDefinition(
         typ: ts.Type,
         asRef = this.args.ref,
@@ -1084,9 +1093,11 @@ export class JsonSchemaGenerator {
         // FIXME: We can't just compare the name of the symbol - it ignores the namespace
         const isRawType =
             !symbol ||
-            this.tc.getFullyQualifiedName(symbol) === "Date" ||
-            symbol.name === "integer" ||
-            this.tc.getIndexInfoOfType(typ, ts.IndexKind.Number) !== undefined;
+            // Window is incorrectly marked as rawType here for some reason
+            (this.tc.getFullyQualifiedName(symbol) !== "Window" &&
+                (this.tc.getFullyQualifiedName(symbol) === "Date" ||
+                    symbol.name === "integer" ||
+                    this.tc.getIndexInfoOfType(typ, ts.IndexKind.Number) !== undefined));
 
         // special case: an union where all child are string literals -> make an enum instead
         let isStringEnum = false;
@@ -1106,6 +1117,7 @@ export class JsonSchemaGenerator {
             ) {
                 asRef = false; // raw types and inline types cannot be reffed,
                 // unless we are handling a type alias
+                // or it is recursive type - see below
             }
         }
 
@@ -1116,15 +1128,16 @@ export class JsonSchemaGenerator {
                     reffedType!.getFlags() & ts.SymbolFlags.Alias ? this.tc.getAliasedSymbol(reffedType!) : reffedType!
                 )
                 .replace(REGEX_FILE_NAME_OR_SPACE, "");
-            if (this.args.uniqueNames) {
-                const sourceFile = getSourceFile(reffedType!);
+            if (this.args.uniqueNames && reffedType) {
+                const sourceFile = getSourceFile(reffedType);
                 const relativePath = path.relative(process.cwd(), sourceFile.fileName);
                 fullTypeName = `${typeName}.${generateHashOfNode(getCanonicalDeclaration(reffedType!), relativePath)}`;
             } else {
                 fullTypeName = this.makeTypeNameUnique(typ, typeName);
             }
-        } else if (asRef) {
-            if (this.args.uniqueNames) {
+        } else {
+            // typ.symbol can be undefined
+            if (this.args.uniqueNames && typ.symbol) {
                 const sym = typ.symbol;
                 const sourceFile = getSourceFile(sym);
                 const relativePath = path.relative(process.cwd(), sourceFile.fileName);
@@ -1136,6 +1149,15 @@ export class JsonSchemaGenerator {
                 fullTypeName = reffedType.escapedName as string;
             } else {
                 fullTypeName = this.getTypeName(typ);
+            }
+        }
+
+        // Handle recursive types
+        if (!isRawType || !!typ.aliasSymbol) {
+            if (this.recursiveTypeRef.has(fullTypeName)) {
+                asRef = true;
+            } else {
+                this.recursiveTypeRef.set(fullTypeName, definition);
             }
         }
 
@@ -1224,6 +1246,26 @@ export class JsonSchemaGenerator {
                 } else {
                     this.getClassDefinition(typ, definition);
                 }
+            }
+        }
+
+        if (this.recursiveTypeRef.get(fullTypeName) === definition) {
+            this.recursiveTypeRef.delete(fullTypeName);
+            // If the type was recursive (there is reffedDefinitions) - lets replace it to reference
+            if (this.reffedDefinitions[fullTypeName]) {
+                // Here we may want to filter out all type specific fields
+                // and include fields like description etc
+                const annotations = Object.entries(returnedDefinition).reduce((acc, [key, value]) => {
+                    if (validationKeywords[key] && typeof value !== undefined) {
+                        acc[key] = value;
+                    }
+                    return acc;
+                }, {});
+
+                returnedDefinition = {
+                    $ref: `${this.args.id}#/definitions/` + fullTypeName,
+                    ...annotations,
+                };
             }
         }
 

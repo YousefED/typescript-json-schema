@@ -1,4 +1,4 @@
-name: NodeJS
+name: Test
 
 on:
   - pull_request

@@ -223,6 +223,21 @@ Translation:
 
 This same syntax can be used for `contains` and `additionalProperties`.
 
+### `integer` type alias
+
+If you create a type alias `integer` for `number` it will be mapped to the `integer` type in the generated JSON schema.
+
+Example:
+
+```typescript
+type integer = number;
+interface MyObject {
+  n: integer;
+}
+```
+
+Note: this feature doesn't work for generic types & array types, it mainly works in very simple cases.
+
 ## Background
 
 Inspired and builds upon [Typson](https://github.com/lbovet/typson/), but typescript-json-schema is compatible with more recent Typescript versions. Also, since it uses the Typescript compiler internally, more advanced scenarios are possible. If you are looking for a library that uses the AST instead of the type hierarchy and therefore better support for type aliases, have a look at [vega/ts-json-schema-generator](https://github.com/vega/ts-json-schema-generator).

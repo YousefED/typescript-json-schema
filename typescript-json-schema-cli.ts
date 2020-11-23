@@ -3,6 +3,8 @@ import { exec, getDefaultArgs } from "./typescript-json-schema";
 export function run() {
     var helpText = "Usage: typescript-json-schema <path-to-typescript-files-or-tsconfig> <type>";
     const defaultArgs = getDefaultArgs();
+
+    // prettier-ignore
     var args = require("yargs")
         .usage(helpText)
         .demand(2)

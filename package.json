@@ -73,6 +73,8 @@
     "run": "ts-node typescript-json-schema-cli.ts",
     "build": "tsc -p .",
     "lint": "tslint --project tsconfig.json -c tslint.json --exclude '**/*.d.ts'",
-    "style": "yarn prettier --write *.js *.ts test/*.ts"
+    "style": "yarn prettier --write *.js *.ts test/*.ts",
+    "dev": "tsc -w -p .",
+    "test:dev": "mocha -t 5000 --watch --require source-map-support/register dist/test"
   }
 }

@@ -1,5 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "$ref": "#/definitions/RootNamespace.Def",
     "definitions": {
         "RootNamespace.Def": {
             "properties": {
@@ -55,26 +56,6 @@
             "type": "object"
         }
     },
-    "properties": {
-        "nest": {
-            "$ref": "#/definitions/RootNamespace.Def"
-        },
-        "prev": {
-            "$ref": "#/definitions/RootNamespace.Def"
-        },
-        "propA": {
-            "$ref": "#/definitions/RootNamespace.SubNamespace.HelperA"
-        },
-        "propB": {
-            "$ref": "#/definitions/RootNamespace.SubNamespace.HelperB"
-        }
-    },
-    "required": [
-        "nest",
-        "prev",
-        "propA",
-        "propB"
-    ],
     "type": "object"
 }
 

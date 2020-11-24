@@ -388,6 +388,14 @@ describe("schema", () => {
         assertSchema("object-numeric-index", "IndexInterface");
         assertSchema("object-numeric-index-as-property", "Target", { required: false });
     });
+
+    describe("recursive type", () => {
+        assertSchema("type-recursive", "TestChildren");
+    });
+
+    describe("typeof globalThis", () => {
+        assertSchema("type-globalThis", "Test");
+    });
 });
 
 describe("tsconfig.json", () => {

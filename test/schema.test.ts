@@ -226,6 +226,9 @@ describe("schema", () => {
         assertSchema("type-intersection", "MyObject", {
             noExtraProps: true,
         });
+        assertSchema("type-intersection-reuse", "MyObject", {
+            noExtraProps: true,
+        });
         assertSchema("type-union-tagged", "Shape");
         assertSchema("type-aliases-union-namespace", "MyModel");
         assertSchema("type-intersection-recursive", "*");

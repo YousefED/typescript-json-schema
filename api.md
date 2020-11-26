@@ -1520,6 +1520,13 @@ interface MyObject {
 }```
 
 
+## [type-globalThis](./test/programs/type-globalThis)
+
+```ts
+export type Test = typeof globalThis;
+```
+
+
 ## [type-intersection](./test/programs/type-intersection)
 
 ```ts
@@ -1640,6 +1647,20 @@ class MyObject {
     object2: {}           = null;
     object3: object       = null;
 
+}
+```
+
+
+## [type-recursive](./test/programs/type-recursive)
+
+```ts
+/**
+ * A recursive type
+ */
+export type TestChildren = TestChild | Array<TestChild | TestChildren>;
+
+interface TestChild {
+    type: string;
 }
 ```
 

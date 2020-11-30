@@ -1,6 +1,7 @@
 // All of these formats are defined in this specification: http://json-schema.org/latest/json-schema-validation.html#rfc.section.8.3
 
 interface MyRef {}
+
 interface MyObject {
     /**
      * @TJS-format date-time

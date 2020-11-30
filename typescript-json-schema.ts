@@ -1089,6 +1089,16 @@ export class JsonSchemaGenerator {
 
         let returnedDefinition = definition; // returned definition, may be a $ref
 
+        // Parse property comments now to skip recursive if ignore.
+        if (prop) {
+            const defs = {};
+            const others = {};
+            this.parseCommentsIntoDefinition(prop, defs, others);
+            if (defs.hasOwnProperty("ignore")) {
+                return defs;
+            }
+        }
+
         const symbol = typ.getSymbol();
         // FIXME: We can't just compare the name of the symbol - it ignores the namespace
         const isRawType =
@@ -1176,7 +1186,6 @@ export class JsonSchemaGenerator {
         if (prop) {
             this.parseCommentsIntoDefinition(prop, returnedDefinition, otherAnnotations);
         }
-
         // Create the actual definition only if is an inline definition, or
         // if it will be a $ref and it is not yet created
         if (!asRef || !this.reffedDefinitions[fullTypeName]) {

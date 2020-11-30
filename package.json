@@ -60,7 +60,7 @@
     "ajv": "^6.12.6",
     "chai": "^4.2.0",
     "mocha": "^8.2.1",
-    "prettier": "^2.2.0",
+    "prettier": "^2.2.1",
     "source-map-support": "^0.5.19",
     "ts-node": "^9.0.0",
     "tslint": "^6.1.3"

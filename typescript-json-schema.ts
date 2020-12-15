@@ -360,6 +360,20 @@ const validationKeywords = {
     id: true
 };
 
+/**
+ * Subset of descriptive, non-type keywords that are permitted alongside a $ref.
+ * Prior to JSON Schema draft 2019-09, $ref is a special keyword that doesn't
+ * permit keywords alongside it, and so AJV may raise warnings if it encounters
+ * any type-related keywords; see https://github.com/ajv-validator/ajv/issues/1121
+ */
+const annotationKeywords: { [k in keyof typeof validationKeywords]?: true } = {
+    description: true,
+    default: true,
+    examples: true,
+    // A JSDoc $ref annotation can appear as a $ref.
+    $ref: true
+};
+
 const subDefinitions = {
     items: true,
     additionalProperties: true,
@@ -1262,10 +1276,8 @@ export class JsonSchemaGenerator {
             this.recursiveTypeRef.delete(fullTypeName);
             // If the type was recursive (there is reffedDefinitions) - lets replace it to reference
             if (this.reffedDefinitions[fullTypeName]) {
-                // Here we may want to filter out all type specific fields
-                // and include fields like description etc
                 const annotations = Object.entries(returnedDefinition).reduce((acc, [key, value]) => {
-                    if (validationKeywords[key] && typeof value !== undefined) {
+                    if (annotationKeywords[key] && typeof value !== undefined) {
                         acc[key] = value;
                     }
                     return acc;

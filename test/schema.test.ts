@@ -5,16 +5,33 @@ import { resolve } from "path";
 import { versionMajorMinor as typescriptVersionMajorMinor } from "typescript";
 import * as TJS from "../typescript-json-schema";
 
-const ajv = new Ajv();
+let ajvWarnings: string[] = [];
+const ajv = new Ajv({
+    logger: {
+        log: console.log,
+        warn: (message) => {
+            ajvWarnings.push(message);
+        },
+        error: (message) => {
+            throw new Error('AJV error: ' + message);
+        },
+    },
+});
 
 const BASE = "test/programs/";
+
+interface AjvTestOptions {
+    skipCompile: boolean;
+    expectedWarnings: string[];
+}
 
 export function assertSchema(
     group: string,
     type: string,
     settings: TJS.PartialArgs = {},
     compilerOptions?: TJS.CompilerOptions,
-    only?: boolean
+    only?: boolean,
+    ajvOptions: Partial<AjvTestOptions> = {}
 ) {
     const run = only ? it.only : it;
 
@@ -37,7 +54,15 @@ export function assertSchema(
         // test against the meta schema
         if (actual !== null) {
             ajv.validateSchema(actual);
+
             assert.equal(ajv.errors, null, "The schema is not valid");
+
+            // Compiling the schema can reveal warnings that validateSchema doesn't.
+            if (!ajvOptions.skipCompile) {
+                ajvWarnings = [];
+                ajv.compile(actual);
+                assert.deepEqual(ajvWarnings, ajvOptions.expectedWarnings || [], "Got unexpected AJV warnings");
+            }
         }
     });
 }
@@ -233,11 +258,20 @@ describe("schema", () => {
 
     describe("annotations", () => {
         assertSchema("annotation-default", "MyObject");
-        assertSchema("annotation-ref", "MyObject");
+        assertSchema("annotation-ref", "MyObject", {}, undefined, undefined, {
+            skipCompile: true
+        });
         assertSchema("annotation-tjs", "MyObject", {
             validationKeywords: ["hide"],
         });
-        assertSchema("annotation-id", "MyObject");
+        assertSchema("annotation-id", "MyObject", {}, undefined, undefined, {
+            expectedWarnings: [
+                "schema id ignored",
+                "schema id ignored",
+                "schema id ignored",
+                "schema id ignored"
+            ]
+        });
         assertSchema("annotation-items", "MyObject");
 
         assertSchema("typeof-keyword", "MyObject", { typeOfKeyword: true });

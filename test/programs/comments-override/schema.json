@@ -32,7 +32,6 @@
         },
         "sub2": {
             "$ref": "#/definitions/MySubObject",
-            "additionalProperties": false,
             "description": "Property-level description"
         }
     },

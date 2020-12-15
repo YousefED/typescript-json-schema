@@ -13,7 +13,7 @@ const ajv = new Ajv({
             ajvWarnings.push(message);
         },
         error: (message) => {
-            throw new Error('AJV error: ' + message);
+            throw new Error("AJV error: " + message);
         },
     },
 });

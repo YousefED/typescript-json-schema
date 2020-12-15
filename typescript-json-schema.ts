@@ -372,7 +372,7 @@ const annotationKeywords: { [k in keyof typeof validationKeywords]?: true } = {
     examples: true,
     // A JSDoc $ref annotation can appear as a $ref.
     $ref: true
-}
+};
 
 const subDefinitions = {
     items: true,

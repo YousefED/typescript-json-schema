@@ -15,6 +15,7 @@
   "definitions": {
     "__type": {
       "type": "object",
+      "description": "Make all properties in T optional",
       "properties": {
         "x": {
           "type": "number"
@@ -29,6 +30,7 @@
     },
     "__type_1": {
       "type": "object",
+      "description": "Make all properties in T optional",
       "properties": {
         "a": {
           "type": "number"

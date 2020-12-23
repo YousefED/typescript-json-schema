@@ -22,7 +22,9 @@
           },
           "type": "array"
         }
-      ]
+      ],
+      "description": "A recursive type"
     }
-  }
+  },
+  "description": "A recursive type"
 }

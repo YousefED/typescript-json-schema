@@ -201,7 +201,7 @@ describe("schema", () => {
             aliasRef: true,
             topRef: false,
         });
-        // disabled beacuse of #80
+        // disabled because of #80
         // assertSchema("type-aliases-alias-ref-topref", "MyAlias", {
         //     useTypeAliasRef: true,
         //     useRootRef: true
@@ -210,7 +210,7 @@ describe("schema", () => {
             aliasRef: true,
             topRef: true,
         });
-        // disabled beacuse of #80
+        // disabled because of #80
         // assertSchema("type-aliases-recursive-alias-topref", "MyAlias", {
         //     useTypeAliasRef: true,
         //     useRootRef: true

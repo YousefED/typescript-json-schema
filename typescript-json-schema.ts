@@ -547,9 +547,7 @@ export class JsonSchemaGenerator {
                 definition.additionalItems = fixedTypes[fixedTypes.length - 1];
                 fixedTypes.splice(fixedTypes.length - 1, 1);
             } else {
-                definition.additionalItems = {
-                    anyOf: fixedTypes,
-                };
+                definition.maxItems = targetTupleType.fixedLength;
             }
         } else {
             const propertyTypeString = this.tc.typeToString(

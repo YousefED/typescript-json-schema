@@ -96,7 +96,7 @@ export interface Definition extends Omit<JSONSchema7, RedefinedFields> {
     defaultProperties?: string[];
     typeof?: "function";
 
-    // Fields that must be redifined because they make use of this definition itself
+    // Fields that must be redefined because they make use of this definition itself
     items?: DefinitionOrBoolean | DefinitionOrBoolean[];
     additionalItems?: DefinitionOrBoolean;
     contains?: JSONSchema7;
@@ -547,9 +547,7 @@ export class JsonSchemaGenerator {
                 definition.additionalItems = fixedTypes[fixedTypes.length - 1];
                 fixedTypes.splice(fixedTypes.length - 1, 1);
             } else {
-                definition.additionalItems = {
-                    anyOf: fixedTypes,
-                };
+                definition.maxItems = targetTupleType.fixedLength;
             }
         } else {
             const propertyTypeString = this.tc.typeToString(
@@ -722,7 +720,7 @@ export class JsonSchemaGenerator {
                         // node
                         const exp = (<any>initial).expression;
                         const text = (<any>exp).text;
-                        // if it is an expression with a text literal, chances are it is the enum convension:
+                        // if it is an expression with a text literal, chances are it is the enum convention:
                         // CASELABEL = 'literal' as any
                         if (text) {
                             enumValues.push(text);
@@ -1429,7 +1427,7 @@ export function buildGenerator(
         }
         return onlyIncludeFiles.indexOf(file.fileName) >= 0;
     }
-    // Use defaults unles otherwise specified
+    // Use defaults unless otherwise specified
     const settings = getDefaultArgs();
 
     for (const pref in args) {

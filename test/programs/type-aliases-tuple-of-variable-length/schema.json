@@ -12,18 +12,6 @@
             "type": "boolean"
         }
     ],
-    "additionalItems": {
-        "anyOf": [
-            {
-                "type": "string"
-            },
-            {
-                "type": "number"
-            },
-            {
-                "type": "boolean"
-            }
-        ]
-    },
+    "maxItems": 3,
     "minItems": 2
 }

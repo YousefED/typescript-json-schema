@@ -185,8 +185,14 @@ function resolveRequiredFile(symbol: ts.Symbol, key: string, fileName: string, o
         throw Error("File couldn't be loaded");
     }
     var requiredObject = objectName ? requiredFile[objectName] : requiredFile.default;
+    if (requiredObject === undefined) {
+        throw Error("Required variable is undefined");
+    }
+    if (typeof requiredObject === "function") {
+        throw Error("Can't use function as a variable");
+    }
     if (key === "examples" && !Array.isArray(requiredObject)) {
-        throw Error("Required object isn't an array");
+        throw Error("Required variable isn't an array");
     }
     return requiredObject;
 }

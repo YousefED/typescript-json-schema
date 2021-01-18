@@ -238,6 +238,72 @@ interface MyObject {
 
 Note: this feature doesn't work for generic types & array types, it mainly works in very simple cases.
 
+### `require` a variable from a file
+
+When you want to import for example an object or an array into your property defined in annotation, you can use `require`.
+
+Example:
+
+```ts
+export interface InnerData {
+  age: number;
+  name: string;
+  free: boolean;
+}
+
+export interface UserData {
+  /**
+   * Specify required object
+   * 
+   * @examples require("./example.ts").example
+   */
+  data: InnerData;
+}
+```
+
+file `example.ts`
+
+```ts
+export const example: InnerData[] = [{
+  age: 30,
+  name: "Ben",
+  free: false
+}]
+```
+
+Translation:
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "data": {
+      "description": "Specify required object",
+      "examples": [
+        { 
+          "age": 30, 
+          "name": "Ben", 
+          "free": false 
+        }
+      ],
+      "type": "object",
+      "properties": {
+        "age": { "type": "number" },
+        "name": { "type": "string" },
+        "free": { "type": "boolean" }
+      },
+      "required": ["age", "free", "name"]
+    }
+  },
+  "required": ["data"],
+  "type": "object"
+}
+```
+
+Also you can use `require(".").example`, which will try to find exported variable with name 'example' in current file. Or you can use `require("./someFile.ts")`, which will try to use default exported variable from 'someFile.ts'.
+
+Note: For `examples` a required variable must be an array.
+
 ## Background
 
 Inspired and builds upon [Typson](https://github.com/lbovet/typson/), but typescript-json-schema is compatible with more recent Typescript versions. Also, since it uses the Typescript compiler internally, more advanced scenarios are possible. If you are looking for a library that uses the AST instead of the type hierarchy and therefore better support for type aliases, have a look at [vega/ts-json-schema-generator](https://github.com/vega/ts-json-schema-generator).

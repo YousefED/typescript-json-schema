@@ -172,27 +172,28 @@ function unique(arr: string[]): string[] {
 }
 
 /**
- * Resolve required file / object
+ * Resolve required file
  */
 function resolveRequiredFile(symbol: ts.Symbol, key: string, fileName: string, objectName: string): any {
-    var sourceFile = getSourceFile(symbol);
-    var requiredFileFullPath =
-        fileName === "."
+    const sourceFile = getSourceFile(symbol);
+    const requiredFilePath = /[.\/]+/.test(fileName)
+        ? fileName === "."
             ? path.resolve(sourceFile.fileName)
-            : path.resolve(path.dirname(sourceFile.fileName), fileName);
-    var requiredFile = require(requiredFileFullPath);
+            : path.resolve(path.dirname(sourceFile.fileName), fileName)
+        : fileName;
+    const requiredFile = require(requiredFilePath);
     if (!requiredFile) {
-        throw Error("File couldn't be loaded");
+        throw Error("Required: File couldn't be loaded");
     }
-    var requiredObject = objectName ? requiredFile[objectName] : requiredFile.default;
+    const requiredObject = objectName ? requiredFile[objectName] : requiredFile.default;
     if (requiredObject === undefined) {
-        throw Error("Required variable is undefined");
+        throw Error("Required: Variable is undefined");
     }
     if (typeof requiredObject === "function") {
-        throw Error("Can't use function as a variable");
+        throw Error("Required: Can't use function as a variable");
     }
     if (key === "examples" && !Array.isArray(requiredObject)) {
-        throw Error("Required variable isn't an array");
+        throw Error("Required: Variable isn't an array");
     }
     return requiredObject;
 }

@@ -176,7 +176,7 @@ function unique(arr: string[]): string[] {
  */
 function resolveRequiredFile(symbol: ts.Symbol, key: string, fileName: string, objectName: string): any {
     const sourceFile = getSourceFile(symbol);
-    const requiredFilePath = /[.\/]+/.test(fileName)
+    const requiredFilePath = /^[.\/]+/.test(fileName)
         ? fileName === "."
             ? path.resolve(sourceFile.fileName)
             : path.resolve(path.dirname(sourceFile.fileName), fileName)
@@ -204,7 +204,7 @@ function resolveRequiredFile(symbol: ts.Symbol, key: string, fileName: string, o
 function parseValue(symbol: ts.Symbol, key: string, value: string): any {
     const match = REGEX_REQUIRE.exec(value);
     if (match) {
-        const fileName = match[2].substr(1, match[2].length - 2);
+        const fileName = match[2].substr(1, match[2].length - 2).trim();
         const objectName = match[4];
         return resolveRequiredFile(symbol, key, fileName, objectName);
     }

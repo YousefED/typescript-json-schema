@@ -274,6 +274,8 @@ describe("schema", () => {
         });
         assertSchema("annotation-items", "MyObject");
 
+        assertSchema("annotation-required", "MyObject");
+
         assertSchema("typeof-keyword", "MyObject", { typeOfKeyword: true });
 
         assertSchema("user-validation-keywords", "MyObject", {

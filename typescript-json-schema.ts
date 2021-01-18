@@ -7,11 +7,13 @@ import { JSONSchema7 } from "json-schema";
 export { Program, CompilerOptions, Symbol } from "typescript";
 
 const vm = require("vm");
+require("ts-node/register");
 
 const REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;
 const REGEX_TSCONFIG_NAME = /^.*\.json$/;
 const REGEX_TJS_JSDOC = /^-([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
 const REGEX_GROUP_JSDOC = /^[.]?([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
+const REGEX_REQUIRE = /^(\s+)?require\((\'[a-zA-Z0-9.\/_-]+\'|\"[a-zA-Z0-9.\/_-]+\")\)(\.([a-zA-Z0-9_-]+))?(\s+)?/;
 const NUMERIC_INDEX_PATTERN = "^[0-9]+$";
 
 export function getDefaultArgs(): Args {
@@ -170,9 +172,35 @@ function unique(arr: string[]): string[] {
 }
 
 /**
+ * Resolve required file / object
+ */
+function resolveRequiredFile(symbol: ts.Symbol, key: string, fileName: string, objectName: string): any {
+    var sourceFile = getSourceFile(symbol);
+    var requiredFileFullPath =
+        fileName === "."
+            ? path.resolve(sourceFile.fileName)
+            : path.resolve(path.dirname(sourceFile.fileName), fileName);
+    var requiredFile = require(requiredFileFullPath);
+    if (!requiredFile) {
+        throw Error("File couldn't be loaded");
+    }
+    var requiredObject = objectName ? requiredFile[objectName] : requiredFile.default;
+    if (key === "examples" && !Array.isArray(requiredObject)) {
+        throw Error("Required object isn't an array");
+    }
+    return requiredObject;
+}
+
+/**
  * Try to parse a value and returns the string if it fails.
  */
-function parseValue(value: string): any {
+function parseValue(symbol: ts.Symbol, key: string, value: string): any {
+    const match = REGEX_REQUIRE.exec(value);
+    if (match) {
+        const fileName = match[2].substr(1, match[2].length - 2);
+        const objectName = match[4];
+        return resolveRequiredFile(symbol, key, fileName, objectName);
+    }
     try {
         return JSON.parse(value);
     } catch (error) {
@@ -371,7 +399,7 @@ const annotationKeywords: { [k in keyof typeof validationKeywords]?: true } = {
     default: true,
     examples: true,
     // A JSDoc $ref annotation can appear as a $ref.
-    $ref: true
+    $ref: true,
 };
 
 const subDefinitions = {
@@ -505,7 +533,7 @@ export class JsonSchemaGenerator {
                 if (match) {
                     const k = match[1];
                     const v = match[2];
-                    definition[name] = { ...definition[name], [k]: v ? parseValue(v) : true };
+                    definition[name] = { ...definition[name], [k]: v ? parseValue(symbol, k, v) : true };
                     return;
                 }
             }
@@ -514,12 +542,15 @@ export class JsonSchemaGenerator {
             if (name.includes(".")) {
                 const parts = name.split(".");
                 if (parts.length === 2 && subDefinitions[parts[0]]) {
-                    definition[parts[0]] = { ...definition[parts[0]], [parts[1]]: text ? parseValue(text) : true };
+                    definition[parts[0]] = {
+                        ...definition[parts[0]],
+                        [parts[1]]: text ? parseValue(symbol, name, text) : true,
+                    };
                 }
             }
 
             if (validationKeywords[name] || this.userValidationKeywords[name]) {
-                definition[name] = text === undefined ? "" : parseValue(text);
+                definition[name] = text === undefined ? "" : parseValue(symbol, name, text);
             } else {
                 // special annotations
                 otherAnnotations[doc.name] = true;

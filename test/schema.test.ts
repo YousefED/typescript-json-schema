@@ -274,8 +274,6 @@ describe("schema", () => {
         });
         assertSchema("annotation-items", "MyObject");
 
-        assertSchema("annotation-required", "MyObject");
-
         assertSchema("typeof-keyword", "MyObject", { typeOfKeyword: true });
 
         assertSchema("user-validation-keywords", "MyObject", {
@@ -459,4 +457,10 @@ describe("tsconfig.json", () => {
             assert.throws(() => generator.getSchemaForSymbol("IncludedOnlyByTsConfig"));
         }
     });
+});
+
+describe("Required", () => {
+    // this part is needed to resolve ts script internaly
+    require("ts-node/register");
+    assertSchema("annotation-required", "MyObject");
 });

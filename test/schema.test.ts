@@ -459,8 +459,8 @@ describe("tsconfig.json", () => {
     });
 });
 
-describe("Required", () => {
-    // this part is needed to resolve ts script internaly
-    require("ts-node/register");
-    assertSchema("annotation-required", "MyObject");
+describe("Functionality 'required' in annotation", () => {
+    assertSchema("annotation-required", "MyObject", {
+        tsNodeRegister: true
+    });
 });

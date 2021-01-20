@@ -48,6 +48,7 @@ Options:
   --rejectDateType      Rejects Date fields in type definitions.                     [boolean] [default: false]
   --id                  Set schema id.                                               [string]  [default: ""]
   --defaultNumberType   Default number type.                                         [choices: "number", "integer"] [default: "number"]
+  --tsNodeRegister      Use ts-node/register (needed for require typescript files).  [boolean] [default: false]
 ```
 
 ### Programmatic use
@@ -59,12 +60,12 @@ import * as TJS from "typescript-json-schema";
 
 // optionally pass argument to schema generator
 const settings: TJS.PartialArgs = {
-  required: true,
+    required: true,
 };
 
 // optionally pass ts compiler options
 const compilerOptions: TJS.CompilerOptions = {
-  strictNullChecks: true,
+    strictNullChecks: true,
 };
 
 // optionally pass a base path
@@ -95,7 +96,7 @@ generator.getSchemaForSymbol("AnotherType");
 // In larger projects type names may not be unique,
 // while unique names may be enabled.
 const settings: TJS.PartialArgs = {
-  uniqueNames: true,
+    uniqueNames: true,
 };
 
 const generator = TJS.buildGenerator(program, settings);
@@ -114,10 +115,10 @@ const fullSymbolList = generator.getSymbols();
 
 ```ts
 type SymbolRef = {
-  name: string;
-  typeName: string;
-  fullyQualifiedName: string;
-  symbol: ts.Symbol;
+    name: string;
+    typeName: string;
+    fullyQualifiedName: string;
+    symbol: ts.Symbol;
 };
 ```
 
@@ -131,13 +132,13 @@ For example
 
 ```ts
 export interface Shape {
-  /**
-   * The size of the shape.
-   *
-   * @minimum 0
-   * @TJS-type integer
-   */
-  size: number;
+    /**
+     * The size of the shape.
+     *
+     * @minimum 0
+     * @TJS-type integer
+     */
+    size: number;
 }
 ```
 
@@ -145,20 +146,20 @@ will be translated to
 
 ```json
 {
-  "$ref": "#/definitions/Shape",
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "definitions": {
-    "Shape": {
-      "properties": {
-        "size": {
-          "description": "The size of the shape.",
-          "minimum": 0,
-          "type": "integer"
+    "$ref": "#/definitions/Shape",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "Shape": {
+            "properties": {
+                "size": {
+                    "description": "The size of the shape.",
+                    "minimum": 0,
+                    "type": "integer"
+                }
+            },
+            "type": "object"
         }
-      },
-      "type": "object"
     }
-  }
 }
 ```
 
@@ -172,20 +173,20 @@ Example:
 
 ```ts
 export interface ShapesData {
-  /**
-   * Specify individual fields in items.
-   *
-   * @items.type integer
-   * @items.minimum 0
-   */
-  sizes: number[];
+    /**
+     * Specify individual fields in items.
+     *
+     * @items.type integer
+     * @items.minimum 0
+     */
+    sizes: number[];
 
-  /**
-   * Or specify a JSON spec:
-   *
-   * @items {"type":"string","format":"email"}
-   */
-  emails: string[];
+    /**
+     * Or specify a JSON spec:
+     *
+     * @items {"type":"string","format":"email"}
+     */
+    emails: string[];
 }
 ```
 
@@ -193,31 +194,31 @@ Translation:
 
 ```json
 {
-  "$ref": "#/definitions/ShapesData",
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "definitions": {
-    "Shape": {
-      "properties": {
-        "sizes": {
-          "description": "Specify individual fields in items.",
-          "items": {
-            "minimum": 0,
-            "type": "integer"
-          },
-          "type": "array"
-        },
-        "emails": {
-          "description": "Or specify a JSON spec:",
-          "items": {
-            "format": "email",
-            "type": "string"
-          },
-          "type": "array"
+    "$ref": "#/definitions/ShapesData",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "Shape": {
+            "properties": {
+                "sizes": {
+                    "description": "Specify individual fields in items.",
+                    "items": {
+                        "minimum": 0,
+                        "type": "integer"
+                    },
+                    "type": "array"
+                },
+                "emails": {
+                    "description": "Or specify a JSON spec:",
+                    "items": {
+                        "format": "email",
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "type": "object"
         }
-      },
-      "type": "object"
     }
-  }
 }
 ```
 
@@ -232,7 +233,7 @@ Example:
 ```typescript
 type integer = number;
 interface MyObject {
-  n: integer;
+    n: integer;
 }
 ```
 
@@ -240,24 +241,26 @@ Note: this feature doesn't work for generic types & array types, it mainly works
 
 ### `require` a variable from a file
 
+(for requiring typescript files is needed to set argument `tsNodeRegister` to true)
+
 When you want to import for example an object or an array into your property defined in annotation, you can use `require`.
 
 Example:
 
 ```ts
 export interface InnerData {
-  age: number;
-  name: string;
-  free: boolean;
+    age: number;
+    name: string;
+    free: boolean;
 }
 
 export interface UserData {
-  /**
-   * Specify required object
-   * 
-   * @examples require("./example.ts").example
-   */
-  data: InnerData;
+    /**
+     * Specify required object
+     *
+     * @examples require("./example.ts").example
+     */
+    data: InnerData;
 }
 ```
 
@@ -275,28 +278,28 @@ Translation:
 
 ```json
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "properties": {
-    "data": {
-      "description": "Specify required object",
-      "examples": [
-        { 
-          "age": 30, 
-          "name": "Ben", 
-          "free": false 
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "data": {
+            "description": "Specify required object",
+            "examples": [
+                {
+                    "age": 30,
+                    "name": "Ben",
+                    "free": false
+                }
+            ],
+            "type": "object",
+            "properties": {
+                "age": { "type": "number" },
+                "name": { "type": "string" },
+                "free": { "type": "boolean" }
+            },
+            "required": ["age", "free", "name"]
         }
-      ],
-      "type": "object",
-      "properties": {
-        "age": { "type": "number" },
-        "name": { "type": "string" },
-        "free": { "type": "boolean" }
-      },
-      "required": ["age", "free", "name"]
-    }
-  },
-  "required": ["data"],
-  "type": "object"
+    },
+    "required": ["data"],
+    "type": "object"
 }
 ```
 

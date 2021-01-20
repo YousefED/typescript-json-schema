@@ -55,6 +55,7 @@ export function getDefaultArgs(): Args {
         rejectDateType: false,
         id: "",
         defaultNumberType: "number",
+        tsNodeRegister: false,
     };
 }
 
@@ -82,6 +83,7 @@ export type Args = {
     rejectDateType: boolean;
     id: string;
     defaultNumberType: "number" | "integer";
+    tsNodeRegister: boolean;
 };
 
 export type PartialArgs = Partial<Args>;
@@ -1494,6 +1496,10 @@ export function buildGenerator(
         if (args.hasOwnProperty(pref)) {
             settings[pref] = args[pref];
         }
+    }
+
+    if (args.tsNodeRegister) {
+        require("ts-node/register");
     }
 
     let diagnostics: ReadonlyArray<ts.Diagnostic> = [];

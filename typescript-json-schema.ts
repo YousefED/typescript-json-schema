@@ -13,6 +13,25 @@ const REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;
 const REGEX_TSCONFIG_NAME = /^.*\.json$/;
 const REGEX_TJS_JSDOC = /^-([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
 const REGEX_GROUP_JSDOC = /^[.]?([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
+/**
+ * Resolve required file, his path and a property name,
+ *      pattern: require([file_path]).[property_name]
+ *
+ * the part ".[property_name]" is optional in the regex
+ *
+ * will match:
+ *
+ *      require('./path.ts')
+ *      require('./path.ts').objectName
+ *      require("./path.ts")
+ *      require("./path.ts").objectName
+ *      require('@module-name')
+ *
+ *      match[2] = file_path (a path to the file with quotes)
+ *      match[3] = (optional) property_name (a property name, exported in the file)
+ *
+ * for more details, see tests/require.test.ts
+ */
 const REGEX_REQUIRE = /^(\s+)?require\((\'@?[a-zA-Z0-9.\/_-]+\'|\"@?[a-zA-Z0-9.\/_-]+\")\)(\.([a-zA-Z0-9_$]+))?(\s+|$)/;
 const NUMERIC_INDEX_PATTERN = "^[0-9]+$";
 
@@ -198,11 +217,15 @@ function resolveRequiredFile(symbol: ts.Symbol, key: string, fileName: string, o
     return requiredObject;
 }
 
+export function regexRequire(value: string) {
+    return REGEX_REQUIRE.exec(value);
+}
+
 /**
  * Try to parse a value and returns the string if it fails.
  */
 function parseValue(symbol: ts.Symbol, key: string, value: string): any {
-    const match = REGEX_REQUIRE.exec(value);
+    const match = regexRequire(value);
     if (match) {
         const fileName = match[2].substr(1, match[2].length - 2).trim();
         const objectName = match[4];

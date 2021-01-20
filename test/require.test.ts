@@ -93,28 +93,13 @@ const tests = (singleQuotation: boolean, objectName?: string) => {
     });
 };
 
-describe("Double quotation", () => {
+describe("Require regex pattern", () => {
     tests(false);
     commonTests(false);
-});
-
-describe("Single quotation", () => {
     tests(true);
     commonTests(true);
-});
-
-describe("Double quotation + object", () => {
     tests(false, objName);
-});
-
-describe("Single quotation + object", () => {
     tests(true, objName);
-});
-
-describe("Double quotation + extended object name", () => {
     tests(false, extendedObjName);
-});
-
-describe("Single quotation + extended object name", () => {
     tests(true, extendedObjName);
 });

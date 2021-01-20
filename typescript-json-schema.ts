@@ -7,7 +7,6 @@ import { JSONSchema7 } from "json-schema";
 export { Program, CompilerOptions, Symbol } from "typescript";
 
 const vm = require("vm");
-require("ts-node/register");
 
 const REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;
 const REGEX_TSCONFIG_NAME = /^.*\.json$/;

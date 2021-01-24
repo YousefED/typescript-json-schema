@@ -12,6 +12,26 @@ const REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;
 const REGEX_TSCONFIG_NAME = /^.*\.json$/;
 const REGEX_TJS_JSDOC = /^-([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
 const REGEX_GROUP_JSDOC = /^[.]?([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
+/**
+ * Resolve required file, his path and a property name,
+ *      pattern: require([file_path]).[property_name]
+ *
+ * the part ".[property_name]" is optional in the regex
+ *
+ * will match:
+ *
+ *      require('./path.ts')
+ *      require('./path.ts').objectName
+ *      require("./path.ts")
+ *      require("./path.ts").objectName
+ *      require('@module-name')
+ *
+ *      match[2] = file_path (a path to the file with quotes)
+ *      match[3] = (optional) property_name (a property name, exported in the file)
+ *
+ * for more details, see tests/require.test.ts
+ */
+const REGEX_REQUIRE = /^(\s+)?require\((\'@?[a-zA-Z0-9.\/_-]+\'|\"@?[a-zA-Z0-9.\/_-]+\")\)(\.([a-zA-Z0-9_$]+))?(\s+|$)/;
 const NUMERIC_INDEX_PATTERN = "^[0-9]+$";
 
 export function getDefaultArgs(): Args {
@@ -35,6 +55,7 @@ export function getDefaultArgs(): Args {
         rejectDateType: false,
         id: "",
         defaultNumberType: "number",
+        tsNodeRegister: false,
     };
 }
 
@@ -62,6 +83,7 @@ export type Args = {
     rejectDateType: boolean;
     id: string;
     defaultNumberType: "number" | "integer";
+    tsNodeRegister: boolean;
 };
 
 export type PartialArgs = Partial<Args>;
@@ -170,9 +192,46 @@ function unique(arr: string[]): string[] {
 }
 
 /**
+ * Resolve required file
+ */
+function resolveRequiredFile(symbol: ts.Symbol, key: string, fileName: string, objectName: string): any {
+    const sourceFile = getSourceFile(symbol);
+    const requiredFilePath = /^[.\/]+/.test(fileName)
+        ? fileName === "."
+            ? path.resolve(sourceFile.fileName)
+            : path.resolve(path.dirname(sourceFile.fileName), fileName)
+        : fileName;
+    const requiredFile = require(requiredFilePath);
+    if (!requiredFile) {
+        throw Error("Required: File couldn't be loaded");
+    }
+    const requiredObject = objectName ? requiredFile[objectName] : requiredFile.default;
+    if (requiredObject === undefined) {
+        throw Error("Required: Variable is undefined");
+    }
+    if (typeof requiredObject === "function") {
+        throw Error("Required: Can't use function as a variable");
+    }
+    if (key === "examples" && !Array.isArray(requiredObject)) {
+        throw Error("Required: Variable isn't an array");
+    }
+    return requiredObject;
+}
+
+export function regexRequire(value: string) {
+    return REGEX_REQUIRE.exec(value);
+}
+
+/**
  * Try to parse a value and returns the string if it fails.
  */
-function parseValue(value: string): any {
+function parseValue(symbol: ts.Symbol, key: string, value: string): any {
+    const match = regexRequire(value);
+    if (match) {
+        const fileName = match[2].substr(1, match[2].length - 2).trim();
+        const objectName = match[4];
+        return resolveRequiredFile(symbol, key, fileName, objectName);
+    }
     try {
         return JSON.parse(value);
     } catch (error) {
@@ -371,7 +430,7 @@ const annotationKeywords: { [k in keyof typeof validationKeywords]?: true } = {
     default: true,
     examples: true,
     // A JSDoc $ref annotation can appear as a $ref.
-    $ref: true
+    $ref: true,
 };
 
 const subDefinitions = {
@@ -505,7 +564,7 @@ export class JsonSchemaGenerator {
                 if (match) {
                     const k = match[1];
                     const v = match[2];
-                    definition[name] = { ...definition[name], [k]: v ? parseValue(v) : true };
+                    definition[name] = { ...definition[name], [k]: v ? parseValue(symbol, k, v) : true };
                     return;
                 }
             }
@@ -514,12 +573,15 @@ export class JsonSchemaGenerator {
             if (name.includes(".")) {
                 const parts = name.split(".");
                 if (parts.length === 2 && subDefinitions[parts[0]]) {
-                    definition[parts[0]] = { ...definition[parts[0]], [parts[1]]: text ? parseValue(text) : true };
+                    definition[parts[0]] = {
+                        ...definition[parts[0]],
+                        [parts[1]]: text ? parseValue(symbol, name, text) : true,
+                    };
                 }
             }
 
             if (validationKeywords[name] || this.userValidationKeywords[name]) {
-                definition[name] = text === undefined ? "" : parseValue(text);
+                definition[name] = text === undefined ? "" : parseValue(symbol, name, text);
             } else {
                 // special annotations
                 otherAnnotations[doc.name] = true;
@@ -1434,6 +1496,10 @@ export function buildGenerator(
         if (args.hasOwnProperty(pref)) {
             settings[pref] = args[pref];
         }
+    }
+
+    if (args.tsNodeRegister) {
+        require("ts-node/register");
     }
 
     let diagnostics: ReadonlyArray<ts.Diagnostic> = [];

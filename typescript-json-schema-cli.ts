@@ -22,8 +22,8 @@ export function run() {
             .describe("noExtraProps", "Disable additional properties in objects by default.")
         .boolean("propOrder").default("propOrder", defaultArgs.propOrder)
             .describe("propOrder", "Create property order definitions.")
-        .boolean("typeOfKeyword").default("typeOfKeyword", defaultArgs.typeOfKeyword)
-            .describe("typeOfKeyword", "Use typeOf keyword (https://goo.gl/DC6sni) for functions.")
+        .boolean("useTypeOfKeyword").default("useTypeOfKeyword", defaultArgs.typeOfKeyword)
+            .describe("useTypeOfKeyword", "Use typeOf keyword (https://goo.gl/DC6sni) for functions.")
         .boolean("required").default("required", defaultArgs.required)
             .describe("required", "Create required array for non-optional properties.")
         .boolean("strictNullChecks").default("strictNullChecks", defaultArgs.strictNullChecks)
@@ -47,6 +47,8 @@ export function run() {
         .option("defaultNumberType").choices("defaultNumberType", ["number", "integer"])
             .default("defaultNumberType", defaultArgs.defaultNumberType)
             .describe("defaultNumberType", "Default number type.")
+        .boolean("tsNodeRegister").default("tsNodeRegister", defaultArgs.tsNodeRegister)
+            .describe("tsNodeRegister", "Use ts-node/register (needed for requiring typescript files).")
         .argv;
 
     exec(args._[0], args._[1], {
@@ -69,6 +71,7 @@ export function run() {
         rejectDateType: args.rejectDateType,
         id: args.id,
         defaultNumberType: args.defaultNumberType,
+        tsNodeRegister: args.tsNodeRegister,
     });
 }
 

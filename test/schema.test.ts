@@ -458,3 +458,9 @@ describe("tsconfig.json", () => {
         }
     });
 });
+
+describe("Functionality 'required' in annotation", () => {
+    assertSchema("annotation-required", "MyObject", {
+        tsNodeRegister: true
+    });
+});

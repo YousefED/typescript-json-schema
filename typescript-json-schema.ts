@@ -416,7 +416,8 @@ const validationKeywords = {
     format: true,
     default: true,
     $ref: true,
-    id: true
+    id: true,
+    title: true
 };
 
 /**

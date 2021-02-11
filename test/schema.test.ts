@@ -259,19 +259,15 @@ describe("schema", () => {
     describe("annotations", () => {
         assertSchema("annotation-default", "MyObject");
         assertSchema("annotation-ref", "MyObject", {}, undefined, undefined, {
-            skipCompile: true
+            skipCompile: true,
         });
         assertSchema("annotation-tjs", "MyObject", {
             validationKeywords: ["hide"],
         });
         assertSchema("annotation-id", "MyObject", {}, undefined, undefined, {
-            expectedWarnings: [
-                "schema id ignored",
-                "schema id ignored",
-                "schema id ignored",
-                "schema id ignored"
-            ]
+            expectedWarnings: ["schema id ignored", "schema id ignored", "schema id ignored", "schema id ignored"],
         });
+        assertSchema("annotation-title", "MyObject");
         assertSchema("annotation-items", "MyObject");
 
         assertSchema("typeof-keyword", "MyObject", { typeOfKeyword: true });
@@ -461,6 +457,6 @@ describe("tsconfig.json", () => {
 
 describe("Functionality 'required' in annotation", () => {
     assertSchema("annotation-required", "MyObject", {
-        tsNodeRegister: true
+        tsNodeRegister: true,
     });
 });

@@ -42,7 +42,7 @@ export function assertSchema(
 
         const files = [resolve(BASE + group + "/main.ts")];
         const actual = TJS.generateSchema(TJS.getProgramFromFiles(files, compilerOptions), type, settings, files);
-
+        console.log('actual', JSON.stringify(actual, null, 2))
         // writeFileSync(BASE + group + "/schema.json", stringify(actual, {space: 4}) + "\n\n");
 
         const file = readFileSync(BASE + group + "/schema.json", "utf8");
@@ -298,6 +298,7 @@ describe("schema", () => {
             aliasRef: true,
         });
         assertSchema("comments-from-lib", "MyObject");
+        assertSchema("comments-from-lib2", "MyObject2");
     });
 
     describe("types", () => {

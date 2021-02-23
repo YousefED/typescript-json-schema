@@ -1,0 +1,13 @@
+{
+  "description": "Use this comment",
+  "type": "object",
+  "properties": {
+    "prop1": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "prop1"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

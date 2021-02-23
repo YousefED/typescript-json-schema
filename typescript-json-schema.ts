@@ -512,6 +512,14 @@ export class JsonSchemaGenerator {
         return this.reffedDefinitions;
     }
 
+    private isFromDefaultLib(symbol: ts.Symbol) {
+        const declarations = symbol.getDeclarations();
+        if (declarations && declarations.length > 0) {
+            return declarations[0].parent.getSourceFile().hasNoDefaultLib;
+        }
+        return false;
+    }
+
     /**
      * Parse the comments of a symbol into the definition and other annotations.
      */
@@ -522,8 +530,7 @@ export class JsonSchemaGenerator {
 
         // the comments for a symbol
         const comments = symbol.getDocumentationComment(this.tc);
-
-        if (comments.length) {
+        if (comments.length && !this.isFromDefaultLib(symbol)) {
             definition.description = comments
                 .map((comment) =>
                     comment.kind === "lineBreak" ? comment.text : comment.text.trim().replace(/\r\n/g, "\n")
@@ -1262,6 +1269,11 @@ export class JsonSchemaGenerator {
         if (prop) {
             this.parseCommentsIntoDefinition(prop, returnedDefinition, otherAnnotations);
         }
+
+        if (pairedSymbol && symbol && this.isFromDefaultLib(symbol)) {
+            this.parseCommentsIntoDefinition(pairedSymbol!, definition, otherAnnotations);
+        }
+
         // Create the actual definition only if is an inline definition, or
         // if it will be a $ref and it is not yet created
         if (!asRef || !this.reffedDefinitions[fullTypeName]) {

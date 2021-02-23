@@ -297,6 +297,7 @@ describe("schema", () => {
         assertSchema("comments-imports", "MyObject", {
             aliasRef: true,
         });
+        assertSchema("comments-from-lib", "MyObject");
     });
 
     describe("types", () => {

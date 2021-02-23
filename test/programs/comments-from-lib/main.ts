@@ -1,10 +1,10 @@
 /**
- * Use this comment
+ * Want this comment, but doesn't work at the moment
  */
 export type MyObject = Pick<BigThing, "prop1">;
 
 /**
- * Not this comment though
+ * This comment should be ignored
  */
 interface BigThing {
   prop1: string;

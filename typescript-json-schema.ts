@@ -1272,11 +1272,6 @@ export class JsonSchemaGenerator {
         if (prop) {
             this.parseCommentsIntoDefinition(prop, returnedDefinition, otherAnnotations);
         }
-
-        if (pairedSymbol && symbol && this.isFromDefaultLib(symbol)) {
-            this.parseCommentsIntoDefinition(pairedSymbol!, definition, otherAnnotations);
-        }
-
         // Create the actual definition only if is an inline definition, or
         // if it will be a $ref and it is not yet created
         if (!asRef || !this.reffedDefinitions[fullTypeName]) {

@@ -529,13 +529,16 @@ export class JsonSchemaGenerator {
         }
 
         // the comments for a symbol
-        const comments = symbol.getDocumentationComment(this.tc);
-        if (comments.length && !this.isFromDefaultLib(symbol)) {
-            definition.description = comments
-                .map((comment) =>
-                    comment.kind === "lineBreak" ? comment.text : comment.text.trim().replace(/\r\n/g, "\n")
-                )
-                .join("");
+	if (!this.isFromDefaultLib(symbol)) {
+		const comments = symbol.getDocumentationComment(this.tc);
+
+		if (comments.length) {
+		    definition.description = comments
+		        .map((comment) =>
+		            comment.kind === "lineBreak" ? comment.text : comment.text.trim().replace(/\r\n/g, "\n")
+		        )
+		        .join("");
+		}
         }
 
         // jsdocs are separate from comments

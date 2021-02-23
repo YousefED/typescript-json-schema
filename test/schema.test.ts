@@ -42,6 +42,7 @@ export function assertSchema(
 
         const files = [resolve(BASE + group + "/main.ts")];
         const actual = TJS.generateSchema(TJS.getProgramFromFiles(files, compilerOptions), type, settings, files);
+
         // writeFileSync(BASE + group + "/schema.json", stringify(actual, {space: 4}) + "\n\n");
 
         const file = readFileSync(BASE + group + "/schema.json", "utf8");

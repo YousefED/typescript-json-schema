@@ -3,9 +3,9 @@ import { exec, getDefaultArgs } from "../typescript-json-schema";
 
 describe("out option", () => {
     beforeEach(() => new Promise((resolve, reject) => {
-        require("fs").rmdir(
+        require("fs").rm(
             "./dist/test/doesnotexist",
-            { recursive: true },
+            { recursive: true, force: true },
             (err: Error) => (err ? reject(err) : resolve(null))
         );
     }));

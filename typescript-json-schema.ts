@@ -1653,7 +1653,7 @@ function normalizeFileName(fn: string): string {
     return fn;
 }
 
-export function exec(filePattern: string, fullTypeName: string, args = getDefaultArgs()): void {
+export async function exec(filePattern: string, fullTypeName: string, args = getDefaultArgs()): Promise<void> {
     let program: ts.Program;
     let onlyIncludeFiles: string[] | undefined = undefined;
     if (REGEX_TSCONFIG_NAME.test(path.basename(filePattern))) {
@@ -1677,12 +1677,18 @@ export function exec(filePattern: string, fullTypeName: string, args = getDefaul
 
     const json = stringify(definition, { space: 4 }) + "\n\n";
     if (args.out) {
-        require("fs").writeFile(args.out, json, function (err: Error) {
-            if (err) {
-                throw new Error("Unable to write output file: " + err.message);
-            }
+        return new Promise((resolve, reject) => {
+            require("fs").writeFile(args.out, json, function (err: Error) {
+                if (err) {
+                    return reject(new Error("Unable to write output file: " + err.message));
+                }
+                resolve();
+            });
         });
     } else {
-        process.stdout.write(json);
+        const hasBeenBuffered = process.stdout.write(json);
+        if (hasBeenBuffered) {
+            return new Promise(resolve => process.stdout.on("drain", () => resolve()));
+        }
     }
 }

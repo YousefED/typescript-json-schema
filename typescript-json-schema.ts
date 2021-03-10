@@ -1678,11 +1678,17 @@ export async function exec(filePattern: string, fullTypeName: string, args = get
     const json = stringify(definition, { space: 4 }) + "\n\n";
     if (args.out) {
         return new Promise((resolve, reject) => {
-            require("fs").writeFile(args.out, json, function (err: Error) {
-                if (err) {
-                    return reject(new Error("Unable to write output file: " + err.message));
+            const fs = require("fs");
+            fs.mkdir(path.dirname(args.out), { recursive: true }, function (mkErr: Error) {
+                if (mkErr) {
+                    return reject(new Error("Unable to create parent directory for output file: " + mkErr.message));
                 }
-                resolve();
+                fs.writeFile(args.out, json, function(wrErr: Error) {
+                    if (wrErr) {
+                        return reject(new Error("Unable to write output file: " + wrErr.message));
+                    }
+                    resolve();
+                });
             });
         });
     } else {

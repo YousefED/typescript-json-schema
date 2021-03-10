@@ -59,6 +59,7 @@
     "@types/json-stable-stringify": "^1.0.32",
     "@types/mocha": "^8.2.1",
     "ajv": "^7.2.1",
+    "ajv-formats": "^1.5.1",
     "chai": "^4.3.3",
     "mocha": "^8.3.1",
     "prettier": "^2.2.1",

@@ -1,4 +1,5 @@
 import Ajv from "ajv";
+import addFormats from "ajv-formats";
 import { assert } from "chai";
 import { readFileSync } from "fs";
 import { resolve } from "path";
@@ -16,7 +17,11 @@ const ajv = new Ajv({
             throw new Error("AJV error: " + message);
         },
     },
+    // TODO: enable strict mode
+    strict: false
 });
+
+addFormats(ajv);
 
 const BASE = "test/programs/";
 
@@ -264,9 +269,7 @@ describe("schema", () => {
         assertSchema("annotation-tjs", "MyObject", {
             validationKeywords: ["hide"],
         });
-        assertSchema("annotation-id", "MyObject", {}, undefined, undefined, {
-            expectedWarnings: ["schema id ignored", "schema id ignored", "schema id ignored", "schema id ignored"],
-        });
+        assertSchema("annotation-id", "MyObject", {}, undefined, undefined);
         assertSchema("annotation-title", "MyObject");
         assertSchema("annotation-items", "MyObject");
 

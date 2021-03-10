@@ -1,4 +1,4 @@
-import * as Ajv from "ajv";
+import Ajv from "ajv";
 import { assert } from "chai";
 import { readFileSync } from "fs";
 import { resolve } from "path";
@@ -9,7 +9,7 @@ let ajvWarnings: string[] = [];
 const ajv = new Ajv({
     logger: {
         log: console.log,
-        warn: (message) => {
+        warn: (message: string) => {
             ajvWarnings.push(message);
         },
         error: (message) => {

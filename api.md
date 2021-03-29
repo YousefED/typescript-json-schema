@@ -147,7 +147,8 @@ interface MyObject {
      * @$ref http://my-schema.org
      */
     externalRefOverride: MySubObject;
-}```
+}
+```
 
 
 ## [annotation-tjs](./test/programs/annotation-tjs)
@@ -244,7 +245,8 @@ interface MyObject {
 export interface MyObject {
     a: any;
     b: unknown;
-}```
+}
+```
 
 
 ## [argument-id](./test/programs/argument-id)
@@ -1517,7 +1519,8 @@ interface MyObject {
 ```ts
 interface MyObject {
     myFunction: Function;
-}```
+}
+```
 
 
 ## [type-globalThis](./test/programs/type-globalThis)

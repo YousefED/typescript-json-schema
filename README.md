@@ -84,6 +84,9 @@ const schema = TJS.generateSchema(program, "MyType", settings);
 
 const generator = TJS.buildGenerator(program, settings);
 
+// generator can be also reused to speed up generating the schema if usecase allows:
+const schemaWithReusedGenerator = TJS.generateSchema(program, "MyType", settings, [], generator);
+
 // all symbols
 const symbols = generator.getUserSymbols();
 

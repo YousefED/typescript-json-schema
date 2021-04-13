@@ -1589,13 +1589,18 @@ export function buildGenerator(
     }
 }
 
+let generator: JsonSchemaGenerator | null | undefined;
+
 export function generateSchema(
     program: ts.Program,
     fullTypeName: string,
     args: PartialArgs = {},
-    onlyIncludeFiles?: string[]
+    onlyIncludeFiles?: string[],
+    cacheGenerator = false
 ): Definition | null {
-    const generator = buildGenerator(program, args, onlyIncludeFiles);
+    if (generator === undefined || !cacheGenerator) {
+        generator = buildGenerator(program, args, onlyIncludeFiles);
+    }
 
     if (generator === null) {
         return null;

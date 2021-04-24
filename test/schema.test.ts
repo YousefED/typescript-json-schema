@@ -18,7 +18,7 @@ const ajv = new Ajv({
         },
     },
     // TODO: enable strict mode
-    strict: false
+    strict: false,
 });
 
 addFormats(ajv);

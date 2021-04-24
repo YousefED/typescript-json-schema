@@ -1593,9 +1593,10 @@ export function generateSchema(
     program: ts.Program,
     fullTypeName: string,
     args: PartialArgs = {},
-    onlyIncludeFiles?: string[]
+    onlyIncludeFiles?: string[],
+    externalGenerator?: JsonSchemaGenerator
 ): Definition | null {
-    const generator = buildGenerator(program, args, onlyIncludeFiles);
+    const generator = externalGenerator ?? buildGenerator(program, args, onlyIncludeFiles);
 
     if (generator === null) {
         return null;
@@ -1684,7 +1685,7 @@ export async function exec(filePattern: string, fullTypeName: string, args = get
                 if (mkErr) {
                     return reject(new Error("Unable to create parent directory for output file: " + mkErr.message));
                 }
-                fs.writeFile(args.out, json, function(wrErr: Error) {
+                fs.writeFile(args.out, json, function (wrErr: Error) {
                     if (wrErr) {
                         return reject(new Error("Unable to write output file: " + wrErr.message));
                     }
@@ -1695,7 +1696,7 @@ export async function exec(filePattern: string, fullTypeName: string, args = get
     } else {
         const hasBeenBuffered = process.stdout.write(json);
         if (hasBeenBuffered) {
-            return new Promise(resolve => process.stdout.on("drain", () => resolve()));
+            return new Promise((resolve) => process.stdout.on("drain", () => resolve()));
         }
     }
 }

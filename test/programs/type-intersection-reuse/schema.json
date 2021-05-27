@@ -1,0 +1,53 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "definitions": {
+        "Type1": {
+            "additionalProperties": false,
+            "properties": {
+                "value1": {
+                    "type": "string"
+                },
+                "value2": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "value1",
+                "value2"
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "value1": {
+            "$ref": "#/definitions/Type1"
+        },
+        "value2": {
+            "additionalProperties": false,
+            "properties": {
+                "value1": {
+                    "type": "string"
+                },
+                "value2": {
+                    "type": "number"
+                },
+                "value3": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "value1",
+                "value2",
+                "value3"
+            ],
+            "type": "object"
+        }
+    },
+    "required": [
+        "value1",
+        "value2"
+    ],
+    "type": "object"
+}
+

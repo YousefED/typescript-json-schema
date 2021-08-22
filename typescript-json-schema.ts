@@ -640,6 +640,8 @@ export class JsonSchemaGenerator {
                     reffedType?.getName() === "integer" ||
                     defaultNumberType === "integer";
                 definition.type = isInteger ? "integer" : "number";
+            } else if (flags & ts.TypeFlags.BigInt) {
+                definition.type = "bigint";
             } else if (flags & ts.TypeFlags.Boolean) {
                 definition.type = "boolean";
             } else if (flags & ts.TypeFlags.Null) {

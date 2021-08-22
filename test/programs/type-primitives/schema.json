@@ -26,6 +26,10 @@
             "default": 1,
             "type": "integer"
         },
+        "bigint1": {
+            "default": null,
+            "type": "bigint"
+        },
         "number1": {
             "default": 1,
             "type": "number"

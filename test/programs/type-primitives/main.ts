@@ -13,6 +13,8 @@ class MyObject {
     integer1: number      = 1;
     integer2: integer     = 1;
 
+    bigint1: bigint = null; // BigInt literals are not available when targeting lower than ES2020.
+
     string1: string       = "defaultValue";
 
     array1: Array<any>    = null;

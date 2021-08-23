@@ -58,6 +58,7 @@
     "required": [
         "array1",
         "array2",
+        "bigint1",
         "boolean1",
         "integer1",
         "integer2",

@@ -28,6 +28,8 @@ export function run() {
             .describe("required", "Create required array for non-optional properties.")
         .boolean("strictNullChecks").default("strictNullChecks", defaultArgs.strictNullChecks)
             .describe("strictNullChecks", "Make values non-nullable by default.")
+        .boolean("esModuleInterop").default("esModuleInterop", defaultArgs.esModuleInterop)
+            .describe("esModuleInterop", "Use esModuleInterop when loading typescript modules.")
         .boolean("ignoreErrors").default("ignoreErrors", defaultArgs.ignoreErrors)
             .describe("ignoreErrors", "Generate even if the program has errors.")
         .alias("out", "o")
@@ -62,6 +64,7 @@ export function run() {
         typeOfKeyword: args.useTypeOfKeyword,
         required: args.required,
         strictNullChecks: args.strictNullChecks,
+        esModuleInterop: args.esModuleInterop,
         ignoreErrors: args.ignoreErrors,
         out: args.out,
         validationKeywords: args.validationKeywords,

@@ -1386,7 +1386,7 @@ export class JsonSchemaGenerator {
             throw new Error(`type ${symbolName} not found`);
         }
 
-        this.reffedDefinitions = { }
+        this.reffedDefinitions = { };
 
         const def = this.getTypeDefinition(
             this.allSymbols[symbolName],
@@ -1419,7 +1419,7 @@ export class JsonSchemaGenerator {
             root["$id"] = id;
         }
 
-        this.reffedDefinitions = { }
+        this.reffedDefinitions = { };
 
         for (const symbolName of symbolNames) {
             root.definitions[symbolName] = this.getTypeDefinition(

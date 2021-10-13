@@ -50,7 +50,7 @@
     "glob": "^7.1.7",
     "json-stable-stringify": "^1.0.1",
     "ts-node": "^10.2.1",
-    "typescript": "~4.2.3",
+    "typescript": "~4.4.4",
     "yargs": "^17.1.1"
   },
   "devDependencies": {
@@ -69,7 +69,7 @@
   "scripts": {
     "prepublishOnly": "yarn build",
     "test": "yarn build && mocha -t 5000 --require source-map-support/register dist/test",
-    "debug": "ts-node --inspect=19248 --debug-brk typescript-json-schema-cli.ts",
+    "debug": "node --inspect=19248 --inspect-brk -r ts-node/register typescript-json-schema-cli.ts",
     "docs": "./update-docs.js",
     "run": "ts-node typescript-json-schema-cli.ts",
     "build": "tsc -p .",

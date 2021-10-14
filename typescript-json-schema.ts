@@ -351,11 +351,12 @@ function makeNullable(def: Definition): Definition {
 function getCanonicalDeclaration(sym: ts.Symbol): ts.Declaration {
     if (sym.valueDeclaration !== undefined) {
         return sym.valueDeclaration;
-    } else if (sym.declarations.length === 1) {
+    } else if (sym.declarations?.length === 1) {
         return sym.declarations[0];
     }
 
-    throw new Error(`Symbol "${sym.name}" has no valueDeclaration and ${sym.declarations.length} declarations.`);
+    const declarationCount = sym.declarations?.length ?? 0;
+    throw new Error(`Symbol "${sym.name}" has no valueDeclaration and ${declarationCount} declarations.`);
 }
 
 /**
@@ -548,7 +549,9 @@ export class JsonSchemaGenerator {
         const jsdocs = symbol.getJsDocTags();
         jsdocs.forEach((doc) => {
             // if we have @TJS-... annotations, we have to parse them
-            let [name, text] = [doc.name, doc.text as string];
+            let name = doc.name;
+            const originalText = doc.text ? doc.text.map(t => t.text).join("") : "";
+            let text = originalText;
             // In TypeScript versions prior to 3.7, it stops parsing the annotation
             // at the first non-alphanumeric character and puts the rest of the line as the
             // "text" of the annotation, so we have a little hack to check for the name
@@ -560,7 +563,7 @@ export class JsonSchemaGenerator {
                     text = "true";
                 }
             } else if (name === "TJS" && text.startsWith("-")) {
-                let match: string[] | RegExpExecArray | null = new RegExp(REGEX_TJS_JSDOC).exec(doc.text!);
+                let match: string[] | RegExpExecArray | null = new RegExp(REGEX_TJS_JSDOC).exec(originalText);
                 if (match) {
                     name = match[1];
                     text = match[2];
@@ -1001,7 +1004,8 @@ export class JsonSchemaGenerator {
 
             const decls = prop.declarations;
             return !(
-                decls?.filter((decl) => {
+                decls &&
+                decls.filter((decl) => {
                     const mods = decl.modifiers;
                     return mods && mods.filter((mod) => mod.kind === ts.SyntaxKind.PrivateKeyword).length > 0;
                 }).length > 0

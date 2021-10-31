@@ -1,5 +1,5 @@
 import * as glob from "glob";
-import * as stringify from "json-stable-stringify";
+import { stringify } from "safe-stable-stringify";
 import * as path from "path";
 import { createHash } from "crypto";
 import * as ts from "typescript";
@@ -1684,7 +1684,7 @@ export async function exec(filePattern: string, fullTypeName: string, args = get
         throw new Error("No output definition. Probably caused by errors prior to this?");
     }
 
-    const json = stringify(definition, { space: 4 }) + "\n\n";
+    const json = stringify(definition, null, 4) + "\n\n";
     if (args.out) {
         return new Promise((resolve, reject) => {
             const fs = require("fs");

@@ -655,7 +655,7 @@ export class JsonSchemaGenerator {
                 // no type restriction, so that anything will match
             } else if (propertyTypeString === "Date" && !this.args.rejectDateType) {
                 definition.type = "string";
-                definition.format = "date-time";
+                definition.format = definition.format || "date-time";
             } else if (propertyTypeString === "object") {
                 definition.type = "object";
                 definition.properties = {};

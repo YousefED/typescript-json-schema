@@ -8,11 +8,21 @@
         "var2": {
             "format": "date-time",
             "type": "string"
+        },
+        "var3": {
+            "format": "date",
+            "type": "string"
+        },
+        "var4": {
+            "format": "date",
+            "type": "string"
         }
     },
     "required": [
         "var1",
-        "var2"
+        "var2",
+        "var3",
+        "var4"
     ],
     "type": "object"
 }

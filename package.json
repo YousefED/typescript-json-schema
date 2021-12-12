@@ -66,15 +66,15 @@
     "tslint": "^6.1.3"
   },
   "scripts": {
-    "prepublishOnly": "yarn build",
-    "test": "yarn build && mocha -t 5000 --require source-map-support/register dist/test",
+    "prepare": "tsc",
+    "test": "tsc && mocha -t 5000 --require source-map-support/register dist/test",
     "debug": "node --inspect=19248 --inspect-brk -r ts-node/register typescript-json-schema-cli.ts",
     "docs": "./update-docs.js",
     "run": "ts-node typescript-json-schema-cli.ts",
-    "build": "tsc -p .",
+    "build": "tsc",
     "lint": "tslint --project tsconfig.json -c tslint.json --exclude '**/*.d.ts'",
-    "style": "yarn prettier --write *.js *.ts test/*.ts",
-    "dev": "tsc -w -p .",
+    "style": "prettier --write *.js *.ts test/*.ts",
+    "dev": "tsc -w",
     "test:dev": "mocha -t 5000 --watch --require source-map-support/register dist/test"
   }
 }

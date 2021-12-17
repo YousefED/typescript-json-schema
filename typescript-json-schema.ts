@@ -649,7 +649,7 @@ export class JsonSchemaGenerator {
                 definition.type = "boolean";
             } else if (flags & ts.TypeFlags.Null) {
                 definition.type = "null";
-            } else if (flags & ts.TypeFlags.Undefined) {
+            } else if (flags & ts.TypeFlags.Undefined || propertyTypeString === "void") {
                 definition.type = "undefined";
             } else if (flags & ts.TypeFlags.Any || flags & ts.TypeFlags.Unknown) {
                 // no type restriction, so that anything will match

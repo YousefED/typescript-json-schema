@@ -4,6 +4,7 @@ class MyObject {
      valNullable: number | null;
      valUndef: number | undefined;
      valOpt?: number;
+     valVoid: number | void;
 
      valTrueOpt?: true;
      valTrueOrNull: true|null;

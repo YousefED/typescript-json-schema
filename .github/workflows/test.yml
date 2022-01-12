@@ -7,29 +7,13 @@ on:
   pull_request:
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 15
-      - name: Lint
-        run: |
-          yarn --frozen-lockfile
-          yarn lint
-
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [14, 15]
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      - run: yarn --frozen-lockfile
+      - name: Lint
+        run: yarn lint
       - name: Test
-        run: |
-          yarn --frozen-lockfile
-          yarn test
+        run: yarn test

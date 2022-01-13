@@ -38,6 +38,7 @@ Options:
   --propOrder           Create property order definitions.                           [boolean] [default: false]
   --required            Create required array for non-optional properties.           [boolean] [default: false]
   --strictNullChecks    Make values non-nullable by default.                         [boolean] [default: false]
+  --esModuleInterop     Use esModuleInterop when loading typescript modules.         [boolean] [default: false]
   --useTypeOfKeyword    Use `typeOf` keyword (https://goo.gl/DC6sni) for functions.  [boolean] [default: false]
   --out, -o             The output file, defaults to using stdout
   --validationKeywords  Provide additional validation keywords to include            [array]   [default: []]
@@ -83,6 +84,9 @@ const schema = TJS.generateSchema(program, "MyType", settings);
 // ... or a generator that lets us incrementally get more schemas
 
 const generator = TJS.buildGenerator(program, settings);
+
+// generator can be also reused to speed up generating the schema if usecase allows:
+const schemaWithReusedGenerator = TJS.generateSchema(program, "MyType", settings, [], generator);
 
 // all symbols
 const symbols = generator.getUserSymbols();

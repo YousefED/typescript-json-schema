@@ -3,7 +3,7 @@ import { exec, getDefaultArgs } from "../typescript-json-schema";
 
 describe("error", () => {
     it("error-check", async () => {
-        try  {
+        try {
             await exec("test/programs/dates/", "MyObject", getDefaultArgs());
             assert.fail("Expected exec to fail");
         } catch (err) {

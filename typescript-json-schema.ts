@@ -1,5 +1,5 @@
 import * as glob from "glob";
-import * as stringify from "json-stable-stringify";
+import { stringify } from "safe-stable-stringify";
 import * as path from "path";
 import { createHash } from "crypto";
 import * as ts from "typescript";
@@ -48,6 +48,7 @@ export function getDefaultArgs(): Args {
         typeOfKeyword: false,
         required: false,
         strictNullChecks: false,
+        esModuleInterop: false,
         ignoreErrors: false,
         out: "",
         validationKeywords: [],
@@ -76,6 +77,7 @@ export type Args = {
     typeOfKeyword: boolean;
     required: boolean;
     strictNullChecks: boolean;
+    esModuleInterop: boolean;
     ignoreErrors: boolean;
     out: string;
     validationKeywords: string[];
@@ -351,11 +353,12 @@ function makeNullable(def: Definition): Definition {
 function getCanonicalDeclaration(sym: ts.Symbol): ts.Declaration {
     if (sym.valueDeclaration !== undefined) {
         return sym.valueDeclaration;
-    } else if (sym.declarations.length === 1) {
+    } else if (sym.declarations?.length === 1) {
         return sym.declarations[0];
     }
 
-    throw new Error(`Symbol "${sym.name}" has no valueDeclaration and ${sym.declarations.length} declarations.`);
+    const declarationCount = sym.declarations?.length ?? 0;
+    throw new Error(`Symbol "${sym.name}" has no valueDeclaration and ${declarationCount} declarations.`);
 }
 
 /**
@@ -549,7 +552,9 @@ export class JsonSchemaGenerator {
         const jsdocs = symbol.getJsDocTags();
         jsdocs.forEach((doc) => {
             // if we have @TJS-... annotations, we have to parse them
-            let [name, text] = [doc.name, doc.text as string];
+            let name = doc.name;
+            const originalText = doc.text ? doc.text.map(t => t.text).join("") : "";
+            let text = originalText;
             // In TypeScript versions prior to 3.7, it stops parsing the annotation
             // at the first non-alphanumeric character and puts the rest of the line as the
             // "text" of the annotation, so we have a little hack to check for the name
@@ -561,7 +566,7 @@ export class JsonSchemaGenerator {
                     text = "true";
                 }
             } else if (name === "TJS" && text.startsWith("-")) {
-                let match: string[] | RegExpExecArray | null = new RegExp(REGEX_TJS_JSDOC).exec(doc.text!);
+                let match: string[] | RegExpExecArray | null = new RegExp(REGEX_TJS_JSDOC).exec(originalText);
                 if (match) {
                     name = match[1];
                     text = match[2];
@@ -648,13 +653,13 @@ export class JsonSchemaGenerator {
                 definition.type = "boolean";
             } else if (flags & ts.TypeFlags.Null) {
                 definition.type = "null";
-            } else if (flags & ts.TypeFlags.Undefined) {
+            } else if (flags & ts.TypeFlags.Undefined || propertyTypeString === "void") {
                 definition.type = "undefined";
             } else if (flags & ts.TypeFlags.Any || flags & ts.TypeFlags.Unknown) {
                 // no type restriction, so that anything will match
             } else if (propertyTypeString === "Date" && !this.args.rejectDateType) {
                 definition.type = "string";
-                definition.format = "date-time";
+                definition.format = definition.format || "date-time";
             } else if (propertyTypeString === "object") {
                 definition.type = "object";
                 definition.properties = {};
@@ -1004,7 +1009,8 @@ export class JsonSchemaGenerator {
 
             const decls = prop.declarations;
             return !(
-                decls?.filter((decl) => {
+                decls &&
+                decls.filter((decl) => {
                     const mods = decl.modifiers;
                     return mods && mods.filter((mod) => mod.kind === ts.SyntaxKind.PrivateKeyword).length > 0;
                 }).length > 0
@@ -1598,9 +1604,10 @@ export function generateSchema(
     program: ts.Program,
     fullTypeName: string,
     args: PartialArgs = {},
-    onlyIncludeFiles?: string[]
+    onlyIncludeFiles?: string[],
+    externalGenerator?: JsonSchemaGenerator
 ): Definition | null {
-    const generator = buildGenerator(program, args, onlyIncludeFiles);
+    const generator = externalGenerator ?? buildGenerator(program, args, onlyIncludeFiles);
 
     if (generator === null) {
         return null;
@@ -1672,6 +1679,7 @@ export async function exec(filePattern: string, fullTypeName: string, args = get
         onlyIncludeFiles = glob.sync(filePattern);
         program = getProgramFromFiles(onlyIncludeFiles, {
             strictNullChecks: args.strictNullChecks,
+            esModuleInterop: args.esModuleInterop
         });
         onlyIncludeFiles = onlyIncludeFiles.map(normalizeFileName);
     }
@@ -1681,7 +1689,7 @@ export async function exec(filePattern: string, fullTypeName: string, args = get
         throw new Error("No output definition. Probably caused by errors prior to this?");
     }
 
-    const json = stringify(definition, { space: 4 }) + "\n\n";
+    const json = stringify(definition, null, 4) + "\n\n";
     if (args.out) {
         return new Promise((resolve, reject) => {
             const fs = require("fs");
@@ -1689,7 +1697,7 @@ export async function exec(filePattern: string, fullTypeName: string, args = get
                 if (mkErr) {
                     return reject(new Error("Unable to create parent directory for output file: " + mkErr.message));
                 }
-                fs.writeFile(args.out, json, function(wrErr: Error) {
+                fs.writeFile(args.out, json, function (wrErr: Error) {
                     if (wrErr) {
                         return reject(new Error("Unable to write output file: " + wrErr.message));
                     }
@@ -1700,7 +1708,7 @@ export async function exec(filePattern: string, fullTypeName: string, args = get
     } else {
         const hasBeenBuffered = process.stdout.write(json);
         if (hasBeenBuffered) {
-            return new Promise(resolve => process.stdout.on("drain", () => resolve()));
+            return new Promise((resolve) => process.stdout.on("drain", () => resolve()));
         }
     }
 }

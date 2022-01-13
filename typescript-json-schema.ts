@@ -4,7 +4,9 @@ import * as path from "path";
 import { createHash } from "crypto";
 import * as ts from "typescript";
 import { JSONSchema7 } from "json-schema";
+import { pathEqual } from "path-equal";
 export { Program, CompilerOptions, Symbol } from "typescript";
+
 
 const vm = require("vm");
 
@@ -507,6 +509,7 @@ export class JsonSchemaGenerator {
         this.inheritingTypes = inheritingTypes;
         this.tc = tc;
         this.userValidationKeywords = args.validationKeywords.reduce((acc, word) => ({ ...acc, [word]: true }), {});
+
     }
 
     public get ReffedDefinitions(): { [key: string]: Definition } {
@@ -622,6 +625,7 @@ export class JsonSchemaGenerator {
                 fixedTypes.splice(fixedTypes.length - 1, 1);
             } else {
                 definition.maxItems = targetTupleType.fixedLength;
+
             }
         } else {
             const propertyTypeString = this.tc.typeToString(
@@ -971,6 +975,7 @@ export class JsonSchemaGenerator {
         }
         return definition;
     }
+
 
     private getClassDefinition(clazzType: ts.Type, definition: Definition): Definition {
         const node = clazzType.getSymbol()!.getDeclarations()![0];
@@ -1447,7 +1452,7 @@ export class JsonSchemaGenerator {
             if (onlyIncludeFiles === undefined) {
                 return !file.isDeclarationFile;
             }
-            return onlyIncludeFiles.indexOf(file.fileName) >= 0;
+            return onlyIncludeFiles.filter(f => pathEqual(f,file.fileName)).length > 0;
         }
         const files = program.getSourceFiles().filter(includeFile);
         if (files.length) {

@@ -5,6 +5,8 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 import { versionMajorMinor as typescriptVersionMajorMinor } from "typescript";
 import * as TJS from "../typescript-json-schema";
+import {JSONPath} from "jsonpath-plus";
+import {isEmpty} from "lodash";
 
 let ajvWarnings: string[] = [];
 const ajv = new Ajv({
@@ -47,7 +49,6 @@ export function assertSchema(
 
         const files = [resolve(BASE + group + "/main.ts")];
         const actual = TJS.generateSchema(TJS.getProgramFromFiles(files, compilerOptions), type, settings, files);
-
         // writeFileSync(BASE + group + "/schema.json", stringify(actual, {space: 4}) + "\n\n");
 
         const file = readFileSync(BASE + group + "/schema.json", "utf8");
@@ -67,6 +68,13 @@ export function assertSchema(
                 ajvWarnings = [];
                 ajv.compile(actual);
                 assert.deepEqual(ajvWarnings, ajvOptions.expectedWarnings || [], "Got unexpected AJV warnings");
+            }
+
+            const refs:{$ref: string}[] = JSONPath({path: "$..[?(@ && @.$ref)]", json: actual});
+            if (!isEmpty(refs)) {
+                assert.isTrue(refs.every(({$ref: r}) => {
+                    return !(/[<>,]/.test(r));
+                }));
             }
         }
     });
@@ -282,6 +290,7 @@ describe("schema", () => {
 
     describe("generics", () => {
         assertSchema("generic-simple", "MyObject");
+        assertSchema("generic-simple-unique", "MyObject", {uniqueNames: true});
         assertSchema("generic-arrays", "MyObject");
         assertSchema("generic-multiple", "MyObject");
         assertSchema("generic-multiargs", "MyObject");

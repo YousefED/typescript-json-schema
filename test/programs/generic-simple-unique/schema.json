@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
-        "MyGeneric_number_": {
+        "MyGeneric_number_.7590b3ed": {
             "properties": {
                 "field": {
                     "type": "number"
@@ -15,7 +15,7 @@
     },
     "properties": {
         "value": {
-            "$ref": "#/definitions/MyGeneric_number_"
+            "$ref": "#/definitions/MyGeneric_number_.7590b3ed"
         }
     },
     "required": [

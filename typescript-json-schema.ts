@@ -14,6 +14,7 @@ const REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;
 const REGEX_TSCONFIG_NAME = /^.*\.json$/;
 const REGEX_TJS_JSDOC = /^-([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
 const REGEX_GROUP_JSDOC = /^[.]?([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
+const REGEX_GENERIC_INVALID_TOKENS = /[<>,]/g;
 /**
  * Resolve required file, his path and a property name,
  *      pattern: require([file_path]).[property_name]
@@ -1258,6 +1259,7 @@ export class JsonSchemaGenerator {
                 fullTypeName = this.getTypeName(typ);
             }
         }
+        fullTypeName = fullTypeName.replace(REGEX_GENERIC_INVALID_TOKENS, "_");
 
         // Handle recursive types
         if (!isRawType || !!typ.aliasSymbol) {
@@ -1402,7 +1404,6 @@ export class JsonSchemaGenerator {
             undefined,
             this.userSymbols[symbolName] || undefined
         );
-
         if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
             def.definitions = this.reffedDefinitions;
         }
@@ -1683,7 +1684,6 @@ export async function exec(filePattern: string, fullTypeName: string, args = get
         });
         onlyIncludeFiles = onlyIncludeFiles.map(normalizeFileName);
     }
-
     const definition = generateSchema(program, fullTypeName, args, onlyIncludeFiles);
     if (definition === null) {
         throw new Error("No output definition. Probably caused by errors prior to this?");

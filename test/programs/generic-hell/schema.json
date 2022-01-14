@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
-        "GenericA<\"alias\">": {
+        "GenericA_\"alias\"_": {
             "properties": {
                 "a": {
                     "enum": [
@@ -15,7 +15,7 @@
             ],
             "type": "object"
         },
-        "GenericA<1>": {
+        "GenericA_1_": {
             "properties": {
                 "a": {
                     "enum": [
@@ -29,7 +29,7 @@
             ],
             "type": "object"
         },
-        "GenericA<string>": {
+        "GenericA_string_": {
             "properties": {
                 "a": {
                     "type": "string"
@@ -40,7 +40,7 @@
             ],
             "type": "object"
         },
-        "GenericC<\"alias\">": {
+        "GenericC_\"alias\"_": {
             "properties": {
                 "c": {
                     "enum": [
@@ -54,7 +54,7 @@
             ],
             "type": "object"
         },
-        "GenericC<2>": {
+        "GenericC_2_": {
             "properties": {
                 "c": {
                     "enum": [
@@ -68,10 +68,10 @@
             ],
             "type": "object"
         },
-        "GenericC<GenericA<string>>": {
+        "GenericC_GenericA_string__": {
             "properties": {
                 "c": {
-                    "$ref": "#/definitions/GenericA<string>"
+                    "$ref": "#/definitions/GenericA_string_"
                 }
             },
             "required": [
@@ -79,10 +79,10 @@
             ],
             "type": "object"
         },
-        "GenericC<GenericC<GenericA<string>>>": {
+        "GenericC_GenericC_GenericA_string___": {
             "properties": {
                 "c": {
-                    "$ref": "#/definitions/GenericC<GenericA<string>>"
+                    "$ref": "#/definitions/GenericC_GenericA_string__"
                 }
             },
             "required": [
@@ -90,7 +90,7 @@
             ],
             "type": "object"
         },
-        "SomeGeneric<\"alias\",\"alias\">": {
+        "SomeGeneric_\"alias\",\"alias\"_": {
             "properties": {
                 "a": {
                     "enum": [
@@ -105,10 +105,10 @@
                     "type": "string"
                 },
                 "c": {
-                    "$ref": "#/definitions/GenericA<\"alias\">"
+                    "$ref": "#/definitions/GenericA_\"alias\"_"
                 },
                 "d": {
-                    "$ref": "#/definitions/GenericC<\"alias\">"
+                    "$ref": "#/definitions/GenericC_\"alias\"_"
                 }
             },
             "required": [
@@ -119,7 +119,7 @@
             ],
             "type": "object"
         },
-        "SomeGeneric<1,2>": {
+        "SomeGeneric_1_2_": {
             "properties": {
                 "a": {
                     "enum": [
@@ -134,10 +134,10 @@
                     "type": "number"
                 },
                 "c": {
-                    "$ref": "#/definitions/GenericA<1>"
+                    "$ref": "#/definitions/GenericA_1_"
                 },
                 "d": {
-                    "$ref": "#/definitions/GenericC<2>"
+                    "$ref": "#/definitions/GenericC_2_"
                 }
             },
             "required": [
@@ -154,13 +154,13 @@
             "type": "number"
         },
         "c": {
-            "$ref": "#/definitions/GenericC<GenericC<GenericA<string>>>"
+            "$ref": "#/definitions/GenericC_GenericC_GenericA_string___"
         },
         "someAlias": {
-            "$ref": "#/definitions/SomeGeneric<\"alias\",\"alias\">"
+            "$ref": "#/definitions/SomeGeneric_\"alias\",\"alias\"_"
         },
         "someGeneric": {
-            "$ref": "#/definitions/SomeGeneric<1,2>"
+            "$ref": "#/definitions/SomeGeneric_1_2_"
         }
     },
     "required": [

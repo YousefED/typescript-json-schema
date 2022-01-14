@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
-        "MyGeneric<number>": {
+        "MyGeneric_number_": {
             "properties": {
                 "field": {
                     "type": "number"
@@ -12,7 +12,7 @@
             ],
             "type": "object"
         },
-        "MyGeneric<string>": {
+        "MyGeneric_string_": {
             "properties": {
                 "field": {
                     "type": "string"
@@ -26,10 +26,10 @@
     },
     "properties": {
         "value1": {
-            "$ref": "#/definitions/MyGeneric<number>"
+            "$ref": "#/definitions/MyGeneric_number_"
         },
         "value2": {
-            "$ref": "#/definitions/MyGeneric<string>"
+            "$ref": "#/definitions/MyGeneric_string_"
         }
     },
     "required": [

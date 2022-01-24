@@ -140,7 +140,7 @@ export interface Shape {
      * The size of the shape.
      *
      * @minimum 0
-     * @TJS-type integer
+     * @type integer
      */
     size: number;
 }
@@ -166,8 +166,6 @@ will be translated to
     }
 }
 ```
-
-Note that we needed to use `@TJS-type` instead of just `@type` because of an [issue with the typescript compiler](https://github.com/Microsoft/TypeScript/issues/13498).
 
 You can also override the type of array items, either listing each field in its own annotation or one
 annotation with the full JSON of the spec (for special cases). This replaces the item types that would

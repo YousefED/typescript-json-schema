@@ -527,6 +527,17 @@ export class JsonSchemaGenerator {
         return false;
     }
 
+    private resetSchemaSpecificProperties() {
+      this.reffedDefinitions = {};
+      this.typeIdsByName = {};
+      this.typeNamesById = {};
+
+      // restore schema overrides
+      this.schemaOverrides.forEach((value, key) => {
+        this.reffedDefinitions[key] = value;
+      });
+    }
+
     /**
      * Parse the comments of a symbol into the definition and other annotations.
      */
@@ -1386,7 +1397,6 @@ export class JsonSchemaGenerator {
     }
 
     public setSchemaOverride(symbolName: string, schema: Definition): void {
-        this.reffedDefinitions[symbolName] = schema;
         this.schemaOverrides.set(symbolName, schema);
     }
 
@@ -1394,6 +1404,9 @@ export class JsonSchemaGenerator {
         if (!this.allSymbols[symbolName]) {
             throw new Error(`type ${symbolName} not found`);
         }
+
+        this.resetSchemaSpecificProperties();
+
         const def = this.getTypeDefinition(
             this.allSymbols[symbolName],
             this.args.topRef,
@@ -1419,6 +1432,9 @@ export class JsonSchemaGenerator {
             $schema: "http://json-schema.org/draft-07/schema#",
             definitions: {},
         };
+
+        this.resetSchemaSpecificProperties();
+
         const id = this.args.id;
 
         if (id) {

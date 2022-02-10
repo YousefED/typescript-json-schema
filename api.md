@@ -1,4 +1,4 @@
-_Auto-generated file. Updated on NPM deploy. Update manually with 'yarn docs'._
+_Auto-generated file. Updated with NPM deploy. Update manually with 'yarn docs'._
 
 # typescript-json-schema test examples
 
@@ -149,7 +149,8 @@ interface MyObject {
      * @$ref http://my-schema.org
      */
     externalRefOverride: MySubObject;
-}```
+}
+```
 
 
 ## [annotation-required](./test/programs/annotation-required)
@@ -169,7 +170,8 @@ const myDefaultExample: MyDefaultObject[] = [{
     free: true
 }]
 
-export default myDefaultExample;```
+export default myDefaultExample;
+```
 
 
 ## [annotation-required](./test/programs/annotation-required)
@@ -341,7 +343,8 @@ interface MyObject {
 export interface MyObject {
     a: any;
     b: unknown;
-}```
+}
+```
 
 
 ## [argument-id](./test/programs/argument-id)
@@ -1662,7 +1665,8 @@ interface MyObject {
 ```ts
 interface MyObject {
     myFunction: Function;
-}```
+}
+```
 
 
 ## [type-globalThis](./test/programs/type-globalThis)

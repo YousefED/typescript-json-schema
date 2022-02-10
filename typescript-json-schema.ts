@@ -1666,6 +1666,7 @@ export function programFromConfig(configFileName: string, onlyIncludeFiles?: str
     delete options.declaration;
     delete options.declarationDir;
     delete options.declarationMap;
+    delete options.emitDeclarationOnly;
 
     const program = ts.createProgram({
         rootNames: onlyIncludeFiles || configParseResult.fileNames,

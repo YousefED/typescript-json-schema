@@ -14,7 +14,9 @@ function getFiles(base) {
 
 const tests = getFiles("./test/programs");
 
-let source = "# typescript-json-schema test examples\n\n";
+let source =
+    "_Auto-generated file. Updated with NPM deploy. Update manually with 'yarn docs'._\n\n" +
+    "# typescript-json-schema test examples\n\n";
 tests.forEach((file) => {
     const contents = fs.readFileSync(file, "utf8");
     const folder = file.split("/").slice(-2)[0];

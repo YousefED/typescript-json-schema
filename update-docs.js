@@ -13,12 +13,15 @@ function getFiles(base) {
 }
 
 const tests = getFiles("./test/programs");
+const ensureTrailingLineBrake = (contents) => (contents[contents.length - 1] === "\n" ? contents : contents + "\n");
 
-let source = "# typescript-json-schema test examples\n\n";
+let source =
+    "_Auto-generated file. Updated with NPM deploy. Update manually with 'yarn docs'._\n\n" +
+    "# typescript-json-schema test examples\n\n";
 tests.forEach((file) => {
     const contents = fs.readFileSync(file, "utf8");
     const folder = file.split("/").slice(-2)[0];
-    source += `## [${folder}](./test/programs/${folder})\n\n\`\`\`ts\n${contents}\`\`\`\n\n\n`;
+    source += `## [${folder}](./test/programs/${folder})\n\n\`\`\`ts\n${ensureTrailingLineBrake(contents)}\`\`\`\n\n\n`;
 });
 
 fs.writeFileSync("./api.md", source);

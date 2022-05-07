@@ -32,11 +32,7 @@
     "type": "git",
     "url": "git@github.com:YousefED/typescript-json-schema.git"
   },
-  "licenses": [
-    {
-      "type": "BSD-3-Clause"
-    }
-  ],
+  "license": "BSD-3-Clause",
   "keywords": [
     "typescript",
     "json",

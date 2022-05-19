@@ -346,6 +346,7 @@ describe("schema", () => {
     describe("maps and arrays", () => {
         assertSchema("array-readonly", "MyReadOnlyArray");
         assertSchema("array-types", "MyArray");
+        assertSchema("array-empty", "MyEmptyArray");
         assertSchema("map-types", "MyObject");
         assertSchema("extra-properties", "MyObject");
     });

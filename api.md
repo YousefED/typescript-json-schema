@@ -375,6 +375,13 @@ export interface MyObject {
 ```
 
 
+## [array-empty](./test/programs/array-empty)
+
+```ts
+type MyEmptyArray = [];
+```
+
+
 ## [array-readonly](./test/programs/array-readonly)
 
 ```ts

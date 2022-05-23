@@ -716,10 +716,8 @@ export class JsonSchemaGenerator {
             if (type && type.kind & ts.SyntaxKind.TypeReference && type.typeName) {
                 const symbol = this.tc.getSymbolAtLocation(type.typeName);
                 if (symbol && symbol.flags & ts.SymbolFlags.Alias) {
-                    //         console.log("isAlias", this.tc.getAliasedSymbol(symbol));
                     return this.tc.getAliasedSymbol(symbol);
                 }
-                //     console.log("IsNotAlias");
                 return symbol;
             }
         }

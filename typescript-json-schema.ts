@@ -7,7 +7,6 @@ import { JSONSchema7 } from "json-schema";
 import { pathEqual } from "path-equal";
 export { Program, CompilerOptions, Symbol } from "typescript";
 
-
 const vm = require("vm");
 
 const REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;
@@ -512,7 +511,6 @@ export class JsonSchemaGenerator {
         this.inheritingTypes = inheritingTypes;
         this.tc = tc;
         this.userValidationKeywords = args.validationKeywords.reduce((acc, word) => ({ ...acc, [word]: true }), {});
-
     }
 
     public get ReffedDefinitions(): { [key: string]: Definition } {
@@ -525,6 +523,17 @@ export class JsonSchemaGenerator {
             return declarations[0].parent.getSourceFile().hasNoDefaultLib;
         }
         return false;
+    }
+
+    private resetSchemaSpecificProperties() {
+        this.reffedDefinitions = {};
+        this.typeIdsByName = {};
+        this.typeNamesById = {};
+
+        // restore schema overrides
+        this.schemaOverrides.forEach((value, key) => {
+            this.reffedDefinitions[key] = value;
+        });
     }
 
     /**
@@ -560,7 +569,7 @@ export class JsonSchemaGenerator {
         jsdocs.forEach((doc) => {
             // if we have @TJS-... annotations, we have to parse them
             let name = doc.name;
-            const originalText = doc.text ? doc.text.map(t => t.text).join("") : "";
+            const originalText = doc.text ? doc.text.map((t) => t.text).join("") : "";
             let text = originalText;
             // In TypeScript versions prior to 3.7, it stops parsing the annotation
             // at the first non-alphanumeric character and puts the rest of the line as the
@@ -629,7 +638,9 @@ export class JsonSchemaGenerator {
             const elemTypes: ts.NodeArray<ts.TypeNode> = (propertyType as any).typeArguments;
             const fixedTypes = elemTypes.map((elType) => this.getTypeDefinition(elType as any));
             definition.type = "array";
-            definition.items = fixedTypes;
+            if (fixedTypes.length > 0) {
+                definition.items = fixedTypes;
+            }
             const targetTupleType = (propertyType as ts.TupleTypeReference).target;
             definition.minItems = targetTupleType.minLength;
             if (targetTupleType.hasRestElement) {
@@ -637,7 +648,6 @@ export class JsonSchemaGenerator {
                 fixedTypes.splice(fixedTypes.length - 1, 1);
             } else {
                 definition.maxItems = targetTupleType.fixedLength;
-
             }
         } else {
             const propertyTypeString = this.tc.typeToString(
@@ -870,7 +880,8 @@ export class JsonSchemaGenerator {
             if (value !== undefined) {
                 pushEnumValue(value);
             } else {
-                const def = this.getTypeDefinition(valueType);
+                const symbol = valueType.aliasSymbol;
+                const def = this.getTypeDefinition(valueType, undefined, undefined, symbol, symbol);
                 if (def.type === "undefined") {
                     if (prop) {
                         (<any>prop).mayBeUndefined = true;
@@ -987,7 +998,6 @@ export class JsonSchemaGenerator {
         }
         return definition;
     }
-
 
     private getClassDefinition(clazzType: ts.Type, definition: Definition): Definition {
         const node = clazzType.getSymbol()!.getDeclarations()![0];
@@ -1393,7 +1403,6 @@ export class JsonSchemaGenerator {
     }
 
     public setSchemaOverride(symbolName: string, schema: Definition): void {
-        this.reffedDefinitions[symbolName] = schema;
         this.schemaOverrides.set(symbolName, schema);
     }
 
@@ -1401,6 +1410,9 @@ export class JsonSchemaGenerator {
         if (!this.allSymbols[symbolName]) {
             throw new Error(`type ${symbolName} not found`);
         }
+
+        this.resetSchemaSpecificProperties();
+
         const def = this.getTypeDefinition(
             this.allSymbols[symbolName],
             this.args.topRef,
@@ -1426,6 +1438,9 @@ export class JsonSchemaGenerator {
             $schema: "http://json-schema.org/draft-07/schema#",
             definitions: {},
         };
+
+        this.resetSchemaSpecificProperties();
+
         const id = this.args.id;
 
         if (id) {
@@ -1465,7 +1480,7 @@ export class JsonSchemaGenerator {
             if (onlyIncludeFiles === undefined) {
                 return !file.isDeclarationFile;
             }
-            return onlyIncludeFiles.filter(f => pathEqual(f,file.fileName)).length > 0;
+            return onlyIncludeFiles.filter((f) => pathEqual(f, file.fileName)).length > 0;
         }
         const files = program.getSourceFiles().filter(includeFile);
         if (files.length) {
@@ -1686,7 +1701,7 @@ export async function exec(filePattern: string, fullTypeName: string, args = get
         onlyIncludeFiles = glob.sync(filePattern);
         program = getProgramFromFiles(onlyIncludeFiles, {
             strictNullChecks: args.strictNullChecks,
-            esModuleInterop: args.esModuleInterop
+            esModuleInterop: args.esModuleInterop,
         });
         onlyIncludeFiles = onlyIncludeFiles.map(normalizeFileName);
     }

@@ -556,7 +556,9 @@ export class JsonSchemaGenerator {
                       // If a comment contains a "{@link XYZ}" inline tag that could not be
                       // resolved by the TS checker, then this comment will contain a trailing
                       // whitespace that we need to remove.
-                      if (comment.kind === 'linkText') return newlineNormalizedComment.trim();
+                      if (comment.kind === "linkText") {
+                        return newlineNormalizedComment.trim();
+                      }
 
                       return newlineNormalizedComment;
                     })

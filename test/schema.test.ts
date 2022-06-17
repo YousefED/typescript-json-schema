@@ -301,6 +301,7 @@ describe("schema", () => {
             aliasRef: true,
         });
         assertSchema("comments-from-lib", "MyObject");
+        assertSchema("comments-inline-tags", "MyObject");
     });
 
     describe("types", () => {

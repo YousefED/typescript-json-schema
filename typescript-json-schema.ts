@@ -550,10 +550,19 @@ export class JsonSchemaGenerator {
 
             if (comments.length) {
                 definition.description = comments
-                    .map((comment) =>
-                        comment.kind === "lineBreak" ? comment.text : comment.text.trim().replace(/\r\n/g, "\n")
-                    )
-                    .join("");
+                    .map((comment) => {
+                      const newlineNormalizedComment = comment.text.replace(/\r\n/g, "\n");
+
+                      // If a comment contains a "{@link XYZ}" inline tag that could not be
+                      // resolved by the TS checker, then this comment will contain a trailing
+                      // whitespace that we need to remove.
+                      if (comment.kind === "linkText") {
+                        return newlineNormalizedComment.trim();
+                      }
+
+                      return newlineNormalizedComment;
+                    })
+                    .join("").trim();
             }
         }
 

@@ -418,6 +418,8 @@ describe("schema", () => {
         assertSchemas("type-default-number-as-integer", "*", {
             defaultNumberType: "integer",
         });
+
+        assertSchema("override", "MyObject");
     });
 
     describe("object index", () => {

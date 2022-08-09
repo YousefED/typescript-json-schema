@@ -228,6 +228,8 @@ Translation:
 
 This same syntax can be used for `contains` and `additionalProperties`.
 
+To completely override types aliased from third-party libraries use `@override`.
+
 ### `integer` type alias
 
 If you create a type alias `integer` for `number` it will be mapped to the `integer` type in the generated JSON schema.

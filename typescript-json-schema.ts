@@ -93,6 +93,7 @@ export type PartialArgs = Partial<Args>;
 
 export type PrimitiveType = number | boolean | string | null;
 
+type MetaDefinitionFields = "ignore";
 type RedefinedFields =
     | "type"
     | "items"
@@ -1207,10 +1208,10 @@ export class JsonSchemaGenerator {
 
         // Parse property comments now to skip recursive if ignore.
         if (prop) {
-            const defs = {};
+            const defs: Definition & { [k in MetaDefinitionFields]?: "" } = {};
             const others = {};
             this.parseCommentsIntoDefinition(prop, defs, others);
-            if (defs.hasOwnProperty("ignore")) {
+            if (defs.hasOwnProperty("ignore") || defs.hasOwnProperty("type")) {
                 return defs;
             }
         }

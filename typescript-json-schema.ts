@@ -1025,11 +1025,6 @@ export class JsonSchemaGenerator {
             return definition;
         }
 
-        if (this.args.typeOfKeyword && node.kind === ts.SyntaxKind.FunctionType) {
-            definition.typeof = "function";
-            return definition;
-        }
-
         const clazz = <ts.ClassDeclaration>node;
         const props = this.tc.getPropertiesOfType(clazzType).filter((prop) => {
             // filter never
@@ -1207,15 +1202,6 @@ export class JsonSchemaGenerator {
         ) {
             typ = typ.aliasTypeArguments[0];
             reffedType = undefined;
-        }
-
-        if (
-            this.args.typeOfKeyword &&
-            typ.flags & ts.TypeFlags.Object &&
-            (<ts.ObjectType>typ).objectFlags & ts.ObjectFlags.Anonymous
-        ) {
-            definition.typeof = "function";
-            return definition;
         }
 
         let returnedDefinition = definition; // returned definition, may be a $ref

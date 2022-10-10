@@ -121,6 +121,7 @@ export interface Definition extends Omit<JSONSchema7, RedefinedFields> {
     propertyOrder?: string[];
     defaultProperties?: string[];
     typeof?: "function";
+    parameters?: Definition[];
 
     // Fields that must be redefined because they make use of this definition itself
     items?: DefinitionOrBoolean | DefinitionOrBoolean[];

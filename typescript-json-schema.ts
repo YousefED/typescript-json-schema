@@ -1374,7 +1374,7 @@ export class JsonSchemaGenerator {
                     // {} is TypeLiteral with no members. Need special case because it doesn't have declarations.
                     definition.type = "object";
                     definition.properties = {};
-                } else if (ts.isFunctionLike(node)) {
+                } else if (this.args.typeOfKeyword && ts.isFunctionLike(node)) {
                     this.getFunctionDefinition(typ, definition);
                 } else {
                     this.getClassDefinition(typ, definition);

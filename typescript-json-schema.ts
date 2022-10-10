@@ -1006,11 +1006,10 @@ export class JsonSchemaGenerator {
     private getFunctionDefinition(funcType: ts.Type, definition: Definition): Definition {
         const node = funcType.getSymbol()!.getDeclarations()![0];
 
-        // tiberiu
         const parameters = (node as ts.FunctionLikeDeclaration).parameters;
         definition.typeof = "function";
         definition.parameters = parameters
-            .map((p) => this.tc.getTypeAtLocation(p.type))
+            .map((p) => this.tc.getTypeAtLocation(p.type!))
             .map((type) => this.getTypeDefinition(type));
 
         return definition;
@@ -1374,7 +1373,7 @@ export class JsonSchemaGenerator {
                     // {} is TypeLiteral with no members. Need special case because it doesn't have declarations.
                     definition.type = "object";
                     definition.properties = {};
-                } else if (this.args.typeOfKeyword && ts.isFunctionLike(node)) {
+                } else if (this.args.typeOfKeyword && node && ts.isFunctionLike(node)) {
                     this.getFunctionDefinition(typ, definition);
                 } else {
                     this.getClassDefinition(typ, definition);

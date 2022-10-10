@@ -553,16 +553,16 @@ export class JsonSchemaGenerator {
             if (comments.length) {
                 definition.description = comments
                     .map((comment) => {
-                      const newlineNormalizedComment = comment.text.replace(/\r\n/g, "\n");
+                        const newlineNormalizedComment = comment.text.replace(/\r\n/g, "\n");
 
-                      // If a comment contains a "{@link XYZ}" inline tag that could not be
-                      // resolved by the TS checker, then this comment will contain a trailing
-                      // whitespace that we need to remove.
-                      if (comment.kind === "linkText") {
-                        return newlineNormalizedComment.trim();
-                      }
+                        // If a comment contains a "{@link XYZ}" inline tag that could not be
+                        // resolved by the TS checker, then this comment will contain a trailing
+                        // whitespace that we need to remove.
+                        if (comment.kind === "linkText") {
+                            return newlineNormalizedComment.trim();
+                        }
 
-                      return newlineNormalizedComment;
+                        return newlineNormalizedComment;
                     })
                     .join("").trim();
             }
@@ -1003,6 +1003,19 @@ export class JsonSchemaGenerator {
         return definition;
     }
 
+    private getFunctionDefinition(funcType: ts.Type, definition: Definition): Definition {
+        const node = funcType.getSymbol()!.getDeclarations()![0];
+
+        // tiberiu
+        const parameters = (node as ts.FunctionLikeDeclaration).parameters;
+        definition.typeof = "function";
+        definition.parameters = parameters
+            .map((p) => this.tc.getTypeAtLocation(p.type))
+            .map((type) => this.getTypeDefinition(type));
+
+        return definition;
+    }
+
     private getClassDefinition(clazzType: ts.Type, definition: Definition): Definition {
         const node = clazzType.getSymbol()!.getDeclarations()![0];
 
@@ -1375,6 +1388,8 @@ export class JsonSchemaGenerator {
                     // {} is TypeLiteral with no members. Need special case because it doesn't have declarations.
                     definition.type = "object";
                     definition.properties = {};
+                } else if (ts.isFunctionLike(node)) {
+                    this.getFunctionDefinition(typ, definition);
                 } else {
                     this.getClassDefinition(typ, definition);
                 }

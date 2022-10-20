@@ -671,6 +671,8 @@ export class JsonSchemaGenerator {
                 definition.type = isInteger ? "integer" : "number";
             } else if (flags & ts.TypeFlags.Boolean) {
                 definition.type = "boolean";
+            } else if (flags & ts.TypeFlags.ESSymbol) {
+                definition.type = "symbol";
             } else if (flags & ts.TypeFlags.Null) {
                 definition.type = "null";
             } else if (flags & ts.TypeFlags.Undefined || propertyTypeString === "void") {

@@ -1,62 +1,41 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "properties": {
-        "varBoolean": {
-            "anyOf": [
-                {
-                    "enum": [
-                        "a",
-                        "b",
-                        "c",
-                        false,
-                        true
-                    ]
-                },
-                {
-                    "type": "number"
-                }
-            ],
-            "default": false
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "definitions": {
+    "Foo": {
+      "anyOf": [
+        {
+          "enum": [
+            "a",
+            "b",
+            "c",
+            false,
+            true
+          ]
         },
-        "varInteger": {
-            "anyOf": [
-                {
-                    "enum": [
-                        "a",
-                        "b",
-                        "c",
-                        false,
-                        true
-                    ]
-                },
-                {
-                    "type": "number"
-                }
-            ],
-            "default": 123
-        },
-        "varString": {
-            "anyOf": [
-                {
-                    "enum": [
-                        "a",
-                        "b",
-                        "c",
-                        false,
-                        true
-                    ]
-                },
-                {
-                    "type": "number"
-                }
-            ],
-            "default": "123"
+        {
+          "type": "number"
         }
+      ]
+    }
+  },
+  "properties": {
+    "varBoolean": {
+      "$ref": "#/definitions/Foo",
+      "default": false
     },
-    "required": [
-        "varBoolean",
-        "varInteger",
-        "varString"
-    ],
-    "type": "object"
+    "varInteger": {
+      "$ref": "#/definitions/Foo",
+      "default": 123
+    },
+    "varString": {
+      "$ref": "#/definitions/Foo",
+      "default": "123"
+    }
+  },
+  "required": [
+    "varBoolean",
+    "varInteger",
+    "varString"
+  ]
 }

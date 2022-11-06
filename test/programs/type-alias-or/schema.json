@@ -1,30 +1,30 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "definitions": {
-    "A": {
-      "type": "object"
-    },
-    "B": {
-      "type": "object"
-    },
-    "C": {
-      "anyOf": [
-        {
-          "$ref": "#/definitions/A"
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "A": {
+            "type": "object"
         },
-        {
-          "$ref": "#/definitions/B"
+        "B": {
+            "type": "object"
+        },
+        "C": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/A"
+                },
+                {
+                    "$ref": "#/definitions/B"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "properties": {
-    "c": {
-      "$ref": "#/definitions/C"
-    }
-  },
-  "required": [
-    "c"
-  ],
-  "type": "object"
+    },
+    "properties": {
+        "c": {
+            "$ref": "#/definitions/C"
+        }
+    },
+    "required": [
+        "c"
+    ],
+    "type": "object"
 }

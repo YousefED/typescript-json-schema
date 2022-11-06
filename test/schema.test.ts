@@ -215,9 +215,7 @@ describe("schema", () => {
             aliasRef: true,
             topRef: true,
         });
-
         assertSchema("type-alias-or", "MyObject");
-
         // disabled because of #80
         // assertSchema("type-aliases-recursive-alias-topref", "MyAlias", {
         //     useTypeAliasRef: true,

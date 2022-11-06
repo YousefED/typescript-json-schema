@@ -1,41 +1,41 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "definitions": {
-    "Foo": {
-      "anyOf": [
-        {
-          "enum": [
-            "a",
-            "b",
-            "c",
-            false,
-            true
-          ]
-        },
-        {
-          "type": "number"
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "Foo": {
+            "anyOf": [
+                {
+                    "enum": [
+                        "a",
+                        "b",
+                        "c",
+                        false,
+                        true
+                    ]
+                },
+                {
+                    "type": "number"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "properties": {
-    "varBoolean": {
-      "$ref": "#/definitions/Foo",
-      "default": false
     },
-    "varInteger": {
-      "$ref": "#/definitions/Foo",
-      "default": 123
+    "properties": {
+        "varBoolean": {
+            "$ref": "#/definitions/Foo",
+            "default": false
+        },
+        "varInteger": {
+            "$ref": "#/definitions/Foo",
+            "default": 123
+        },
+        "varString": {
+            "$ref": "#/definitions/Foo",
+            "default": "123"
+        }
     },
-    "varString": {
-      "$ref": "#/definitions/Foo",
-      "default": "123"
-    }
-  },
-  "required": [
-    "varBoolean",
-    "varInteger",
-    "varString"
-  ]
+    "required": [
+        "varBoolean",
+        "varInteger",
+        "varString"
+    ],
+    "type": "object"
 }

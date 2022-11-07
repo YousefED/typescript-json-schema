@@ -1228,7 +1228,7 @@ export class JsonSchemaGenerator {
                     symbol.name === "integer" ||
                     this.tc.getIndexInfoOfType(typ, ts.IndexKind.Number) !== undefined));
 
-        if(isRawType && reffedType?.escapedName && (typ as any).types) {
+        if (isRawType && reffedType?.escapedName && (typ as any).types) {
             isRawType = false;
         }
 

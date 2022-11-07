@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "properties": {
-        "varBoolean": {
+    "definitions": {
+        "Foo": {
             "anyOf": [
                 {
                     "enum": [
@@ -15,41 +15,20 @@
                 {
                     "type": "number"
                 }
-            ],
+            ]
+        }
+    },
+    "properties": {
+        "varBoolean": {
+            "$ref": "#/definitions/Foo",
             "default": false
         },
         "varInteger": {
-            "anyOf": [
-                {
-                    "enum": [
-                        "a",
-                        "b",
-                        "c",
-                        false,
-                        true
-                    ]
-                },
-                {
-                    "type": "number"
-                }
-            ],
+            "$ref": "#/definitions/Foo",
             "default": 123
         },
         "varString": {
-            "anyOf": [
-                {
-                    "enum": [
-                        "a",
-                        "b",
-                        "c",
-                        false,
-                        true
-                    ]
-                },
-                {
-                    "type": "number"
-                }
-            ],
+            "$ref": "#/definitions/Foo",
             "default": "123"
         }
     },

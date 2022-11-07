@@ -1228,8 +1228,8 @@ export class JsonSchemaGenerator {
                     symbol.name === "integer" ||
                     this.tc.getIndexInfoOfType(typ, ts.IndexKind.Number) !== undefined));
 
-        if (isRawType && reffedType?.escapedName && (typ as any).types) {
-            isRawType = false;
+        if (isRawType && (typ as any).aliasSymbol?.escapedName && (typ as any).types) {
+          isRawType = false;
         }
 
         // special case: an union where all child are string literals -> make an enum instead

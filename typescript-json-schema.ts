@@ -520,7 +520,7 @@ export class JsonSchemaGenerator {
 
     private isFromDefaultLib(symbol: ts.Symbol) {
         const declarations = symbol.getDeclarations();
-        if (declarations && declarations.length > 0) {
+        if (declarations && declarations.length > 0 && declarations[0].parent) {
             return declarations[0].parent.getSourceFile().hasNoDefaultLib;
         }
         return false;

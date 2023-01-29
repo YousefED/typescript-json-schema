@@ -48,6 +48,7 @@ export function getDefaultArgs(): Args {
         required: false,
         strictNullChecks: false,
         esModuleInterop: false,
+        skipLibCheck: false,
         ignoreErrors: false,
         out: "",
         validationKeywords: [],
@@ -77,6 +78,7 @@ export type Args = {
     required: boolean;
     strictNullChecks: boolean;
     esModuleInterop: boolean;
+    skipLibCheck: boolean;
     ignoreErrors: boolean;
     out: string;
     validationKeywords: string[];
@@ -1711,6 +1713,7 @@ export async function exec(filePattern: string, fullTypeName: string, args = get
         program = getProgramFromFiles(onlyIncludeFiles, {
             strictNullChecks: args.strictNullChecks,
             esModuleInterop: args.esModuleInterop,
+            skipLibCheck: args.skipLibCheck,
         });
         onlyIncludeFiles = onlyIncludeFiles.map(normalizeFileName);
     }

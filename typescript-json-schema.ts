@@ -554,18 +554,19 @@ export class JsonSchemaGenerator {
             if (comments.length) {
                 definition.description = comments
                     .map((comment) => {
-                      const newlineNormalizedComment = comment.text.replace(/\r\n/g, "\n");
+                        const newlineNormalizedComment = comment.text.replace(/\r\n/g, "\n");
 
-                      // If a comment contains a "{@link XYZ}" inline tag that could not be
-                      // resolved by the TS checker, then this comment will contain a trailing
-                      // whitespace that we need to remove.
-                      if (comment.kind === "linkText") {
-                        return newlineNormalizedComment.trim();
-                      }
+                        // If a comment contains a "{@link XYZ}" inline tag that could not be
+                        // resolved by the TS checker, then this comment will contain a trailing
+                        // whitespace that we need to remove.
+                        if (comment.kind === "linkText") {
+                            return newlineNormalizedComment.trim();
+                        }
 
-                      return newlineNormalizedComment;
+                        return newlineNormalizedComment;
                     })
-                    .join("").trim();
+                    .join("")
+                    .trim();
             }
         }
 
@@ -726,7 +727,9 @@ export class JsonSchemaGenerator {
     private getReferencedTypeSymbol(prop: ts.Symbol): ts.Symbol | undefined {
         const decl = prop.getDeclarations();
         if (decl?.length) {
-            const type = <ts.TypeReferenceNode>(<any>decl[0]).type;
+            let type: ts.TypeReferenceNode;
+            if ((<any>decl[0]).type.kind === ts.SyntaxKind.ArrayType) type = (<any>decl[0]).elementType;
+            else type = <ts.TypeReferenceNode>(<any>decl[0]).type;
             if (type && type.kind & ts.SyntaxKind.TypeReference && type.typeName) {
                 const symbol = this.tc.getSymbolAtLocation(type.typeName);
                 if (symbol && symbol.flags & ts.SymbolFlags.Alias) {
@@ -1223,7 +1226,7 @@ export class JsonSchemaGenerator {
         const symbol = typ.getSymbol();
         // FIXME: We can't just compare the name of the symbol - it ignores the namespace
         let isRawType =
-          !symbol ||
+            !symbol ||
             // Window is incorrectly marked as rawType here for some reason
             (this.tc.getFullyQualifiedName(symbol) !== "Window" &&
                 (this.tc.getFullyQualifiedName(symbol) === "Date" ||
@@ -1231,7 +1234,7 @@ export class JsonSchemaGenerator {
                     this.tc.getIndexInfoOfType(typ, ts.IndexKind.Number) !== undefined));
 
         if (isRawType && (typ as any).aliasSymbol?.escapedName && (typ as any).types) {
-          isRawType = false;
+            isRawType = false;
         }
 
         // special case: an union where all child are string literals -> make an enum instead

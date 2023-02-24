@@ -1,9 +1,10 @@
 import * as glob from "glob";
-import * as stringify from "json-stable-stringify";
+import { stringify } from "safe-stable-stringify";
 import * as path from "path";
 import { createHash } from "crypto";
 import * as ts from "typescript";
 import { JSONSchema7 } from "json-schema";
+import { pathEqual } from "path-equal";
 export { Program, CompilerOptions, Symbol } from "typescript";
 
 const vm = require("vm");
@@ -46,6 +47,8 @@ export function getDefaultArgs(): Args {
         typeOfKeyword: false,
         required: false,
         strictNullChecks: false,
+        esModuleInterop: false,
+        skipLibCheck: false,
         ignoreErrors: false,
         out: "",
         validationKeywords: [],
@@ -74,6 +77,8 @@ export type Args = {
     typeOfKeyword: boolean;
     required: boolean;
     strictNullChecks: boolean;
+    esModuleInterop: boolean;
+    skipLibCheck: boolean;
     ignoreErrors: boolean;
     out: string;
     validationKeywords: string[];
@@ -90,6 +95,7 @@ export type PartialArgs = Partial<Args>;
 
 export type PrimitiveType = number | boolean | string | null;
 
+type MetaDefinitionFields = "ignore";
 type RedefinedFields =
     | "type"
     | "items"
@@ -349,11 +355,12 @@ function makeNullable(def: Definition): Definition {
 function getCanonicalDeclaration(sym: ts.Symbol): ts.Declaration {
     if (sym.valueDeclaration !== undefined) {
         return sym.valueDeclaration;
-    } else if (sym.declarations.length === 1) {
+    } else if (sym.declarations?.length === 1) {
         return sym.declarations[0];
     }
 
-    throw new Error(`Symbol "${sym.name}" has no valueDeclaration and ${sym.declarations.length} declarations.`);
+    const declarationCount = sym.declarations?.length ?? 0;
+    throw new Error(`Symbol "${sym.name}" has no valueDeclaration and ${declarationCount} declarations.`);
 }
 
 /**
@@ -515,10 +522,21 @@ export class JsonSchemaGenerator {
 
     private isFromDefaultLib(symbol: ts.Symbol) {
         const declarations = symbol.getDeclarations();
-        if (declarations && declarations.length > 0) {
+        if (declarations && declarations.length > 0 && declarations[0].parent) {
             return declarations[0].parent.getSourceFile().hasNoDefaultLib;
         }
         return false;
+    }
+
+    private resetSchemaSpecificProperties() {
+        this.reffedDefinitions = {};
+        this.typeIdsByName = {};
+        this.typeNamesById = {};
+
+        // restore schema overrides
+        this.schemaOverrides.forEach((value, key) => {
+            this.reffedDefinitions[key] = value;
+        });
     }
 
     /**
@@ -535,10 +553,19 @@ export class JsonSchemaGenerator {
 
             if (comments.length) {
                 definition.description = comments
-                    .map((comment) =>
-                        comment.kind === "lineBreak" ? comment.text : comment.text.trim().replace(/\r\n/g, "\n")
-                    )
-                    .join("");
+                    .map((comment) => {
+                      const newlineNormalizedComment = comment.text.replace(/\r\n/g, "\n");
+
+                      // If a comment contains a "{@link XYZ}" inline tag that could not be
+                      // resolved by the TS checker, then this comment will contain a trailing
+                      // whitespace that we need to remove.
+                      if (comment.kind === "linkText") {
+                        return newlineNormalizedComment.trim();
+                      }
+
+                      return newlineNormalizedComment;
+                    })
+                    .join("").trim();
             }
         }
 
@@ -546,7 +573,9 @@ export class JsonSchemaGenerator {
         const jsdocs = symbol.getJsDocTags();
         jsdocs.forEach((doc) => {
             // if we have @TJS-... annotations, we have to parse them
-            let [name, text] = [doc.name, doc.text as string];
+            let name = doc.name;
+            const originalText = doc.text ? doc.text.map((t) => t.text).join("") : "";
+            let text = originalText;
             // In TypeScript versions prior to 3.7, it stops parsing the annotation
             // at the first non-alphanumeric character and puts the rest of the line as the
             // "text" of the annotation, so we have a little hack to check for the name
@@ -558,7 +587,7 @@ export class JsonSchemaGenerator {
                     text = "true";
                 }
             } else if (name === "TJS" && text.startsWith("-")) {
-                let match: string[] | RegExpExecArray | null = new RegExp(REGEX_TJS_JSDOC).exec(doc.text!);
+                let match: string[] | RegExpExecArray | null = new RegExp(REGEX_TJS_JSDOC).exec(originalText);
                 if (match) {
                     name = match[1];
                     text = match[2];
@@ -614,7 +643,9 @@ export class JsonSchemaGenerator {
             const elemTypes: ts.NodeArray<ts.TypeNode> = (propertyType as any).typeArguments;
             const fixedTypes = elemTypes.map((elType) => this.getTypeDefinition(elType as any));
             definition.type = "array";
-            definition.items = fixedTypes;
+            if (fixedTypes.length > 0) {
+                definition.items = fixedTypes;
+            }
             const targetTupleType = (propertyType as ts.TupleTypeReference).target;
             definition.minItems = targetTupleType.minLength;
             if (targetTupleType.hasRestElement) {
@@ -644,15 +675,17 @@ export class JsonSchemaGenerator {
                 definition.type = "bigint";
             } else if (flags & ts.TypeFlags.Boolean) {
                 definition.type = "boolean";
+            } else if (flags & ts.TypeFlags.ESSymbol) {
+                definition.type = "symbol";
             } else if (flags & ts.TypeFlags.Null) {
                 definition.type = "null";
-            } else if (flags & ts.TypeFlags.Undefined) {
+            } else if (flags & ts.TypeFlags.Undefined || propertyTypeString === "void") {
                 definition.type = "undefined";
             } else if (flags & ts.TypeFlags.Any || flags & ts.TypeFlags.Unknown) {
                 // no type restriction, so that anything will match
             } else if (propertyTypeString === "Date" && !this.args.rejectDateType) {
                 definition.type = "string";
-                definition.format = "date-time";
+                definition.format = definition.format || "date-time";
             } else if (propertyTypeString === "object") {
                 definition.type = "object";
                 definition.properties = {};
@@ -856,7 +889,8 @@ export class JsonSchemaGenerator {
             if (value !== undefined) {
                 pushEnumValue(value);
             } else {
-                const def = this.getTypeDefinition(valueType);
+                const symbol = valueType.aliasSymbol;
+                const def = this.getTypeDefinition(valueType, undefined, undefined, symbol, symbol);
                 if (def.type === "undefined") {
                     if (prop) {
                         (<any>prop).mayBeUndefined = true;
@@ -1001,7 +1035,8 @@ export class JsonSchemaGenerator {
 
             const decls = prop.declarations;
             return !(
-                decls?.filter((decl) => {
+                decls &&
+                decls.filter((decl) => {
                     const mods = decl.modifiers;
                     return mods && mods.filter((mod) => mod.kind === ts.SyntaxKind.PrivateKeyword).length > 0;
                 }).length > 0
@@ -1179,23 +1214,27 @@ export class JsonSchemaGenerator {
 
         // Parse property comments now to skip recursive if ignore.
         if (prop) {
-            const defs = {};
+            const defs: Definition & { [k in MetaDefinitionFields]?: "" } = {};
             const others = {};
             this.parseCommentsIntoDefinition(prop, defs, others);
-            if (defs.hasOwnProperty("ignore")) {
+            if (defs.hasOwnProperty("ignore") || defs.hasOwnProperty("type")) {
                 return defs;
             }
         }
 
         const symbol = typ.getSymbol();
         // FIXME: We can't just compare the name of the symbol - it ignores the namespace
-        const isRawType =
-            !symbol ||
+        let isRawType =
+          !symbol ||
             // Window is incorrectly marked as rawType here for some reason
             (this.tc.getFullyQualifiedName(symbol) !== "Window" &&
                 (this.tc.getFullyQualifiedName(symbol) === "Date" ||
                     symbol.name === "integer" ||
                     this.tc.getIndexInfoOfType(typ, ts.IndexKind.Number) !== undefined));
+
+        if (isRawType && (typ as any).aliasSymbol?.escapedName && (typ as any).types) {
+          isRawType = false;
+        }
 
         // special case: an union where all child are string literals -> make an enum instead
         let isStringEnum = false;
@@ -1377,7 +1416,6 @@ export class JsonSchemaGenerator {
     }
 
     public setSchemaOverride(symbolName: string, schema: Definition): void {
-        this.reffedDefinitions[symbolName] = schema;
         this.schemaOverrides.set(symbolName, schema);
     }
 
@@ -1385,6 +1423,9 @@ export class JsonSchemaGenerator {
         if (!this.allSymbols[symbolName]) {
             throw new Error(`type ${symbolName} not found`);
         }
+
+        this.resetSchemaSpecificProperties();
+
         const def = this.getTypeDefinition(
             this.allSymbols[symbolName],
             this.args.topRef,
@@ -1410,6 +1451,9 @@ export class JsonSchemaGenerator {
             $schema: "http://json-schema.org/draft-07/schema#",
             definitions: {},
         };
+
+        this.resetSchemaSpecificProperties();
+
         const id = this.args.id;
 
         if (id) {
@@ -1449,7 +1493,7 @@ export class JsonSchemaGenerator {
             if (onlyIncludeFiles === undefined) {
                 return !file.isDeclarationFile;
             }
-            return onlyIncludeFiles.indexOf(file.fileName) >= 0;
+            return onlyIncludeFiles.filter((f) => pathEqual(f, file.fileName)).length > 0;
         }
         const files = program.getSourceFiles().filter(includeFile);
         if (files.length) {
@@ -1670,6 +1714,8 @@ export async function exec(filePattern: string, fullTypeName: string, args = get
         onlyIncludeFiles = glob.sync(filePattern);
         program = getProgramFromFiles(onlyIncludeFiles, {
             strictNullChecks: args.strictNullChecks,
+            esModuleInterop: args.esModuleInterop,
+            skipLibCheck: args.skipLibCheck,
         });
         onlyIncludeFiles = onlyIncludeFiles.map(normalizeFileName);
     }
@@ -1679,7 +1725,7 @@ export async function exec(filePattern: string, fullTypeName: string, args = get
         throw new Error("No output definition. Probably caused by errors prior to this?");
     }
 
-    const json = stringify(definition, { space: 4 }) + "\n\n";
+    const json = stringify(definition, null, 4) + "\n\n";
     if (args.out) {
         return new Promise((resolve, reject) => {
             const fs = require("fs");

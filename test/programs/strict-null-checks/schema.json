@@ -40,6 +40,9 @@
         },
         "valUndef": {
             "type": "number"
+        },
+        "valVoid": {
+            "type": "number"
         }
     },
     "required": [

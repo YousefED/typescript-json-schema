@@ -215,6 +215,7 @@ describe("schema", () => {
             aliasRef: true,
             topRef: true,
         });
+        assertSchema("type-alias-or", "MyObject");
         // disabled because of #80
         // assertSchema("type-aliases-recursive-alias-topref", "MyAlias", {
         //     useTypeAliasRef: true,
@@ -301,6 +302,7 @@ describe("schema", () => {
             aliasRef: true,
         });
         assertSchema("comments-from-lib", "MyObject");
+        assertSchema("comments-inline-tags", "MyObject");
     });
 
     describe("types", () => {
@@ -346,6 +348,7 @@ describe("schema", () => {
     describe("maps and arrays", () => {
         assertSchema("array-readonly", "MyReadOnlyArray");
         assertSchema("array-types", "MyArray");
+        assertSchema("array-empty", "MyEmptyArray");
         assertSchema("map-types", "MyObject");
         assertSchema("extra-properties", "MyObject");
     });
@@ -416,6 +419,8 @@ describe("schema", () => {
         assertSchemas("type-default-number-as-integer", "*", {
             defaultNumberType: "integer",
         });
+
+        assertSchema("prop-override", "MyObject");
     });
 
     describe("object index", () => {
@@ -463,4 +468,22 @@ describe("Functionality 'required' in annotation", () => {
     assertSchema("annotation-required", "MyObject", {
         tsNodeRegister: true,
     });
+});
+
+describe("when reusing a generator", () => {
+  it("should not add unrelated definitions to schemas", () => {
+    // regression test for https://github.com/YousefED/typescript-json-schema/issues/465
+    const testProgramPath = BASE + "no-unrelated-definitions/";
+    const program = TJS.programFromConfig(resolve(testProgramPath + "tsconfig.json"));
+    const generator = TJS.buildGenerator(program);
+
+    ["MyObject", "MyOtherObject"].forEach(symbolName => {
+      const expectedSchemaString = readFileSync(testProgramPath + `schema.${symbolName}.json`, "utf8");
+      const expectedSchemaObject = JSON.parse(expectedSchemaString);
+
+      const actualSchemaObject = generator?.getSchemaForSymbol(symbolName);
+
+      assert.deepEqual(actualSchemaObject, expectedSchemaObject, `The schema for ${symbolName} is not as expected`);
+    });
+  });
 });

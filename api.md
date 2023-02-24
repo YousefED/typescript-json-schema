@@ -1,3 +1,5 @@
+_Auto-generated file. Updated with NPM deploy. Update manually with 'yarn docs'._
+
 # typescript-json-schema test examples
 
 ## [abstract-class](./test/programs/abstract-class)
@@ -75,7 +77,7 @@ interface MyObject {
 
 ```ts
 /**
- * @id filled#
+ * @$id filled#
  */
 interface MySubObject {
     a: boolean;
@@ -83,7 +85,7 @@ interface MySubObject {
 
 interface MyObject {
     /**
-     * @id empty#
+     * @$id empty#
      */
     empty;
 
@@ -151,10 +153,101 @@ interface MyObject {
 ```
 
 
+## [annotation-required](./test/programs/annotation-required)
+
+```ts
+import { MyDefaultObject, MySubObject2 } from "./main";
+
+export const mySubObject2Example: MySubObject2[] = [{
+    bool: true,
+    string: "string",
+    object: { prop: 1 }
+}];
+
+const myDefaultExample: MyDefaultObject[] = [{
+    age: 30,
+    name: "me",
+    free: true
+}]
+
+export default myDefaultExample;
+```
+
+
+## [annotation-required](./test/programs/annotation-required)
+
+```ts
+interface MySubObject {
+    bool: boolean;
+    string: string;
+    object: object | null;
+    /**
+     * @examples require('./examples.ts').mySubObject2Example
+     */
+    subObject?: MySubObject2;
+}
+
+export interface MySubObject2 {
+    bool: boolean;
+    string: string;
+    object: object;
+}
+
+export interface MyDefaultObject {
+  age: number;
+  name: string;
+  free?: boolean;
+}
+
+export interface MyObject {
+    /**
+     * @examples require(".").innerExample
+     */
+    filled: MySubObject;
+    /**
+     * @examples require('./examples.ts')
+     */
+    defaultObject: MyDefaultObject;
+}
+
+export const innerExample: MySubObject[] = [
+    {
+        bool: true,
+        string: "string",
+        object: {}
+    },
+];
+```
+
+
+## [annotation-title](./test/programs/annotation-title)
+
+```ts
+/**
+ * @title filled#
+ */
+interface MySubObject {
+    a: boolean;
+}
+
+interface MyObject {
+    /**
+     * @title empty#
+     */
+    empty;
+
+    filled: MySubObject;
+}
+```
+
+
 ## [annotation-tjs](./test/programs/annotation-tjs)
 
 ```ts
 // All of these formats are defined in this specification: http://json-schema.org/latest/json-schema-validation.html#rfc.section.8.3
+
+interface MyRef {}
+
 interface MyObject {
     /**
      * @TJS-format date-time
@@ -207,7 +300,7 @@ interface MyObject {
     regexPattern: string;
 
     /**
-     * @TJS-pattern ^[a-zA-Z0-9]{4}-abc_123$    
+     * @TJS-pattern ^[a-zA-Z0-9]{4}-abc_123$
      */
     regexPatternWithWhitespace: string;
 
@@ -235,6 +328,11 @@ interface MyObject {
      * @TJS-hide false
      */
     booleanAnnotationWithFalse: string;
+
+    /**
+     * @TJS-ignore
+     */
+    complexWithRefIgnored: MyRef;
 }
 ```
 
@@ -274,6 +372,13 @@ export interface MyObject {
   description?: string;
   test: any[];
 }
+```
+
+
+## [array-empty](./test/programs/array-empty)
+
+```ts
+type MyEmptyArray = [];
 ```
 
 
@@ -380,6 +485,24 @@ interface MyObject {
 ```
 
 
+## [comments-from-lib](./test/programs/comments-from-lib)
+
+```ts
+/**
+ * Use this comment
+ */
+export type MyObject = Pick<BigThing, "prop1">;
+
+/**
+ * Not this comment though
+ */
+interface BigThing {
+  prop1: string;
+  prop2: string;
+};
+```
+
+
 ## [comments-imports](./test/programs/comments-imports)
 
 ```ts
@@ -423,6 +546,25 @@ export interface Text {
 
     /** Description of text color property. */
     color: Color;
+}
+```
+
+
+## [comments-inline-tags](./test/programs/comments-inline-tags)
+
+```ts
+/**
+ * This is MyOtherObject
+ */
+interface MyOtherObject {
+  prop1: string;
+}
+
+/**
+ * This is MyObject. It extends {@link MyOtherObject} and {@link SomeOtherObject}.
+ */
+interface MyObject extends MyOtherObject {
+  prop2: string;
 }
 ```
 
@@ -483,6 +625,14 @@ type DateAlias = Date;
 interface MyObject {
     var1: Date;
     var2: DateAlias;
+    /**
+     * @format date
+     */
+    var3: Date;
+    /**
+     * @format date
+     */
+    var4: DateAlias;
 }
 ```
 
@@ -1020,6 +1170,27 @@ export interface Never {
 ```
 
 
+## [no-unrelated-definitions](./test/programs/no-unrelated-definitions)
+
+```ts
+export interface MyObject {
+  sub: SomeDefinition;
+}
+
+interface SomeDefinition {
+  is: string;
+}
+
+export interface MyOtherObject {
+  sub: SomeOtherDefinition;
+}
+
+interface SomeOtherDefinition {
+  is: string;
+}
+```
+
+
 ## [object-numeric-index](./test/programs/object-numeric-index)
 
 ```ts
@@ -1086,6 +1257,29 @@ export class MyObject {
 ```
 
 
+## [prop-override](./test/programs/prop-override)
+
+```ts
+import type { ObjectId } from './third-party'
+
+export type MyObject = {
+  /**
+   * @TJS-type string
+   * @description Overrides aliased type definition with this JSDoc if at least TJS-type annotation is present
+   */
+  _id: ObjectId
+}
+```
+
+
+## [prop-override](./test/programs/prop-override)
+
+```ts
+// cannot modify with JSDoc because third-party sources
+export class ObjectId {}
+```
+
+
 ## [strict-null-checks](./test/programs/strict-null-checks)
 
 ```ts
@@ -1095,6 +1289,7 @@ class MyObject {
      valNullable: number | null;
      valUndef: number | undefined;
      valOpt?: number;
+     valVoid: number | void;
 
      valTrueOpt?: true;
      valTrueOrNull: true|null;
@@ -1155,6 +1350,20 @@ export interface IncludedAlways {
 export interface IncludedOnlyByTsConfig {
     a: string;
 };
+```
+
+
+## [type-alias-or](./test/programs/type-alias-or)
+
+```ts
+interface A {}
+interface B {}
+
+type C = A | B;
+
+interface MyObject {
+    c: C;
+}
 ```
 
 

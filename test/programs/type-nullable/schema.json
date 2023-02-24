@@ -1,6 +1,25 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
+        "MyType2": {
+            "type": [
+                "string",
+                "number"
+            ]
+        },
+        "MyType3": {
+            "anyOf": [
+                {
+                    "items": {
+                        "type": "number"
+                    },
+                    "type": "array"
+                },
+                {
+                    "type": "string"
+                }
+            ]
+        },
         "MyType6": {
             "type": "object"
         }
@@ -13,22 +32,19 @@
             ]
         },
         "var2": {
-            "type": [
-                "string",
-                "number",
-                "null"
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/MyType2"
+                },
+                {
+                    "type": "null"
+                }
             ]
         },
         "var3": {
             "anyOf": [
                 {
-                    "items": {
-                        "type": "number"
-                    },
-                    "type": "array"
-                },
-                {
-                    "type": "string"
+                    "$ref": "#/definitions/MyType3"
                 },
                 {
                     "type": "null"
@@ -91,4 +107,3 @@
     ],
     "type": "object"
 }
-

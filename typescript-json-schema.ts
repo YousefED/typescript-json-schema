@@ -1290,6 +1290,7 @@ export class JsonSchemaGenerator {
         // Handle recursive types
         if (!isRawType || !!typ.aliasSymbol) {
             if (this.recursiveTypeRef.has(fullTypeName)) {
+                this.recursiveTypeRef.delete(fullTypeName);
                 asRef = true;
             } else {
                 this.recursiveTypeRef.set(fullTypeName, definition);

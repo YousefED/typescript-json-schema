@@ -1184,7 +1184,8 @@ export class JsonSchemaGenerator {
         unionModifier: string = "anyOf",
         prop?: ts.Symbol,
         reffedType?: ts.Symbol,
-        pairedSymbol?: ts.Symbol
+        pairedSymbol?: ts.Symbol,
+        forceNotRef: boolean = false
     ): Definition {
         const definition: Definition = {}; // real definition
 
@@ -1289,7 +1290,7 @@ export class JsonSchemaGenerator {
 
         // Handle recursive types
         if (!isRawType || !!typ.aliasSymbol) {
-            if (this.recursiveTypeRef.has(fullTypeName)) {
+            if (this.recursiveTypeRef.has(fullTypeName) && !forceNotRef) {
                 asRef = true;
             } else {
                 this.recursiveTypeRef.set(fullTypeName, definition);
@@ -1347,12 +1348,13 @@ export class JsonSchemaGenerator {
 
                         const types = (<ts.IntersectionType>typ).types;
                         for (const member of types) {
-                            const other = this.getTypeDefinition(member, false);
+                            const other = this.getTypeDefinition(member, false, undefined, undefined, undefined, undefined, true);
                             definition.type = other.type; // should always be object
                             definition.properties = {
                                 ...definition.properties,
                                 ...other.properties,
                             };
+
                             if (Object.keys(other.default || {}).length > 0) {
                                 definition.default = extend(definition.default || {}, other.default);
                             }
@@ -1388,7 +1390,7 @@ export class JsonSchemaGenerator {
             }
         }
 
-        if (this.recursiveTypeRef.get(fullTypeName) === definition) {
+        if (this.recursiveTypeRef.get(fullTypeName) === definition && !forceNotRef) {
             this.recursiveTypeRef.delete(fullTypeName);
             // If the type was recursive (there is reffedDefinitions) - lets replace it to reference
             if (this.reffedDefinitions[fullTypeName]) {

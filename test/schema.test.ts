@@ -259,7 +259,10 @@ describe("schema", () => {
         });
         assertSchema("type-union-tagged", "Shape");
         assertSchema("type-aliases-union-namespace", "MyModel");
-        assertSchema("type-intersection-recursive", "*");
+        assertSchema("type-intersection-recursive", "Foo");
+        assertSchema("type-intersection-recursive-no-additional", "MyLinkedList", {
+            noExtraProps: true,
+        });
     });
 
     describe("annotations", () => {

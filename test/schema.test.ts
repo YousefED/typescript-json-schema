@@ -490,3 +490,7 @@ describe("when reusing a generator", () => {
     });
   });
 });
+
+describe("satisfies keyword - ignore from a \"satisfies\" and build by rally type", () => {
+    assertSchema("satisfies-keyword", "Specific");
+});

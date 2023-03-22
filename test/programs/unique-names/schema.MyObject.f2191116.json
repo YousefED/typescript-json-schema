@@ -1,0 +1,16 @@
+{
+    "type": "object",
+    "properties": {
+        "is": {
+            "type": "string",
+            "enum": [
+                "MyObject_1"
+            ]
+        }
+    },
+    "required": [
+        "is"
+    ],
+    "$schema": "http://json-schema.org/draft-07/schema#"
+}
+

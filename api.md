@@ -1769,6 +1769,21 @@ interface Foo {
 ```
 
 
+## [type-intersection-recursive-no-additional](./test/programs/type-intersection-recursive-no-additional)
+
+```ts
+type MyRecursiveNode = {
+    next?: MyNode;
+}
+
+type MyNode = {
+    val: string;
+} & MyRecursiveNode;
+
+type MyLinkedList = MyNode;
+```
+
+
 ## [type-mapped-types](./test/programs/type-mapped-types)
 
 ```ts

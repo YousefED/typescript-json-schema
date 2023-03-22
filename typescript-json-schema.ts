@@ -1545,11 +1545,12 @@ export function buildGenerator(
     args: PartialArgs = {},
     onlyIncludeFiles?: string[]
 ): JsonSchemaGenerator | null {
+    const onlyIncludeFilesResolved = (onlyIncludeFiles || []).map(f => path.resolve(f));
     function isUserFile(file: ts.SourceFile): boolean {
         if (onlyIncludeFiles === undefined) {
             return !file.hasNoDefaultLib;
         }
-        return onlyIncludeFiles.indexOf(file.fileName) >= 0;
+        return onlyIncludeFilesResolved.indexOf(path.resolve(file.fileName)) >= 0;
     }
     // Use defaults unless otherwise specified
     const settings = getDefaultArgs();

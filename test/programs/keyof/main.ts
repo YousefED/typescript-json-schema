@@ -6,6 +6,6 @@ type Util = {
 
 export type Main = {
     [Key in keyof Util]: {
-        c: Util[Key];
+        [key: string]: Util[Key];
     };
 };

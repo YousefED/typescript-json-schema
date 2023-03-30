@@ -1222,21 +1222,30 @@ export class JsonSchemaGenerator {
 
         if (typ.flags & ts.TypeFlags.IndexedAccess) {
             const indexedAccessType = <ts.IndexedAccessType>typ;
-            const objectType = indexedAccessType.objectType;
+            // const objectType = indexedAccessType.objectType;
             const indexType = indexedAccessType.indexType;
+            const targetDefinition = this.getDefinitionForProperty(indexType.symbol, indexType.symbol.declarations?.[0]!);
+            returnedDefinition = {
+                ...returnedDefinition,
+                ...targetDefinition,
+            };
+            return returnedDefinition;
 
-            const membersOfObjectType: ts.Symbol[] = Array.from((<any>objectType).members?.values?.() || []);
-            const indexName = (<ts.LiteralType>indexType.getConstraint())?.value;
-            const symbolTarget = membersOfObjectType.find(s => s.name === indexName);
-            const targetNode = symbolTarget?.declarations?.[0];
-            if (!!indexName && !!symbolTarget && targetNode) {
-                const targetDefinition = this.getDefinitionForProperty(symbolTarget, targetNode);
-                returnedDefinition = {
-                    ...returnedDefinition,
-                    ...targetDefinition,
-                };
-                return returnedDefinition;
-            }
+            // const membersOfObjectType: ts.Symbol[] = Array.from((<any>objectType).members?.values?.() || []);
+            // const indexName = (<ts.LiteralType>indexType.getConstraint())?.value;
+            // console.log(membersOfObjectType, indexName);
+            // returnedDefinition.type = "test";
+            // return returnedDefinition;
+            // const symbolTarget = membersOfObjectType.find(s => s.name === indexName);
+            // const targetNode = symbolTarget?.declarations?.[0];
+            // if (!!indexName && !!symbolTarget && targetNode) {
+            //     const targetDefinition = this.getDefinitionForProperty(symbolTarget, targetNode);
+            //     returnedDefinition = {
+            //         ...returnedDefinition,
+            //         ...targetDefinition,
+            //     };
+            //     return returnedDefinition;
+            // }
         }
         // FIXME: We can't just compare the name of the symbol - it ignores the namespace
         let isRawType =

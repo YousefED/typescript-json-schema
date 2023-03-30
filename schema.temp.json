@@ -1,24 +1,10 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "properties": {
-        "a": {
-            "additionalProperties": {
-                "properties": {
-                    "b": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "b"
-                ],
-                "type": "object"
-            },
-            "type": "object"
-        }
-    },
-    "required": [
-        "a"
+    "enum": [
+        "1",
+        "2",
+        "3"
     ],
-    "type": "object"
+    "type": "string"
 }
 

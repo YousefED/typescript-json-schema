@@ -2,7 +2,7 @@ _Auto-generated file. Updated with NPM deploy. Update manually with 'yarn docs'.
 
 # typescript-json-schema test examples
 
-## [C:\dev\mce\typescript-json-schema\test\programs\abstract-class\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\abstract-class\main.ts)
+## [abstract-class](./test/programs/abstract-class)
 
 ```ts
 export abstract class AbstractBase {
@@ -15,7 +15,7 @@ export abstract class AbstractBase {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\abstract-extends\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\abstract-extends\main.ts)
+## [abstract-extends](./test/programs/abstract-extends)
 
 ```ts
 import { AbstractBase } from "../abstract-class/main";
@@ -29,7 +29,7 @@ class MyObjectFromAbstract extends AbstractBase {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\annotation-default\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\annotation-default\main.ts)
+## [annotation-default](./test/programs/annotation-default)
 
 ```ts
 interface MyObject {
@@ -73,7 +73,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\annotation-id\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\annotation-id\main.ts)
+## [annotation-id](./test/programs/annotation-id)
 
 ```ts
 /**
@@ -94,7 +94,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\annotation-items\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\annotation-items\main.ts)
+## [annotation-items](./test/programs/annotation-items)
 
 ```ts
 interface MyObject {
@@ -134,7 +134,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\annotation-ref\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\annotation-ref\main.ts)
+## [annotation-ref](./test/programs/annotation-ref)
 
 ```ts
 interface MySubObject {}
@@ -153,7 +153,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\annotation-required\examples.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\annotation-required\examples.ts)
+## [annotation-required](./test/programs/annotation-required)
 
 ```ts
 import { MyDefaultObject, MySubObject2 } from "./main";
@@ -174,7 +174,7 @@ export default myDefaultExample;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\annotation-required\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\annotation-required\main.ts)
+## [annotation-required](./test/programs/annotation-required)
 
 ```ts
 interface MySubObject {
@@ -220,7 +220,7 @@ export const innerExample: MySubObject[] = [
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\annotation-title\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\annotation-title\main.ts)
+## [annotation-title](./test/programs/annotation-title)
 
 ```ts
 /**
@@ -241,7 +241,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\annotation-tjs\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\annotation-tjs\main.ts)
+## [annotation-tjs](./test/programs/annotation-tjs)
 
 ```ts
 // All of these formats are defined in this specification: http://json-schema.org/latest/json-schema-validation.html#rfc.section.8.3
@@ -337,7 +337,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\any-unknown\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\any-unknown\main.ts)
+## [any-unknown](./test/programs/any-unknown)
 
 ```ts
 export interface MyObject {
@@ -347,7 +347,7 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\argument-id\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\argument-id\main.ts)
+## [argument-id](./test/programs/argument-id)
 
 ```ts
 interface MyObject {
@@ -361,7 +361,7 @@ interface ReferenceType {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\array-and-description\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\array-and-description\main.ts)
+## [array-and-description](./test/programs/array-and-description)
 
 ```ts
 export interface MyObject {
@@ -375,28 +375,28 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\array-empty\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\array-empty\main.ts)
+## [array-empty](./test/programs/array-empty)
 
 ```ts
 type MyEmptyArray = [];
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\array-readonly\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\array-readonly\main.ts)
+## [array-readonly](./test/programs/array-readonly)
 
 ```ts
 export type MyReadOnlyArray = ReadonlyArray<number>;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\array-types\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\array-types\main.ts)
+## [array-types](./test/programs/array-types)
 
 ```ts
 type MyArray = Array<string | number>;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\builtin-names\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\builtin-names\main.ts)
+## [builtin-names](./test/programs/builtin-names)
 
 ```ts
 declare namespace Ext {
@@ -410,7 +410,7 @@ declare namespace Ext {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\class-extends\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\class-extends\main.ts)
+## [class-extends](./test/programs/class-extends)
 
 ```ts
 class Base {
@@ -423,7 +423,7 @@ class MyObject extends Base {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\class-single\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\class-single\main.ts)
+## [class-single](./test/programs/class-single)
 
 ```ts
 class MyObject {
@@ -435,7 +435,7 @@ class MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\comments\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\comments\main.ts)
+## [comments](./test/programs/comments)
 
 ```ts
 
@@ -485,7 +485,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\comments-from-lib\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\comments-from-lib\main.ts)
+## [comments-from-lib](./test/programs/comments-from-lib)
 
 ```ts
 /**
@@ -503,7 +503,7 @@ interface BigThing {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\comments-imports\color.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\comments-imports\color.ts)
+## [comments-imports](./test/programs/comments-imports)
 
 ```ts
 /**
@@ -515,7 +515,7 @@ export type Color = string;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\comments-imports\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\comments-imports\main.ts)
+## [comments-imports](./test/programs/comments-imports)
 
 ```ts
 import { Color } from "./color";
@@ -532,7 +532,7 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\comments-imports\text.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\comments-imports\text.ts)
+## [comments-imports](./test/programs/comments-imports)
 
 ```ts
 import { Color } from "./color";
@@ -550,7 +550,7 @@ export interface Text {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\comments-inline-tags\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\comments-inline-tags\main.ts)
+## [comments-inline-tags](./test/programs/comments-inline-tags)
 
 ```ts
 /**
@@ -569,7 +569,7 @@ interface MyObject extends MyOtherObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\comments-override\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\comments-override\main.ts)
+## [comments-override](./test/programs/comments-override)
 
 ```ts
 
@@ -600,7 +600,7 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\custom-dates\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\custom-dates\main.ts)
+## [custom-dates](./test/programs/custom-dates)
 
 ```ts
 namespace foo {
@@ -617,7 +617,7 @@ namespace foo {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\dates\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\dates\main.ts)
+## [dates](./test/programs/dates)
 
 ```ts
 type DateAlias = Date;
@@ -637,7 +637,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\default-properties\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\default-properties\main.ts)
+## [default-properties](./test/programs/default-properties)
 
 ```ts
 type Foo = "a" | "b" | "c" | boolean | number;
@@ -650,7 +650,7 @@ class MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\enums-compiled-compute\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\enums-compiled-compute\main.ts)
+## [enums-compiled-compute](./test/programs/enums-compiled-compute)
 
 ```ts
 enum Enum {
@@ -662,7 +662,7 @@ enum Enum {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\enums-mixed\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\enums-mixed\main.ts)
+## [enums-mixed](./test/programs/enums-mixed)
 
 ```ts
 enum Enum {
@@ -679,7 +679,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\enums-number\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\enums-number\main.ts)
+## [enums-number](./test/programs/enums-number)
 
 ```ts
 enum Enum {
@@ -693,7 +693,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\enums-number-initialized\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\enums-number-initialized\main.ts)
+## [enums-number-initialized](./test/programs/enums-number-initialized)
 
 ```ts
 enum Enum {
@@ -705,7 +705,7 @@ enum Enum {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\enums-string\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\enums-string\main.ts)
+## [enums-string](./test/programs/enums-string)
 
 ```ts
 enum Enum {
@@ -720,7 +720,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\enums-value-in-interface\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\enums-value-in-interface\main.ts)
+## [enums-value-in-interface](./test/programs/enums-value-in-interface)
 
 ```ts
 export enum A {
@@ -735,7 +735,7 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\extra-properties\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\extra-properties\main.ts)
+## [extra-properties](./test/programs/extra-properties)
 
 ```ts
 export interface MyObject {
@@ -746,7 +746,7 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\force-type\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\force-type\main.ts)
+## [force-type](./test/programs/force-type)
 
 ```ts
 /** @TJS-type number */
@@ -761,7 +761,7 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\force-type-imported\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\force-type-imported\main.ts)
+## [force-type-imported](./test/programs/force-type-imported)
 
 ```ts
 import { Widget } from "./widget";
@@ -775,7 +775,7 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\force-type-imported\widget.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\force-type-imported\widget.ts)
+## [force-type-imported](./test/programs/force-type-imported)
 
 ```ts
 /** @TJS-type number */
@@ -783,7 +783,7 @@ export class Widget {}
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\generate-all-types\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\generate-all-types\main.ts)
+## [generate-all-types](./test/programs/generate-all-types)
 
 ```ts
 
@@ -802,7 +802,7 @@ enum MyEnum {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\generic-anonymous\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\generic-anonymous\main.ts)
+## [generic-anonymous](./test/programs/generic-anonymous)
 
 ```ts
 interface MyGeneric<A, B> {
@@ -817,7 +817,7 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\generic-arrays\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\generic-arrays\main.ts)
+## [generic-arrays](./test/programs/generic-arrays)
 
 ```ts
 export interface MyObject {
@@ -827,7 +827,7 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\generic-hell\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\generic-hell\main.ts)
+## [generic-hell](./test/programs/generic-hell)
 
 ```ts
 export interface GenericA<A> {
@@ -855,7 +855,7 @@ export interface MyObject extends GenericC<GenericC<GenericC<GenericA<string>>>>
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\generic-multiargs\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\generic-multiargs\main.ts)
+## [generic-multiargs](./test/programs/generic-multiargs)
 
 ```ts
 export interface MyGeneric<A, B> {
@@ -870,7 +870,7 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\generic-multiple\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\generic-multiple\main.ts)
+## [generic-multiple](./test/programs/generic-multiple)
 
 ```ts
 export interface MyGeneric<T> {
@@ -884,7 +884,7 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\generic-recursive\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\generic-recursive\main.ts)
+## [generic-recursive](./test/programs/generic-recursive)
 
 ```ts
 export interface MyGeneric<A, B> {
@@ -897,7 +897,7 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\generic-simple\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\generic-simple\main.ts)
+## [generic-simple](./test/programs/generic-simple)
 
 ```ts
 export interface MyGeneric<T> {
@@ -910,7 +910,7 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\ignored-required\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\ignored-required\main.ts)
+## [ignored-required](./test/programs/ignored-required)
 
 ```ts
 interface MyObject {
@@ -930,7 +930,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\imports\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\imports\main.ts)
+## [imports](./test/programs/imports)
 
 ```ts
 
@@ -952,7 +952,7 @@ class MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\imports\module1.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\imports\module1.ts)
+## [imports](./test/programs/imports)
 
 ```ts
 
@@ -963,7 +963,7 @@ export class MyInterface {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\imports\module2.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\imports\module2.ts)
+## [imports](./test/programs/imports)
 
 ```ts
 
@@ -974,7 +974,7 @@ export class MyInterface {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\interface-extends\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\interface-extends\main.ts)
+## [interface-extends](./test/programs/interface-extends)
 
 ```ts
 interface Base {
@@ -987,7 +987,7 @@ export interface MyObject extends Base {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\interface-extra-props\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\interface-extra-props\main.ts)
+## [interface-extra-props](./test/programs/interface-extra-props)
 
 ```ts
 export interface MyObject {
@@ -998,7 +998,7 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\interface-multi\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\interface-multi\main.ts)
+## [interface-multi](./test/programs/interface-multi)
 
 ```ts
 interface MyObject {
@@ -1012,7 +1012,7 @@ interface MySubObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\interface-recursion\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\interface-recursion\main.ts)
+## [interface-recursion](./test/programs/interface-recursion)
 
 ```ts
 interface MyObject {
@@ -1022,7 +1022,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\interface-single\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\interface-single\main.ts)
+## [interface-single](./test/programs/interface-single)
 
 ```ts
 export interface MyObject {
@@ -1032,7 +1032,7 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\map-types\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\map-types\main.ts)
+## [map-types](./test/programs/map-types)
 
 ```ts
 
@@ -1060,7 +1060,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\module-interface-deep\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\module-interface-deep\main.ts)
+## [module-interface-deep](./test/programs/module-interface-deep)
 
 ```ts
 module MyModule {
@@ -1084,7 +1084,7 @@ module MyModule {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\module-interface-single\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\module-interface-single\main.ts)
+## [module-interface-single](./test/programs/module-interface-single)
 
 ```ts
 module MyModule {
@@ -1096,7 +1096,7 @@ module MyModule {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\namespace\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\namespace\main.ts)
+## [namespace](./test/programs/namespace)
 
 ```ts
 export namespace Types {
@@ -1108,7 +1108,7 @@ export type Type = typeof Types.X | typeof Types.Y;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\namespace-deep-1\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\namespace-deep-1\main.ts)
+## [namespace-deep-1](./test/programs/namespace-deep-1)
 
 ```ts
 namespace RootNamespace {
@@ -1134,7 +1134,7 @@ namespace RootNamespace {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\namespace-deep-2\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\namespace-deep-2\main.ts)
+## [namespace-deep-2](./test/programs/namespace-deep-2)
 
 ```ts
 namespace RootNamespace {
@@ -1160,7 +1160,7 @@ namespace RootNamespace {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\never\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\never\main.ts)
+## [never](./test/programs/never)
 
 ```ts
 export interface Never {
@@ -1170,7 +1170,7 @@ export interface Never {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\no-unrelated-definitions\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\no-unrelated-definitions\main.ts)
+## [no-unrelated-definitions](./test/programs/no-unrelated-definitions)
 
 ```ts
 export interface MyObject {
@@ -1191,7 +1191,7 @@ interface SomeOtherDefinition {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\object-numeric-index\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\object-numeric-index\main.ts)
+## [object-numeric-index](./test/programs/object-numeric-index)
 
 ```ts
 interface IndexInterface {
@@ -1200,7 +1200,7 @@ interface IndexInterface {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\object-numeric-index-as-property\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\object-numeric-index-as-property\main.ts)
+## [object-numeric-index-as-property](./test/programs/object-numeric-index-as-property)
 
 ```ts
 interface Target {
@@ -1222,7 +1222,7 @@ type IndexInPartial = { [index in number]?: number };
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\optionals\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\optionals\main.ts)
+## [optionals](./test/programs/optionals)
 
 ```ts
 interface MyObject {
@@ -1232,7 +1232,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\optionals-derived\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\optionals-derived\main.ts)
+## [optionals-derived](./test/programs/optionals-derived)
 
 ```ts
 interface MyBase {
@@ -1247,7 +1247,7 @@ interface MyDerived extends MyBase {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\private-members\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\private-members\main.ts)
+## [private-members](./test/programs/private-members)
 
 ```ts
 export class MyObject {
@@ -1257,7 +1257,7 @@ export class MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\prop-override\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\prop-override\main.ts)
+## [prop-override](./test/programs/prop-override)
 
 ```ts
 import type { ObjectId } from './third-party'
@@ -1272,7 +1272,7 @@ export type MyObject = {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\prop-override\third-party.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\prop-override\third-party.ts)
+## [prop-override](./test/programs/prop-override)
 
 ```ts
 // cannot modify with JSDoc because third-party sources
@@ -1280,7 +1280,7 @@ export class ObjectId {}
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\satisfies-keyword\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\satisfies-keyword\main.ts)
+## [satisfies-keyword](./test/programs/satisfies-keyword)
 
 ```ts
 interface Basic {
@@ -1300,7 +1300,7 @@ export type Specific = typeof myObject;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\strict-null-checks\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\strict-null-checks\main.ts)
+## [strict-null-checks](./test/programs/strict-null-checks)
 
 ```ts
 
@@ -1318,7 +1318,7 @@ class MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\string-literals\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\string-literals\main.ts)
+## [string-literals](./test/programs/string-literals)
 
 ```ts
 type result = "ok" | "fail" | "abort" | "";
@@ -1330,7 +1330,7 @@ class MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\string-literals-inline\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\string-literals-inline\main.ts)
+## [string-literals-inline](./test/programs/string-literals-inline)
 
 ```ts
 class MyObject {
@@ -1340,7 +1340,7 @@ class MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\tsconfig\exclude.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\tsconfig\exclude.ts)
+## [tsconfig](./test/programs/tsconfig)
 
 ```ts
 // This file is ignored.
@@ -1351,7 +1351,7 @@ export interface Excluded {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\tsconfig\includedAlways.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\tsconfig\includedAlways.ts)
+## [tsconfig](./test/programs/tsconfig)
 
 ```ts
 // This file is included by tsconfig.json and --include.
@@ -1362,7 +1362,7 @@ export interface IncludedAlways {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\tsconfig\includedByConfig.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\tsconfig\includedByConfig.ts)
+## [tsconfig](./test/programs/tsconfig)
 
 ```ts
 // This file is included by tsconfig.json.
@@ -1373,7 +1373,7 @@ export interface IncludedOnlyByTsConfig {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-alias-or\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-alias-or\main.ts)
+## [type-alias-or](./test/programs/type-alias-or)
 
 ```ts
 interface A {}
@@ -1387,7 +1387,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-alias-schema-override\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-alias-schema-override\main.ts)
+## [type-alias-schema-override](./test/programs/type-alias-schema-override)
 
 ```ts
 interface All {}
@@ -1400,14 +1400,14 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-alias-single\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-alias-single\main.ts)
+## [type-alias-single](./test/programs/type-alias-single)
 
 ```ts
 type MyString = string;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-alias-single-annotated\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-alias-single-annotated\main.ts)
+## [type-alias-single-annotated](./test/programs/type-alias-single-annotated)
 
 ```ts
 /**
@@ -1420,7 +1420,7 @@ type MyString = string;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases\main.ts)
+## [type-aliases](./test/programs/type-aliases)
 
 ```ts
 /**
@@ -1452,7 +1452,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-alias-ref\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-alias-ref\main.ts)
+## [type-aliases-alias-ref](./test/programs/type-aliases-alias-ref)
 
 ```ts
 
@@ -1464,7 +1464,7 @@ type MyAlias = MyObject;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-alias-ref-topref\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-alias-ref-topref\main.ts)
+## [type-aliases-alias-ref-topref](./test/programs/type-aliases-alias-ref-topref)
 
 ```ts
 
@@ -1476,7 +1476,7 @@ type MyAlias = MyObject;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-anonymous\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-anonymous\main.ts)
+## [type-aliases-anonymous](./test/programs/type-aliases-anonymous)
 
 ```ts
 export type MyExportString = string;
@@ -1489,7 +1489,7 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-fixed-size-array\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-fixed-size-array\main.ts)
+## [type-aliases-fixed-size-array](./test/programs/type-aliases-fixed-size-array)
 
 ```ts
 type MyFixedSizeArray = [string, number];
@@ -1497,7 +1497,7 @@ type MyFixedSizeArray = [string, number];
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-local-namespace\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-local-namespace\main.ts)
+## [type-aliases-local-namespace](./test/programs/type-aliases-local-namespace)
 
 ```ts
 namespace A {
@@ -1519,7 +1519,7 @@ export interface MyObject extends D.D {}
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-local-namsepace\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-local-namsepace\main.ts)
+## [type-aliases-local-namsepace](./test/programs/type-aliases-local-namsepace)
 
 ```ts
 namespace A {
@@ -1541,7 +1541,7 @@ interface MyObject extends D.D {}
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-mixed\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-mixed\main.ts)
+## [type-aliases-mixed](./test/programs/type-aliases-mixed)
 
 ```ts
 export type MyString = string;
@@ -1558,7 +1558,7 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-multitype-array\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-multitype-array\main.ts)
+## [type-aliases-multitype-array](./test/programs/type-aliases-multitype-array)
 
 ```ts
 
@@ -1572,7 +1572,7 @@ type MyArray = (string | MyObject)[];
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-object\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-object\main.ts)
+## [type-aliases-object](./test/programs/type-aliases-object)
 
 ```ts
 
@@ -1585,7 +1585,7 @@ export type MyAlias = MyObject;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-partial\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-partial\main.ts)
+## [type-aliases-partial](./test/programs/type-aliases-partial)
 
 ```ts
 export interface Foo {
@@ -1605,14 +1605,14 @@ export interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-primitive\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-primitive\main.ts)
+## [type-aliases-primitive](./test/programs/type-aliases-primitive)
 
 ```ts
 export type MyString = string;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-recursive-alias-topref\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-recursive-alias-topref\main.ts)
+## [type-aliases-recursive-alias-topref](./test/programs/type-aliases-recursive-alias-topref)
 
 ```ts
 
@@ -1625,7 +1625,7 @@ type MyAlias = MyObject;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-recursive-anonymous\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-recursive-anonymous\main.ts)
+## [type-aliases-recursive-anonymous](./test/programs/type-aliases-recursive-anonymous)
 
 ```ts
 interface MyObject {
@@ -1637,7 +1637,7 @@ export type MyAlias = MyObject;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-recursive-export\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-recursive-export\main.ts)
+## [type-aliases-recursive-export](./test/programs/type-aliases-recursive-export)
 
 ```ts
 export interface MyObject {
@@ -1649,7 +1649,7 @@ export type MyAlias = MyObject;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-recursive-object-topref\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-recursive-object-topref\main.ts)
+## [type-aliases-recursive-object-topref](./test/programs/type-aliases-recursive-object-topref)
 
 ```ts
 
@@ -1662,28 +1662,28 @@ type MyAlias = MyObject;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-tuple\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-tuple\main.ts)
+## [type-aliases-tuple](./test/programs/type-aliases-tuple)
 
 ```ts
 export type MyTuple = [string, number];
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-tuple-of-variable-length\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-tuple-of-variable-length\main.ts)
+## [type-aliases-tuple-of-variable-length](./test/programs/type-aliases-tuple-of-variable-length)
 
 ```ts
 export type MyTuple = [string, number, boolean?];
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-tuple-with-rest-element\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-tuple-with-rest-element\main.ts)
+## [type-aliases-tuple-with-rest-element](./test/programs/type-aliases-tuple-with-rest-element)
 
 ```ts
 export type MyTuple = [string, ...number[]];
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-union\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-union\main.ts)
+## [type-aliases-union](./test/programs/type-aliases-union)
 
 ```ts
 
@@ -1697,7 +1697,7 @@ export type MyUnion = (string | MyObject)[];
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-aliases-union-namespace\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-aliases-union-namespace\main.ts)
+## [type-aliases-union-namespace](./test/programs/type-aliases-union-namespace)
 
 ```ts
 
@@ -1716,7 +1716,7 @@ export interface MyModel {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-anonymous\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-anonymous\main.ts)
+## [type-anonymous](./test/programs/type-anonymous)
 
 ```ts
  interface MyObject {
@@ -1731,7 +1731,7 @@ export interface MyModel {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-default-number-as-integer\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-default-number-as-integer\main.ts)
+## [type-default-number-as-integer](./test/programs/type-default-number-as-integer)
 
 ```ts
 interface MyObject {
@@ -1743,7 +1743,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-function\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-function\main.ts)
+## [type-function](./test/programs/type-function)
 
 ```ts
 interface MyObject {
@@ -1752,14 +1752,14 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-globalThis\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-globalThis\main.ts)
+## [type-globalThis](./test/programs/type-globalThis)
 
 ```ts
 export type Test = typeof globalThis;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-intersection\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-intersection\main.ts)
+## [type-intersection](./test/programs/type-intersection)
 
 ```ts
 interface Type1 {
@@ -1777,7 +1777,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-intersection-recursive\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-intersection-recursive\main.ts)
+## [type-intersection-recursive](./test/programs/type-intersection-recursive)
 
 ```ts
 interface ChildFoo {
@@ -1789,7 +1789,7 @@ interface Foo {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-intersection-recursive-no-additional\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-intersection-recursive-no-additional\main.ts)
+## [type-intersection-recursive-no-additional](./test/programs/type-intersection-recursive-no-additional)
 
 ```ts
 type MyRecursiveNode = {
@@ -1804,7 +1804,7 @@ type MyLinkedList = MyNode;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-mapped-types\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-mapped-types\main.ts)
+## [type-mapped-types](./test/programs/type-mapped-types)
 
 ```ts
 type Keys = "str1" | "str2";
@@ -1815,7 +1815,7 @@ type MyMappedType = {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-no-aliases-recursive-topref\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-no-aliases-recursive-topref\main.ts)
+## [type-no-aliases-recursive-topref](./test/programs/type-no-aliases-recursive-topref)
 
 ```ts
 
@@ -1828,7 +1828,7 @@ type MyAlias = MyObject;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-nullable\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-nullable\main.ts)
+## [type-nullable](./test/programs/type-nullable)
 
 ```ts
 
@@ -1867,7 +1867,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-primitives\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-primitives\main.ts)
+## [type-primitives](./test/programs/type-primitives)
 
 ```ts
 /* tslint:disable:no-inferrable-types */
@@ -1898,7 +1898,7 @@ class MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-recursive\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-recursive\main.ts)
+## [type-recursive](./test/programs/type-recursive)
 
 ```ts
 /**
@@ -1912,7 +1912,7 @@ interface TestChild {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-union\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-union\main.ts)
+## [type-union](./test/programs/type-union)
 
 ```ts
 
@@ -1929,7 +1929,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\type-union-tagged\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\type-union-tagged\main.ts)
+## [type-union-tagged](./test/programs/type-union-tagged)
 
 ```ts
 
@@ -1953,7 +1953,7 @@ type Shape = Square | Rectangle | Circle;
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\typeof-keyword\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\typeof-keyword\main.ts)
+## [typeof-keyword](./test/programs/typeof-keyword)
 
 ```ts
 interface MyObject {
@@ -1962,7 +1962,7 @@ interface MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\unique-names\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\unique-names\main.ts)
+## [unique-names](./test/programs/unique-names)
 
 ```ts
 import "./other";
@@ -1973,7 +1973,7 @@ class MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\unique-names\other.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\unique-names\other.ts)
+## [unique-names](./test/programs/unique-names)
 
 ```ts
 class MyObject {
@@ -1982,7 +1982,7 @@ class MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\unique-names-multiple-subdefinitions\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\unique-names-multiple-subdefinitions\main.ts)
+## [unique-names-multiple-subdefinitions](./test/programs/unique-names-multiple-subdefinitions)
 
 ```ts
 import "./other";
@@ -1997,7 +1997,7 @@ class MyObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\unique-names-multiple-subdefinitions\other.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\unique-names-multiple-subdefinitions\other.ts)
+## [unique-names-multiple-subdefinitions](./test/programs/unique-names-multiple-subdefinitions)
 
 ```ts
 class SubObject {
@@ -2006,7 +2006,7 @@ class SubObject {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\user-symbols\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\user-symbols\main.ts)
+## [user-symbols](./test/programs/user-symbols)
 
 ```ts
 export interface Context {
@@ -2015,7 +2015,7 @@ export interface Context {
 ```
 
 
-## [C:\dev\mce\typescript-json-schema\test\programs\user-validation-keywords\main.ts](./test/programs/C:\dev\mce\typescript-json-schema\test\programs\user-validation-keywords\main.ts)
+## [user-validation-keywords](./test/programs/user-validation-keywords)
 
 ```ts
 export interface MyObject {

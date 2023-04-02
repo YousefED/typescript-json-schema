@@ -14,10 +14,7 @@
                 "required": [
                     "utilDeepKey"
                 ]
-            },
-            "required": [
-                "c"
-            ]
+            }
         }
     },
     "required": [

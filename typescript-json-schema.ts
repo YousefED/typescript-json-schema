@@ -747,7 +747,7 @@ export class JsonSchemaGenerator {
 
         const reffedType = this.getReferencedTypeSymbol(prop);
 
-        const definition = this.getTypeDefinition(propertyType, undefined, undefined, prop, reffedType, undefined);
+        const definition = this.getTypeDefinition(propertyType, undefined, undefined, prop, reffedType);
 
         if (this.args.titles) {
             definition.title = propertyName;
@@ -1237,7 +1237,7 @@ export class JsonSchemaGenerator {
             }
         }
 
-        let symbol = typ.getSymbol();
+        const symbol = typ.getSymbol();
 
         // FIXME: We can't just compare the name of the symbol - it ignores the namespace
         let isRawType =

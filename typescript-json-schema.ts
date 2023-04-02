@@ -1077,7 +1077,7 @@ export class JsonSchemaGenerator {
                         const symbols: Map<string, ts.Symbol> = (<any>indexedAccessType.objectType).members;
                         const targetSymbol = symbols?.get(targetName);
 
-                        if (!!targetName && !!targetSymbol) {
+                        if (targetSymbol) {
                             const targetNode = targetSymbol.getDeclarations()![0];
                             const targetDef = this.getDefinitionForProperty(targetSymbol, targetNode);
                             if (targetDef) {

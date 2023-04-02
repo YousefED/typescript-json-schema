@@ -1068,8 +1068,24 @@ export class JsonSchemaGenerator {
                     }
 
                     const typ = this.tc.getTypeAtLocation(indexSignature.type!);
-                    const def = this.getTypeDefinition(typ, undefined, "anyOf");
+                    let def: Definition | undefined;
+                    if (typ.flags & ts.TypeFlags.IndexedAccess) {
+                        const targetName: string = (<any>clazzType).mapper?.target?.value;
+                        const indexedAccessType = <ts.IndexedAccessType>typ;
+                        const symbols: Map<string, ts.Symbol> = (<any>indexedAccessType.objectType).members;
+                        const targetSymbol = symbols?.get(targetName);
 
+                        if (!!targetName && !!targetSymbol) {
+                            const targetNode = targetSymbol!.getDeclarations()![0];
+                            const targetDef = this.getDefinitionForProperty(targetSymbol, targetNode);
+                            if (targetDef) {
+                                def = targetDef;
+                            }
+                        }
+                    }
+                    if (!def) {
+                        def = this.getTypeDefinition(typ, undefined, "anyOf");
+                    }
                     if (isStringIndexed) {
                         definition.type = "object";
                         definition.additionalProperties = def;
@@ -1220,33 +1236,6 @@ export class JsonSchemaGenerator {
 
         let symbol = typ.getSymbol();
 
-        if (typ.flags & ts.TypeFlags.IndexedAccess) {
-            const indexedAccessType = <ts.IndexedAccessType>typ;
-            // const objectType = indexedAccessType.objectType;
-            const indexType = indexedAccessType.indexType;
-            const targetDefinition = this.getDefinitionForProperty(indexType.symbol, indexType.symbol.declarations?.[0]!);
-            returnedDefinition = {
-                ...returnedDefinition,
-                ...targetDefinition,
-            };
-            return returnedDefinition;
-
-            // const membersOfObjectType: ts.Symbol[] = Array.from((<any>objectType).members?.values?.() || []);
-            // const indexName = (<ts.LiteralType>indexType.getConstraint())?.value;
-            // console.log(membersOfObjectType, indexName);
-            // returnedDefinition.type = "test";
-            // return returnedDefinition;
-            // const symbolTarget = membersOfObjectType.find(s => s.name === indexName);
-            // const targetNode = symbolTarget?.declarations?.[0];
-            // if (!!indexName && !!symbolTarget && targetNode) {
-            //     const targetDefinition = this.getDefinitionForProperty(symbolTarget, targetNode);
-            //     returnedDefinition = {
-            //         ...returnedDefinition,
-            //         ...targetDefinition,
-            //     };
-            //     return returnedDefinition;
-            // }
-        }
         // FIXME: We can't just compare the name of the symbol - it ignores the namespace
         let isRawType =
             !symbol ||

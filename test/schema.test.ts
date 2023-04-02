@@ -435,6 +435,11 @@ describe("schema", () => {
     describe("typeof globalThis", () => {
         assertSchema("type-globalThis", "Test");
     });
+
+    describe("key in key of", () => {
+        assertSchema("key-in-key-of-single", "Main");
+        assertSchema("key-in-key-of-single", "Main");
+    });
 });
 
 describe("tsconfig.json", () => {
@@ -471,19 +476,19 @@ describe("Functionality 'required' in annotation", () => {
 });
 
 describe("when reusing a generator", () => {
-  it("should not add unrelated definitions to schemas", () => {
-    // regression test for https://github.com/YousefED/typescript-json-schema/issues/465
-    const testProgramPath = BASE + "no-unrelated-definitions/";
-    const program = TJS.programFromConfig(resolve(testProgramPath + "tsconfig.json"));
-    const generator = TJS.buildGenerator(program);
+    it("should not add unrelated definitions to schemas", () => {
+        // regression test for https://github.com/YousefED/typescript-json-schema/issues/465
+        const testProgramPath = BASE + "no-unrelated-definitions/";
+        const program = TJS.programFromConfig(resolve(testProgramPath + "tsconfig.json"));
+        const generator = TJS.buildGenerator(program);
 
-    ["MyObject", "MyOtherObject"].forEach(symbolName => {
-      const expectedSchemaString = readFileSync(testProgramPath + `schema.${symbolName}.json`, "utf8");
-      const expectedSchemaObject = JSON.parse(expectedSchemaString);
+        ["MyObject", "MyOtherObject"].forEach(symbolName => {
+            const expectedSchemaString = readFileSync(testProgramPath + `schema.${symbolName}.json`, "utf8");
+            const expectedSchemaObject = JSON.parse(expectedSchemaString);
 
-      const actualSchemaObject = generator?.getSchemaForSymbol(symbolName);
+            const actualSchemaObject = generator?.getSchemaForSymbol(symbolName);
 
-      assert.deepEqual(actualSchemaObject, expectedSchemaObject, `The schema for ${symbolName} is not as expected`);
+            assert.deepEqual(actualSchemaObject, expectedSchemaObject, `The schema for ${symbolName} is not as expected`);
+        });
     });
-  });
 });

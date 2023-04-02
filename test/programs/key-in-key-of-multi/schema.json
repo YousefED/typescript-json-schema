@@ -1,0 +1,47 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "utilKey1": {
+            "additionalProperties": {
+                "properties": {
+                    "utilDeepKey11": {
+                        "type": "string"
+                    },
+                    "utilDeepKey12": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "utilDeepKey11",
+                    "utilDeepKey12"
+                ],
+                "type": "object"
+            },
+            "type": "object"
+        },
+        "utilKey2": {
+            "additionalProperties": {
+                "properties": {
+                    "utilDeepKey21": {
+                        "type": "boolean"
+                    },
+                    "utilDeepKey22": {
+                        "type": "null"
+                    }
+                },
+                "required": [
+                    "utilDeepKey21",
+                    "utilDeepKey22"
+                ],
+                "type": "object"
+            },
+            "type": "object"
+        }
+    },
+    "required": [
+        "utilKey1",
+        "utilKey2"
+    ],
+    "type": "object"
+}
+

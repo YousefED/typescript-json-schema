@@ -1,6 +1,6 @@
 type Util = {
-    a: {
-        b: string;
+    utilKey: {
+        utilDeepKey: string;
     };
 };
 

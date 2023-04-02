@@ -259,7 +259,10 @@ describe("schema", () => {
         });
         assertSchema("type-union-tagged", "Shape");
         assertSchema("type-aliases-union-namespace", "MyModel");
-        assertSchema("type-intersection-recursive", "*");
+        assertSchema("type-intersection-recursive", "Foo");
+        assertSchema("type-intersection-recursive-no-additional", "MyLinkedList", {
+            noExtraProps: true,
+        });
     });
 
     describe("annotations", () => {
@@ -491,4 +494,8 @@ describe("when reusing a generator", () => {
             assert.deepEqual(actualSchemaObject, expectedSchemaObject, `The schema for ${symbolName} is not as expected`);
         });
     });
+});
+
+describe("satisfies keyword - ignore from a \"satisfies\" and build by rally type", () => {
+    assertSchema("satisfies-keyword", "Specific");
 });

@@ -48,6 +48,7 @@ export function getDefaultArgs(): Args {
         required: false,
         strictNullChecks: false,
         esModuleInterop: false,
+        skipLibCheck: false,
         ignoreErrors: false,
         out: "",
         validationKeywords: [],
@@ -77,6 +78,7 @@ export type Args = {
     required: boolean;
     strictNullChecks: boolean;
     esModuleInterop: boolean;
+    skipLibCheck: boolean;
     ignoreErrors: boolean;
     out: string;
     validationKeywords: string[];
@@ -520,7 +522,7 @@ export class JsonSchemaGenerator {
 
     private isFromDefaultLib(symbol: ts.Symbol) {
         const declarations = symbol.getDeclarations();
-        if (declarations && declarations.length > 0) {
+        if (declarations && declarations.length > 0 && declarations[0].parent) {
             return declarations[0].parent.getSourceFile().hasNoDefaultLib;
         }
         return false;
@@ -1198,7 +1200,8 @@ export class JsonSchemaGenerator {
         unionModifier: string = "anyOf",
         prop?: ts.Symbol,
         reffedType?: ts.Symbol,
-        pairedSymbol?: ts.Symbol
+        pairedSymbol?: ts.Symbol,
+        forceNotRef: boolean = false
     ): Definition {
         const definition: Definition = {}; // real definition
 
@@ -1304,7 +1307,7 @@ export class JsonSchemaGenerator {
 
         // Handle recursive types
         if (!isRawType || !!typ.aliasSymbol) {
-            if (this.recursiveTypeRef.has(fullTypeName)) {
+            if (this.recursiveTypeRef.has(fullTypeName) && !forceNotRef) {
                 asRef = true;
             } else {
                 this.recursiveTypeRef.set(fullTypeName, definition);
@@ -1362,12 +1365,13 @@ export class JsonSchemaGenerator {
 
                         const types = (<ts.IntersectionType>typ).types;
                         for (const member of types) {
-                            const other = this.getTypeDefinition(member, false);
+                            const other = this.getTypeDefinition(member, false, undefined, undefined, undefined, undefined, true);
                             definition.type = other.type; // should always be object
                             definition.properties = {
                                 ...definition.properties,
                                 ...other.properties,
                             };
+
                             if (Object.keys(other.default || {}).length > 0) {
                                 definition.default = extend(definition.default || {}, other.default);
                             }
@@ -1403,7 +1407,7 @@ export class JsonSchemaGenerator {
             }
         }
 
-        if (this.recursiveTypeRef.get(fullTypeName) === definition) {
+        if (this.recursiveTypeRef.get(fullTypeName) === definition && !forceNotRef) {
             this.recursiveTypeRef.delete(fullTypeName);
             // If the type was recursive (there is reffedDefinitions) - lets replace it to reference
             if (this.reffedDefinitions[fullTypeName]) {
@@ -1728,6 +1732,7 @@ export async function exec(filePattern: string, fullTypeName: string, args = get
         program = getProgramFromFiles(onlyIncludeFiles, {
             strictNullChecks: args.strictNullChecks,
             esModuleInterop: args.esModuleInterop,
+            skipLibCheck: args.skipLibCheck,
         });
         onlyIncludeFiles = onlyIncludeFiles.map(normalizeFileName);
     }

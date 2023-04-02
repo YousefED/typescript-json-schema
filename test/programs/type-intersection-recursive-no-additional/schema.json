@@ -1,0 +1,21 @@
+{
+    "$ref": "#/definitions/MyNode",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "MyNode": {
+            "additionalProperties": false,
+            "properties": {
+                "next": {
+                    "$ref": "#/definitions/MyNode"
+                },
+                "val": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "val"
+            ],
+            "type": "object"
+        }
+    }
+}

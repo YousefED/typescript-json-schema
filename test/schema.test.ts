@@ -438,6 +438,11 @@ describe("schema", () => {
     describe("typeof globalThis", () => {
         assertSchema("type-globalThis", "Test");
     });
+
+    describe("key in key of", () => {
+        assertSchema("key-in-key-of-single", "Main");
+        assertSchema("key-in-key-of-multi", "Main");
+    });
 });
 
 describe("tsconfig.json", () => {

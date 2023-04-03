@@ -1032,6 +1032,45 @@ export interface MyObject {
 ```
 
 
+## [key-in-key-of-multi](./test/programs/key-in-key-of-multi)
+
+```ts
+type Util = {
+    utilKey1: {
+        utilDeepKey11: string;
+        utilDeepKey12: number;
+    };
+    utilKey2: {
+        utilDeepKey21: boolean;
+        utilDeepKey22: null;
+    };
+};
+
+export type Main = {
+    [Key in keyof Util]: {
+        [key: string]: Util[Key];
+    };
+};
+```
+
+
+## [key-in-key-of-single](./test/programs/key-in-key-of-single)
+
+```ts
+type Util = {
+    utilKey: {
+        utilDeepKey: string;
+    };
+};
+
+export type Main = {
+    [Key in keyof Util]: {
+        [key: string]: Util[Key];
+    };
+};
+```
+
+
 ## [map-types](./test/programs/map-types)
 
 ```ts

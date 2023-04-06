@@ -2,7 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "properties": {
         "sub": {
-            "$ref": "#/definitions/SubObject.0eb4e9af"
+            "$ref": "#/definitions/SubObject.9cf7c8c7"
         }
     },
     "type": "object",
@@ -10,7 +10,7 @@
         "sub"
     ],
     "definitions": {
-        "SubObject.0eb4e9af": {
+        "SubObject.9cf7c8c7": {
             "properties": {
                 "is": {
                     "enum": [

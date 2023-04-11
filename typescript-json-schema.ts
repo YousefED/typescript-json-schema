@@ -45,6 +45,7 @@ export function getDefaultArgs(): Args {
         noExtraProps: false,
         propOrder: false,
         typeOfKeyword: false,
+        useConst: false,
         required: false,
         strictNullChecks: false,
         esModuleInterop: false,
@@ -75,6 +76,7 @@ export type Args = {
     noExtraProps: boolean;
     propOrder: boolean;
     typeOfKeyword: boolean;
+    useConst: boolean;
     required: boolean;
     strictNullChecks: boolean;
     esModuleInterop: boolean;
@@ -554,16 +556,16 @@ export class JsonSchemaGenerator {
             if (comments.length) {
                 definition.description = comments
                     .map((comment) => {
-                      const newlineNormalizedComment = comment.text.replace(/\r\n/g, "\n");
+                        const newlineNormalizedComment = comment.text.replace(/\r\n/g, "\n");
 
-                      // If a comment contains a "{@link XYZ}" inline tag that could not be
-                      // resolved by the TS checker, then this comment will contain a trailing
-                      // whitespace that we need to remove.
-                      if (comment.kind === "linkText") {
-                        return newlineNormalizedComment.trim();
-                      }
+                        // If a comment contains a "{@link XYZ}" inline tag that could not be
+                        // resolved by the TS checker, then this comment will contain a trailing
+                        // whitespace that we need to remove.
+                        if (comment.kind === "linkText") {
+                            return newlineNormalizedComment.trim();
+                        }
 
-                      return newlineNormalizedComment;
+                        return newlineNormalizedComment;
                     })
                     .join("").trim();
             }
@@ -692,12 +694,13 @@ export class JsonSchemaGenerator {
                 const value = extractLiteralValue(propertyType);
                 if (value !== undefined) {
                     definition.type = typeof value;
-                    definition.const = value;
+                    if (this.args.useConst) definition.const = value;
+                    else definition.enum = [value];
                 } else if (arrayType !== undefined) {
                     if (
                         propertyType.flags & ts.TypeFlags.Object &&
                         (propertyType as ts.ObjectType).objectFlags &
-                            (ts.ObjectFlags.Anonymous | ts.ObjectFlags.Interface | ts.ObjectFlags.Mapped)
+                        (ts.ObjectFlags.Anonymous | ts.ObjectFlags.Interface | ts.ObjectFlags.Mapped)
                     ) {
                         definition.type = "object";
                         definition.additionalProperties = false;
@@ -1240,7 +1243,7 @@ export class JsonSchemaGenerator {
         const symbol = typ.getSymbol();
         // FIXME: We can't just compare the name of the symbol - it ignores the namespace
         let isRawType =
-          !symbol ||
+            !symbol ||
             // Window is incorrectly marked as rawType here for some reason
             (this.tc.getFullyQualifiedName(symbol) !== "Window" &&
                 (this.tc.getFullyQualifiedName(symbol) === "Date" ||
@@ -1248,7 +1251,7 @@ export class JsonSchemaGenerator {
                     this.tc.getIndexInfoOfType(typ, ts.IndexKind.Number) !== undefined));
 
         if (isRawType && (typ as any).aliasSymbol?.escapedName && (typ as any).types) {
-          isRawType = false;
+            isRawType = false;
         }
 
         // special case: an union where all child are string literals -> make an enum instead

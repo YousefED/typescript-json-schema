@@ -694,8 +694,11 @@ export class JsonSchemaGenerator {
                 const value = extractLiteralValue(propertyType);
                 if (value !== undefined) {
                     definition.type = typeof value;
-                    if (this.args.useConst) definition.const = value;
-                    else definition.enum = [value];
+                    if (this.args.useConst) {
+                        definition.const = value;
+                    } else {
+                        definition.enum = [value];
+                    }
                 } else if (arrayType !== undefined) {
                     if (
                         propertyType.flags & ts.TypeFlags.Object &&

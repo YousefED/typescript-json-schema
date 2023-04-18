@@ -1379,6 +1379,24 @@ class MyObject {
 ```
 
 
+## [symbol](./test/programs/symbol)
+
+```ts
+export type MyObject = {
+    a: symbol;
+};
+```
+
+
+## [symbol-draft-07](./test/programs/symbol-draft-07)
+
+```ts
+export type MyObject = {
+    a: symbol;
+};
+```
+
+
 ## [tsconfig](./test/programs/tsconfig)
 
 ```ts
@@ -1998,6 +2016,26 @@ type Shape = Square | Rectangle | Circle;
 interface MyObject {
   foo: () => string;
 }
+```
+
+
+## [undefined-property](./test/programs/undefined-property)
+
+```ts
+export type MyObject = {
+    a: string;
+    b: undefined;
+};
+```
+
+
+## [undefined-property-draft-07](./test/programs/undefined-property-draft-07)
+
+```ts
+export type MyObject = {
+    a: string;
+    b: undefined;
+};
 ```
 
 

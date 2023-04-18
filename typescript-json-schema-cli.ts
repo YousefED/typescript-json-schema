@@ -53,6 +53,9 @@ export function run() {
             .describe("defaultNumberType", "Default number type.")
         .boolean("tsNodeRegister").default("tsNodeRegister", defaultArgs.tsNodeRegister)
             .describe("tsNodeRegister", "Use ts-node/register (needed for requiring typescript files).")
+        .option("compatibility").choices("compatibility", ["draft-07", "none"])
+            .default("compatibility", defaultArgs.compatibility)
+            .describe("compatibility", "Output compatibility mode")
         .argv;
 
     exec(args._[0], args._[1], {
@@ -78,6 +81,7 @@ export function run() {
         id: args.id,
         defaultNumberType: args.defaultNumberType,
         tsNodeRegister: args.tsNodeRegister,
+        compatibility: args.compatibility
     });
 }
 

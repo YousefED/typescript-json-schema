@@ -24,8 +24,6 @@ export function run() {
             .describe("propOrder", "Create property order definitions.")
         .boolean("useTypeOfKeyword").default("useTypeOfKeyword", defaultArgs.typeOfKeyword)
             .describe("useTypeOfKeyword", "Use typeOf keyword (https://goo.gl/DC6sni) for functions.")
-        .boolean("useConst").default("useConst", defaultArgs.useConst)
-            .describe("useConst", "Use const for single const values instead of enum.")
         .boolean("required").default("required", defaultArgs.required)
             .describe("required", "Create required array for non-optional properties.")
         .boolean("strictNullChecks").default("strictNullChecks", defaultArgs.strictNullChecks)
@@ -66,7 +64,6 @@ export function run() {
         noExtraProps: args.noExtraProps,
         propOrder: args.propOrder,
         typeOfKeyword: args.useTypeOfKeyword,
-        useConst: args.useConst,
         required: args.required,
         strictNullChecks: args.strictNullChecks,
         esModuleInterop: args.esModuleInterop,

@@ -13,9 +13,7 @@
         "SubObject.0eb4e9af": {
             "properties": {
                 "is": {
-                    "enum": [
-                        "SubObject_1"
-                    ],
+                    "const": "SubObject_1",
                     "type": "string"
                 }
             },

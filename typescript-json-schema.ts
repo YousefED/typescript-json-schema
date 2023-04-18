@@ -45,7 +45,6 @@ export function getDefaultArgs(): Args {
         noExtraProps: false,
         propOrder: false,
         typeOfKeyword: false,
-        useConst: false,
         required: false,
         strictNullChecks: false,
         esModuleInterop: false,
@@ -76,7 +75,6 @@ export type Args = {
     noExtraProps: boolean;
     propOrder: boolean;
     typeOfKeyword: boolean;
-    useConst: boolean;
     required: boolean;
     strictNullChecks: boolean;
     esModuleInterop: boolean;
@@ -694,11 +692,7 @@ export class JsonSchemaGenerator {
                 const value = extractLiteralValue(propertyType);
                 if (value !== undefined) {
                     definition.type = typeof value;
-                    if (this.args.useConst) {
-                        definition.const = value;
-                    } else {
-                        definition.enum = [value];
-                    }
+                    definition.const = value;
                 } else if (arrayType !== undefined) {
                     if (
                         propertyType.flags & ts.TypeFlags.Object &&

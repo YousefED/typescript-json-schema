@@ -5,9 +5,7 @@
         "ReferenceType": {
             "properties": {
                 "reference": {
-                    "enum": [
-                        true
-                    ],
+                    "const": true,
                     "type": "boolean"
                 }
             },

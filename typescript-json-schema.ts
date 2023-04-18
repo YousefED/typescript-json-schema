@@ -1093,8 +1093,24 @@ export class JsonSchemaGenerator {
                     }
 
                     const typ = this.tc.getTypeAtLocation(indexSignature.type!);
-                    const def = this.getTypeDefinition(typ, undefined, "anyOf");
+                    let def: Definition | undefined;
+                    if (typ.flags & ts.TypeFlags.IndexedAccess) {
+                        const targetName: string = (<any>clazzType).mapper?.target?.value;
+                        const indexedAccessType = <ts.IndexedAccessType>typ;
+                        const symbols: Map<string, ts.Symbol> = (<any>indexedAccessType.objectType).members;
+                        const targetSymbol = symbols?.get(targetName);
 
+                        if (targetSymbol) {
+                            const targetNode = targetSymbol.getDeclarations()![0];
+                            const targetDef = this.getDefinitionForProperty(targetSymbol, targetNode);
+                            if (targetDef) {
+                                def = targetDef;
+                            }
+                        }
+                    }
+                    if (!def) {
+                        def = this.getTypeDefinition(typ, undefined, "anyOf");
+                    }
                     if (isStringIndexed) {
                         definition.type = "object";
                         definition.additionalProperties = def;

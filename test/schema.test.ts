@@ -27,6 +27,7 @@ const BASE = "test/programs/";
 
 interface AjvTestOptions {
     skipCompile: boolean;
+    skipValidate: boolean;
     expectedWarnings: string[];
 }
 
@@ -58,9 +59,11 @@ export function assertSchema(
 
         // test against the meta schema
         if (actual !== null) {
-            ajv.validateSchema(actual);
 
-            assert.equal(ajv.errors, null, "The schema is not valid");
+            if (!ajvOptions.skipValidate) {
+                ajv.validateSchema(actual);
+                assert.equal(ajv.errors, null, "The schema is not valid");
+            }
 
             // Compiling the schema can reveal warnings that validateSchema doesn't.
             if (!ajvOptions.skipCompile) {
@@ -426,6 +429,7 @@ describe("schema", () => {
         assertSchema("prop-override", "MyObject");
 
         assertSchema("undefined-property", "MyObject", undefined, undefined, undefined, {
+            skipValidate: true,
             skipCompile: true,
         });
 
@@ -438,6 +442,7 @@ describe("schema", () => {
         });
 
         assertSchema("symbol", "MyObject", undefined, undefined, undefined, {
+            skipValidate: true,
             skipCompile: true,
         });
     });

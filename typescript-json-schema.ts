@@ -118,7 +118,7 @@ type RedefinedFields =
     | "definitions";
 export type DefinitionOrBoolean = Definition | boolean;
 
-export type DefinitionTypeName = JSONSchema7TypeName | "undefined" | "symbol" | "bigint" | "function";
+export type DefinitionTypeName = JSONSchema7TypeName | "undefined" | "symbol" | "function";
 
 export interface Definition extends Omit<JSONSchema7, RedefinedFields> {
     // The type field here is incompatible with the standard definition
@@ -699,22 +699,32 @@ export class JsonSchemaGenerator {
             } else {
                 const value = extractLiteralValue(propertyType);
                 if (value !== undefined) {
+                    // typeof value can be: "string", "boolean", "number", or "object" if value is null
+                    const typeofValue = typeof value;
                     if ("draft-07" === this.args.compatibility) {
-                        const typeofValue = typeof value;
-                        if (["string", "number", "boolean"].includes(typeofValue)) {
-                            definition.type = typeofValue as DefinitionTypeName;
-                        } else {
-                            throw new Error(`Not supported: type ${typeofValue}`);
+                        switch (typeofValue) {
+                            case "string":
+                            case "boolean":
+                                definition.type = typeofValue;
+                                break;
+                            case "number":
+                                definition.type = this.args.defaultNumberType;
+                                break;
+                            case "object":
+                                definition.type = "null";
+                                break;
+                            default:
+                                throw new Error(`Not supported: ${value} as a enum value`);
                         }
                     } else {
-                        definition.type = typeof value;
+                        definition.type = typeofValue as DefinitionTypeName;
                     }
                     definition.enum = [value];
                 } else if (arrayType !== undefined) {
                     if (
                         propertyType.flags & ts.TypeFlags.Object &&
                         (propertyType as ts.ObjectType).objectFlags &
-                            (ts.ObjectFlags.Anonymous | ts.ObjectFlags.Interface | ts.ObjectFlags.Mapped)
+                        (ts.ObjectFlags.Anonymous | ts.ObjectFlags.Interface | ts.ObjectFlags.Mapped)
                     ) {
                         definition.type = "object";
                         definition.additionalProperties = false;

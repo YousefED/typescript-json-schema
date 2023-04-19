@@ -522,10 +522,10 @@ describe("when reusing a generator", () => {
     const generator = TJS.buildGenerator(program);
 
     ["MyObject", "MyOtherObject"].forEach(symbolName => {
-    const expectedSchemaString = readFileSync(testProgramPath + `schema.${symbolName}.json`, "utf8");
-    const expectedSchemaObject = JSON.parse(expectedSchemaString);
+      const expectedSchemaString = readFileSync(testProgramPath + `schema.${symbolName}.json`, "utf8");
+      const expectedSchemaObject = JSON.parse(expectedSchemaString);
 
-    const actualSchemaObject = generator?.getSchemaForSymbol(symbolName);
+      const actualSchemaObject = generator?.getSchemaForSymbol(symbolName);
 
         assert.deepEqual(actualSchemaObject, expectedSchemaObject, `The schema for ${symbolName} is not as expected`);
       });

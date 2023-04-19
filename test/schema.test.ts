@@ -116,7 +116,8 @@ export function assertRejection(
     group: string,
     type: string,
     settings: TJS.PartialArgs = {},
-    compilerOptions?: TJS.CompilerOptions
+    compilerOptions?: TJS.CompilerOptions,
+    errMsgMatcher?: RegExp | string
 ) {
     it(group + " should reject input", () => {
         let schema = null;
@@ -127,7 +128,7 @@ export function assertRejection(
 
             const files = [resolve(BASE + group + "/main.ts")];
             schema = TJS.generateSchema(TJS.getProgramFromFiles(files, compilerOptions), type, settings, files);
-        });
+        }, errMsgMatcher);
         assert.equal(schema, null, "Expected no schema to be generated");
     });
 }
@@ -246,17 +247,20 @@ describe("schema", () => {
         assertSchema("type-aliases-tuple-with-rest-element", "MyTuple");
     });
 
-    describe("enums", () => {
-        assertSchema("enums-string", "MyObject");
-        assertSchema("enums-number", "MyObject");
-        assertSchema("enums-number-initialized", "Enum");
-        assertSchema("enums-compiled-compute", "Enum");
-        assertSchema("enums-mixed", "MyObject");
-        assertSchema("enums-value-in-interface", "MyObject");
+    (["draft-07", "none"] as const).forEach((compatibility) => {
+        describe(`enums compatibility to ${compatibility}`, () => {
+            assertSchema("enums-string", "MyObject", { compatibility });
+            assertSchema("enums-number", "MyObject", { compatibility });
+            assertSchema("enums-number-initialized", "Enum", { compatibility });
+            assertSchema("enums-compiled-compute", "Enum", { compatibility });
+            assertSchema("enums-mixed", "MyObject", { compatibility });
+            assertSchema("enums-value-in-interface", "MyObject", { compatibility });
+        });
     });
 
     describe("unions and intersections", () => {
         assertSchema("type-union", "MyObject");
+        assertSchema("type-union-mix", "Mix");
         assertSchema("type-intersection", "MyObject", {
             noExtraProps: true,
         });
@@ -396,6 +400,27 @@ describe("schema", () => {
         });
     });
 
+    describe("undefined", () => {
+        assertSchema("undefined-property", "MyObject", undefined, undefined, undefined, {
+            skipValidate: true,
+            skipCompile: true,
+        });
+
+        assertSchema("undefined-property-draft-07", "MyObject", {
+            compatibility: "draft-07",
+        });
+
+        assertSchema("type-alias-undefined", "MyUndefined", undefined, undefined, undefined, {
+            skipValidate: true,
+            skipCompile: true,
+        });
+
+        // If compatibility is set to draft 07, creating a schema for main type = undefined will fail
+        assertRejection("type-alias-undefined", "MyUndefined", {
+            compatibility: "draft-07",
+        }, undefined, "Not supported: root type undefined");
+    });
+
     describe("other", () => {
         assertSchema("array-and-description", "MyObject");
 
@@ -427,15 +452,6 @@ describe("schema", () => {
         });
 
         assertSchema("prop-override", "MyObject");
-
-        assertSchema("undefined-property", "MyObject", undefined, undefined, undefined, {
-            skipValidate: true,
-            skipCompile: true,
-        });
-
-        assertSchema("undefined-property-draft-07", "MyObject", {
-            compatibility: "draft-07"
-        });
 
         assertSchema("symbol-draft-07", "MyObject", {
             compatibility: "draft-07"

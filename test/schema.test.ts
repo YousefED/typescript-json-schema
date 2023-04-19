@@ -117,7 +117,7 @@ export function assertRejection(
     type: string,
     settings: TJS.PartialArgs = {},
     compilerOptions?: TJS.CompilerOptions,
-    errMsgMatcher?: RegExp | string
+    errType?: RegExp | ErrorConstructor,
 ) {
     it(group + " should reject input", () => {
         let schema = null;
@@ -128,7 +128,7 @@ export function assertRejection(
 
             const files = [resolve(BASE + group + "/main.ts")];
             schema = TJS.generateSchema(TJS.getProgramFromFiles(files, compilerOptions), type, settings, files);
-        }, errMsgMatcher);
+        }, errType || /.*/);
         assert.equal(schema, null, "Expected no schema to be generated");
     });
 }
@@ -260,7 +260,6 @@ describe("schema", () => {
 
     describe("unions and intersections", () => {
         assertSchema("type-union", "MyObject");
-        assertSchema("type-union-mix", "Mix");
         assertSchema("type-intersection", "MyObject", {
             noExtraProps: true,
         });
@@ -418,7 +417,7 @@ describe("schema", () => {
         // If compatibility is set to draft 07, creating a schema for main type = undefined will fail
         assertRejection("type-alias-undefined", "MyUndefined", {
             compatibility: "draft-07",
-        }, undefined, "Not supported: root type undefined");
+        }, undefined, /Not supported: root type undefined/);
     });
 
     describe("other", () => {

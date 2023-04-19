@@ -1477,6 +1477,13 @@ type MyString = string;
 ```
 
 
+## [type-alias-undefined](./test/programs/type-alias-undefined)
+
+```ts
+export type MyUndefined = undefined;
+```
+
+
 ## [type-aliases](./test/programs/type-aliases)
 
 ```ts

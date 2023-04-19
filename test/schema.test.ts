@@ -527,10 +527,11 @@ describe("when reusing a generator", () => {
 
       const actualSchemaObject = generator?.getSchemaForSymbol(symbolName);
 
-        assert.deepEqual(actualSchemaObject, expectedSchemaObject, `The schema for ${symbolName} is not as expected`);
+      assert.deepEqual(actualSchemaObject, expectedSchemaObject, `The schema for ${symbolName} is not as expected`);
       });
     });
   });
+
 
 describe("satisfies keyword - ignore from a \"satisfies\" and build by rally type", () => {
     assertSchema("satisfies-keyword", "Specific");

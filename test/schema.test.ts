@@ -27,7 +27,6 @@ const BASE = "test/programs/";
 
 interface AjvTestOptions {
     skipCompile: boolean;
-    skipValidate: boolean;
     expectedWarnings: string[];
 }
 
@@ -59,11 +58,8 @@ export function assertSchema(
 
         // test against the meta schema
         if (actual !== null) {
-
-            if (!ajvOptions.skipValidate) {
-                ajv.validateSchema(actual);
-                assert.equal(ajv.errors, null, "The schema is not valid");
-            }
+            ajv.validateSchema(actual);
+            assert.equal(ajv.errors, null, "The schema is not valid");
 
             // Compiling the schema can reveal warnings that validateSchema doesn't.
             if (!ajvOptions.skipCompile) {
@@ -245,17 +241,16 @@ describe("schema", () => {
         */
         assertSchema("type-aliases-tuple-of-variable-length", "MyTuple");
         assertSchema("type-aliases-tuple-with-rest-element", "MyTuple");
+        assertSchema("type-aliases-never", "MyNever");
     });
 
-    (["draft-07", "none"] as const).forEach((compatibility) => {
-        describe(`enums compatibility to ${compatibility}`, () => {
-            assertSchema("enums-string", "MyObject", { compatibility });
-            assertSchema("enums-number", "MyObject", { compatibility });
-            assertSchema("enums-number-initialized", "Enum", { compatibility });
-            assertSchema("enums-compiled-compute", "Enum", { compatibility });
-            assertSchema("enums-mixed", "MyObject", { compatibility });
-            assertSchema("enums-value-in-interface", "MyObject", { compatibility });
-        });
+    describe("enums", () => {
+        assertSchema("enums-string", "MyObject");
+        assertSchema("enums-number", "MyObject");
+        assertSchema("enums-number-initialized", "Enum");
+        assertSchema("enums-compiled-compute", "Enum");
+        assertSchema("enums-mixed", "MyObject");
+        assertSchema("enums-value-in-interface", "MyObject");
     });
 
     describe("unions and intersections", () => {
@@ -400,24 +395,10 @@ describe("schema", () => {
     });
 
     describe("undefined", () => {
-        assertSchema("undefined-property", "MyObject", undefined, undefined, undefined, {
-            skipValidate: true,
-            skipCompile: true,
-        });
+        assertSchema("undefined-property", "MyObject");
 
-        assertSchema("undefined-property-draft-07", "MyObject", {
-            compatibility: "draft-07",
-        });
-
-        assertSchema("type-alias-undefined", "MyUndefined", undefined, undefined, undefined, {
-            skipValidate: true,
-            skipCompile: true,
-        });
-
-        // If compatibility is set to draft 07, creating a schema for main type = undefined will fail
-        assertRejection("type-alias-undefined", "MyUndefined", {
-            compatibility: "draft-07",
-        }, undefined, /Not supported: root type undefined/);
+        // Creating a schema for main type = undefined should fail
+        assertRejection("type-alias-undefined", "MyUndefined", undefined, undefined, /Not supported: root type undefined/);
     });
 
     describe("other", () => {
@@ -452,14 +433,7 @@ describe("schema", () => {
 
         assertSchema("prop-override", "MyObject");
 
-        assertSchema("symbol-draft-07", "MyObject", {
-            compatibility: "draft-07"
-        });
-
-        assertSchema("symbol", "MyObject", undefined, undefined, undefined, {
-            skipValidate: true,
-            skipCompile: true,
-        });
+        assertSchema("symbol", "MyObject");
     });
 
     describe("object index", () => {

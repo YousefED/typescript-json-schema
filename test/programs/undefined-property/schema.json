@@ -4,13 +4,9 @@
     "properties": {
         "a": {
             "type": "string"
-        },
-        "b": {
-            "type": "undefined"
         }
     },
     "required": [
-        "a",
-        "b"
+        "a"
     ]
 }

@@ -3,9 +3,7 @@
     "properties": {
         "is": {
             "type": "string",
-            "enum": [
-                "MyObject_2"
-            ]
+            "const": "MyObject_2"
         }
     },
     "required": [

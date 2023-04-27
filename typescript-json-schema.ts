@@ -554,16 +554,16 @@ export class JsonSchemaGenerator {
             if (comments.length) {
                 definition.description = comments
                     .map((comment) => {
-                      const newlineNormalizedComment = comment.text.replace(/\r\n/g, "\n");
+                        const newlineNormalizedComment = comment.text.replace(/\r\n/g, "\n");
 
-                      // If a comment contains a "{@link XYZ}" inline tag that could not be
-                      // resolved by the TS checker, then this comment will contain a trailing
-                      // whitespace that we need to remove.
-                      if (comment.kind === "linkText") {
-                        return newlineNormalizedComment.trim();
-                      }
+                        // If a comment contains a "{@link XYZ}" inline tag that could not be
+                        // resolved by the TS checker, then this comment will contain a trailing
+                        // whitespace that we need to remove.
+                        if (comment.kind === "linkText") {
+                            return newlineNormalizedComment.trim();
+                        }
 
-                      return newlineNormalizedComment;
+                        return newlineNormalizedComment;
                     })
                     .join("").trim();
             }
@@ -692,12 +692,12 @@ export class JsonSchemaGenerator {
                 const value = extractLiteralValue(propertyType);
                 if (value !== undefined) {
                     definition.type = typeof value;
-                    definition.enum = [value];
+                    definition.const = value;
                 } else if (arrayType !== undefined) {
                     if (
                         propertyType.flags & ts.TypeFlags.Object &&
                         (propertyType as ts.ObjectType).objectFlags &
-                            (ts.ObjectFlags.Anonymous | ts.ObjectFlags.Interface | ts.ObjectFlags.Mapped)
+                        (ts.ObjectFlags.Anonymous | ts.ObjectFlags.Interface | ts.ObjectFlags.Mapped)
                     ) {
                         definition.type = "object";
                         definition.additionalProperties = false;
@@ -762,7 +762,7 @@ export class JsonSchemaGenerator {
         if (valDecl?.initializer) {
             let initial = valDecl.initializer;
 
-            while (ts.isTypeAssertion(initial)) {
+            while (ts.isTypeAssertionExpression(initial)) {
                 initial = initial.expression;
             }
 
@@ -803,7 +803,7 @@ export class JsonSchemaGenerator {
         const members: ts.NodeArray<ts.EnumMember> =
             node.kind === ts.SyntaxKind.EnumDeclaration
                 ? (node as ts.EnumDeclaration).members
-                : ts.createNodeArray([node as ts.EnumMember]);
+                : ts.factory.createNodeArray([node as ts.EnumMember]);
         var enumValues: (number | boolean | string | null)[] = [];
         const enumTypes: string[] = [];
 
@@ -854,7 +854,11 @@ export class JsonSchemaGenerator {
         }
 
         if (enumValues.length > 0) {
-            definition.enum = enumValues.sort();
+            if (enumValues.length > 1) {
+                definition.enum = enumValues.sort();
+            } else {
+                definition.const = enumValues[0];
+            }
         }
 
         return definition;
@@ -919,7 +923,7 @@ export class JsonSchemaGenerator {
             if (isOnlyBooleans) {
                 pushSimpleType("boolean");
             } else {
-                const enumSchema: Definition = { enum: enumValues.sort() };
+                const enumSchema: Definition = enumValues.length > 1 ? { enum: enumValues.sort() } : { const: enumValues[0] };
 
                 // If all values are of the same primitive type, add a "type" field to the schema
                 if (
@@ -1240,7 +1244,7 @@ export class JsonSchemaGenerator {
         const symbol = typ.getSymbol();
         // FIXME: We can't just compare the name of the symbol - it ignores the namespace
         let isRawType =
-          !symbol ||
+            !symbol ||
             // Window is incorrectly marked as rawType here for some reason
             (this.tc.getFullyQualifiedName(symbol) !== "Window" &&
                 (this.tc.getFullyQualifiedName(symbol) === "Date" ||
@@ -1248,7 +1252,7 @@ export class JsonSchemaGenerator {
                     this.tc.getIndexInfoOfType(typ, ts.IndexKind.Number) !== undefined));
 
         if (isRawType && (typ as any).aliasSymbol?.escapedName && (typ as any).types) {
-          isRawType = false;
+            isRawType = false;
         }
 
         // special case: an union where all child are string literals -> make an enum instead

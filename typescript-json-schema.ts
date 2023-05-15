@@ -438,6 +438,7 @@ const annotationKeywords: { [k in keyof typeof validationKeywords]?: true } = {
     description: true,
     default: true,
     examples: true,
+    title: true,
     // A JSDoc $ref annotation can appear as a $ref.
     $ref: true,
 };

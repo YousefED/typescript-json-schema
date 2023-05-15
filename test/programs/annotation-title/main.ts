@@ -10,6 +10,8 @@ interface MyObject {
      * @title empty#
      */
     empty;
-
+    /**
+     * @title filled
+     */
     filled: MySubObject;
 }

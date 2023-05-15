@@ -15,7 +15,8 @@
       "title": "empty#"
     },
     "filled": {
-      "$ref": "#/definitions/MySubObject"
+      "$ref": "#/definitions/MySubObject",
+      "title": "filled"
     }
   },
   "required": ["empty", "filled"],

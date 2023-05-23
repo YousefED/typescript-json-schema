@@ -673,10 +673,10 @@
   dependencies:
     "p-limit" "^3.0.2"
 
-"path-equal@^1.1.2":
-  "integrity" "sha512-AUJvbcle1Zgb1TgtftHYknlrgrSYyI1ytrYgSbKUHSybwqUDnbD2cw9PIWivuMvsN+GTXmr/DRN4VBXpHG6aGg=="
-  "resolved" "https://registry.npmjs.org/path-equal/-/path-equal-1.2.2.tgz"
-  "version" "1.2.2"
+"path-equal@^1.2.5":
+  "integrity" "sha512-i73IctDr3F2W+bsOWDyyVm/lqsXO47aY9nsFZUjTT/aljSbkxHxxCoyZ9UUrM8jK0JVod+An+rl48RCsvWM+9g=="
+  "resolved" "https://registry.yarnpkg.com/path-equal/-/path-equal-1.2.5.tgz#9fcbdd5e5daee448e96f43f3bac06c666b5e982a"
+  "version" "1.2.5"
 
 "path-exists@^4.0.0":
   "integrity" "sha512-ak9Qy5Q7jYb2Wwcey5Fpvg2KoAc/ZIhLSLOSBmRmygPsGwkVVt0fZa0qrtMz+m6tJTAHfZQ8FnmB4MG4LWy7/w=="

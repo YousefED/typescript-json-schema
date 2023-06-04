@@ -114,7 +114,6 @@ type RedefinedFields =
     | "not"
     | "definitions";
 export type DefinitionOrBoolean = Definition | boolean;
-
 export interface Definition extends Omit<JSONSchema7, RedefinedFields> {
     // Non-standard fields
     propertyOrder?: string[];
@@ -1041,7 +1040,6 @@ export class JsonSchemaGenerator {
             if (ts.TypeFlags.Never === propertyFlagType || ts.TypeFlags.Undefined === propertyFlagType) {
                 return false;
             }
-
             if (!this.args.excludePrivate) {
                 return true;
             }

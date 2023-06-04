@@ -77,7 +77,7 @@ export function run() {
         rejectDateType: args.rejectDateType,
         id: args.id,
         defaultNumberType: args.defaultNumberType,
-        tsNodeRegister: args.tsNodeRegister
+        tsNodeRegister: args.tsNodeRegister,
     });
 }
 

@@ -63,10 +63,10 @@ export function assertSchema(
 
             // Compiling the schema can reveal warnings that validateSchema doesn't.
             if (!ajvOptions.skipCompile) {
-            ajvWarnings = [];
-            ajv.compile(actual);
-            assert.deepEqual(ajvWarnings, ajvOptions.expectedWarnings || [], "Got unexpected AJV warnings");
-        }
+                ajvWarnings = [];
+                ajv.compile(actual);
+                assert.deepEqual(ajvWarnings, ajvOptions.expectedWarnings || [], "Got unexpected AJV warnings");
+            }
         }
     });
 }
@@ -505,7 +505,6 @@ describe("when reusing a generator", () => {
         });
     });
 });
-
 
 describe("satisfies keyword - ignore from a \"satisfies\" and build by rally type", () => {
     assertSchema("satisfies-keyword", "Specific");

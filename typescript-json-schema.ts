@@ -631,7 +631,8 @@ export class JsonSchemaGenerator {
         propertyType: ts.Type,
         reffedType: ts.Symbol,
         definition: Definition,
-        defaultNumberType = this.args.defaultNumberType
+        defaultNumberType = this.args.defaultNumberType,
+        ignoreUndefined = false,
     ): Definition {
         const tupleType = resolveTupleType(propertyType);
 
@@ -675,7 +676,11 @@ export class JsonSchemaGenerator {
             } else if (flags & ts.TypeFlags.Null) {
                 definition.type = "null";
             } else if (flags & ts.TypeFlags.Undefined || propertyTypeString === "void") {
-                throw new Error("Not supported: root type undefined");
+                if (!ignoreUndefined) {
+                    throw new Error("Not supported: root type undefined");
+                }
+                // will be deleted
+                definition.type = "undefined" as any;
             } else if (flags & ts.TypeFlags.Any || flags & ts.TypeFlags.Unknown) {
                 // no type restriction, so that anything will match
             } else if (propertyTypeString === "Date" && !this.args.rejectDateType) {
@@ -874,7 +879,6 @@ export class JsonSchemaGenerator {
 
     private getUnionDefinition(
         unionType: ts.UnionType,
-        prop: ts.Symbol,
         unionModifier: string,
         definition: Definition
     ): Definition {
@@ -900,17 +904,20 @@ export class JsonSchemaGenerator {
                 pushEnumValue(value);
             } else {
                 const symbol = valueType.aliasSymbol;
-                const def = this.getTypeDefinition(valueType, undefined, undefined, symbol, symbol);
-                    const keys = Object.keys(def);
-                    if (keys.length === 1 && keys[0] === "type") {
-                        if (typeof def.type !== "string") {
-                            console.error("Expected only a simple type.");
-                        } else {
-                            pushSimpleType(def.type);
-                        }
+                const def = this.getTypeDefinition(valueType, undefined, undefined, symbol, symbol, undefined, undefined, true);
+                if (def.type === "undefined" as any) {
+                    continue;
+                }
+                const keys = Object.keys(def);
+                if (keys.length === 1 && keys[0] === "type") {
+                    if (typeof def.type !== "string") {
+                        console.error("Expected only a simple type.");
                     } else {
-                        schemas.push(def);
+                        pushSimpleType(def.type);
                     }
+                } else {
+                    schemas.push(def);
+                }
             }
         }
 
@@ -1203,7 +1210,8 @@ export class JsonSchemaGenerator {
         prop?: ts.Symbol,
         reffedType?: ts.Symbol,
         pairedSymbol?: ts.Symbol,
-        forceNotRef: boolean = false
+        forceNotRef: boolean = false,
+        ignoreUndefined = false,
     ): Definition {
         const definition: Definition = {}; // real definition
 
@@ -1356,7 +1364,7 @@ export class JsonSchemaGenerator {
             if (definition.type === undefined) {
                 // if users override the type, do not try to infer it
                 if (typ.flags & ts.TypeFlags.Union) {
-                    this.getUnionDefinition(typ as ts.UnionType, prop!, unionModifier, definition);
+                    this.getUnionDefinition(typ as ts.UnionType, unionModifier, definition);
                 } else if (typ.flags & ts.TypeFlags.Intersection) {
                     if (this.args.noExtraProps) {
                         // extend object instead of using allOf because allOf does not work well with additional properties. See #107
@@ -1387,7 +1395,7 @@ export class JsonSchemaGenerator {
                     if (pairedSymbol) {
                         this.parseCommentsIntoDefinition(pairedSymbol, definition, {});
                     }
-                    this.getDefinitionForRootType(typ, reffedType!, definition);
+                    this.getDefinitionForRootType(typ, reffedType!, definition, undefined, ignoreUndefined);
                 } else if (
                     node &&
                     (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)

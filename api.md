@@ -1395,15 +1395,6 @@ export type MyObject = {
 ```
 
 
-## [symbol-draft-07](./test/programs/symbol-draft-07)
-
-```ts
-export type MyObject = {
-    a: symbol;
-};
-```
-
-
 ## [tsconfig](./test/programs/tsconfig)
 
 ```ts
@@ -1434,6 +1425,13 @@ export interface IncludedAlways {
 export interface IncludedOnlyByTsConfig {
     a: string;
 };
+```
+
+
+## [type-alias-never](./test/programs/type-alias-never)
+
+```ts
+export type MyNever = never;
 ```
 
 
@@ -2034,16 +2032,6 @@ interface MyObject {
 
 
 ## [undefined-property](./test/programs/undefined-property)
-
-```ts
-export type MyObject = {
-    a: string;
-    b: undefined;
-};
-```
-
-
-## [undefined-property-draft-07](./test/programs/undefined-property-draft-07)
 
 ```ts
 export type MyObject = {

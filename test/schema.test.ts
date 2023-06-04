@@ -63,10 +63,10 @@ export function assertSchema(
 
             // Compiling the schema can reveal warnings that validateSchema doesn't.
             if (!ajvOptions.skipCompile) {
-                ajvWarnings = [];
-                ajv.compile(actual);
-                assert.deepEqual(ajvWarnings, ajvOptions.expectedWarnings || [], "Got unexpected AJV warnings");
-            }
+            ajvWarnings = [];
+            ajv.compile(actual);
+            assert.deepEqual(ajvWarnings, ajvOptions.expectedWarnings || [], "Got unexpected AJV warnings");
+        }
         }
     });
 }
@@ -241,7 +241,7 @@ describe("schema", () => {
         */
         assertSchema("type-aliases-tuple-of-variable-length", "MyTuple");
         assertSchema("type-aliases-tuple-with-rest-element", "MyTuple");
-        assertSchema("type-alias-never", "MyNever");
+        assertRejection("type-alias-never", "MyNever", {}, {}, /Unsupported type: never/);
     });
 
     describe("enums", () => {
@@ -489,22 +489,22 @@ describe("Functionality 'required' in annotation", () => {
 });
 
 describe("when reusing a generator", () => {
-  it("should not add unrelated definitions to schemas", () => {
-    // regression test for https://github.com/YousefED/typescript-json-schema/issues/465
-    const testProgramPath = BASE + "no-unrelated-definitions/";
-    const program = TJS.programFromConfig(resolve(testProgramPath + "tsconfig.json"));
-    const generator = TJS.buildGenerator(program);
+    it("should not add unrelated definitions to schemas", () => {
+        // regression test for https://github.com/YousefED/typescript-json-schema/issues/465
+        const testProgramPath = BASE + "no-unrelated-definitions/";
+        const program = TJS.programFromConfig(resolve(testProgramPath + "tsconfig.json"));
+        const generator = TJS.buildGenerator(program);
 
-    ["MyObject", "MyOtherObject"].forEach(symbolName => {
-      const expectedSchemaString = readFileSync(testProgramPath + `schema.${symbolName}.json`, "utf8");
-      const expectedSchemaObject = JSON.parse(expectedSchemaString);
+        ["MyObject", "MyOtherObject"].forEach(symbolName => {
+            const expectedSchemaString = readFileSync(testProgramPath + `schema.${symbolName}.json`, "utf8");
+            const expectedSchemaObject = JSON.parse(expectedSchemaString);
 
-      const actualSchemaObject = generator?.getSchemaForSymbol(symbolName);
+            const actualSchemaObject = generator?.getSchemaForSymbol(symbolName);
 
-      assert.deepEqual(actualSchemaObject, expectedSchemaObject, `The schema for ${symbolName} is not as expected`);
-      });
+            assert.deepEqual(actualSchemaObject, expectedSchemaObject, `The schema for ${symbolName} is not as expected`);
+        });
     });
-  });
+});
 
 
 describe("satisfies keyword - ignore from a \"satisfies\" and build by rally type", () => {

@@ -1147,9 +1147,12 @@ export class JsonSchemaGenerator {
                 const requiredProps = props.reduce((required: string[], prop: ts.Symbol) => {
                     const def = {};
                     this.parseCommentsIntoDefinition(prop, def, {});
+                    const allUnionTypesFlags: number[] = (<any>prop).type?.types?.map?.((t: any) => t.flags) || [];
                     if (
                         !(prop.flags & ts.SymbolFlags.Optional) &&
                         !(prop.flags & ts.SymbolFlags.Method) &&
+                        !allUnionTypesFlags.includes(ts.TypeFlags.Undefined) &&
+                        !allUnionTypesFlags.includes(ts.TypeFlags.Void) &&
                         !def.hasOwnProperty("ignore")
                     ) {
                         required.push(prop.getName());

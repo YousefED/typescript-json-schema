@@ -51,7 +51,6 @@ Options:
   --id                  Set schema id.                                               [string]  [default: ""]
   --defaultNumberType   Default number type.                                         [choices: "number", "integer"] [default: "number"]
   --tsNodeRegister      Use ts-node/register (needed for require typescript files).  [boolean] [default: false]
-  --compatibility       Output compatibility mode                                    [choices: "none", "draft-07"] [default: "none"]
 ```
 
 ### Programmatic use

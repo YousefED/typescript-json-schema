@@ -38,6 +38,12 @@
                 }
             ]
         },
+        "valTrueOrNever": {
+            "enum": [
+                true
+            ],
+            "type": "boolean"
+        },
         "valUndef": {
             "type": "number"
         },
@@ -53,4 +59,3 @@
     ],
     "type": "object"
 }
-

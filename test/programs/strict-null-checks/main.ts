@@ -7,6 +7,7 @@ class MyObject {
      valVoid: number | void;
 
      valTrueOpt?: true;
-     valTrueOrNull: true|null;
-     valTrue: true|true; // twice to check that it will appear only once
+     valTrueOrNull: true | null;
+     valTrueOrNever: true | never;
+     valTrue: true | true; // twice to check that it will appear only once
 }

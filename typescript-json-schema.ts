@@ -1153,6 +1153,7 @@ export class JsonSchemaGenerator {
                         !(prop.flags & ts.SymbolFlags.Method) &&
                         !allUnionTypesFlags.includes(ts.TypeFlags.Undefined) &&
                         !allUnionTypesFlags.includes(ts.TypeFlags.Void) &&
+                        !allUnionTypesFlags.includes(ts.TypeFlags.Never) &&
                         !def.hasOwnProperty("ignore")
                     ) {
                         required.push(prop.getName());

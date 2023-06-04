@@ -14,23 +14,17 @@
             "type": "number"
         },
         "valTrue": {
-            "enum": [
-                true
-            ],
+            "const": true,
             "type": "boolean"
         },
         "valTrueOpt": {
-            "enum": [
-                true
-            ],
+            "const": true,
             "type": "boolean"
         },
         "valTrueOrNull": {
             "anyOf": [
                 {
-                    "enum": [
-                        true
-                    ],
+                    "const": true,
                     "type": "boolean"
                 },
                 {

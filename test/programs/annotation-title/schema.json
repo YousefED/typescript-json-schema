@@ -1,6 +1,15 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
+    "AnotherSubObject": {
+      "properties": {
+        "b": {
+          "type": "boolean"
+        }
+      },
+      "required": ["b"],
+      "type": "object"
+    },
     "MySubObject": {
       "title": "filled#",
       "type": "object",
@@ -15,9 +24,13 @@
       "title": "empty#"
     },
     "filled": {
-      "$ref": "#/definitions/MySubObject"
+      "$ref": "#/definitions/MySubObject",
+      "title": "filled"
+    },
+    "nonTitled": {
+      "$ref": "#/definitions/AnotherSubObject"
     }
   },
-  "required": ["empty", "filled"],
+  "required": ["empty", "filled", "nonTitled"],
   "type": "object"
 }

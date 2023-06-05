@@ -1386,6 +1386,15 @@ class MyObject {
 ```
 
 
+## [symbol](./test/programs/symbol)
+
+```ts
+export type MyObject = {
+    a: symbol;
+};
+```
+
+
 ## [tsconfig](./test/programs/tsconfig)
 
 ```ts
@@ -1416,6 +1425,13 @@ export interface IncludedAlways {
 export interface IncludedOnlyByTsConfig {
     a: string;
 };
+```
+
+
+## [type-alias-never](./test/programs/type-alias-never)
+
+```ts
+export type MyNever = never;
 ```
 
 
@@ -1463,6 +1479,13 @@ type MyString = string;
  * @maxLength 24
  */
 type MyString = string;
+```
+
+
+## [type-alias-undefined](./test/programs/type-alias-undefined)
+
+```ts
+export type MyUndefined = undefined;
 ```
 
 
@@ -2005,6 +2028,16 @@ type Shape = Square | Rectangle | Circle;
 interface MyObject {
   foo: () => string;
 }
+```
+
+
+## [undefined-property](./test/programs/undefined-property)
+
+```ts
+export type MyObject = {
+    a: string;
+    b: undefined;
+};
 ```
 
 

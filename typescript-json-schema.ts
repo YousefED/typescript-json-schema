@@ -3,7 +3,7 @@ import { stringify } from "safe-stable-stringify";
 import * as path from "path";
 import { createHash } from "crypto";
 import * as ts from "typescript";
-import { JSONSchema7 } from "json-schema";
+import { JSONSchema7, JSONSchema7TypeName } from "json-schema";
 import { pathEqual } from "path-equal";
 export { Program, CompilerOptions, Symbol } from "typescript";
 
@@ -97,7 +97,6 @@ export type PrimitiveType = number | boolean | string | null;
 
 type MetaDefinitionFields = "ignore";
 type RedefinedFields =
-    | "type"
     | "items"
     | "additionalItems"
     | "contains"
@@ -116,9 +115,6 @@ type RedefinedFields =
     | "definitions";
 export type DefinitionOrBoolean = Definition | boolean;
 export interface Definition extends Omit<JSONSchema7, RedefinedFields> {
-    // The type field here is incompatible with the standard definition
-    type?: string | string[];
-
     // Non-standard fields
     propertyOrder?: string[];
     defaultProperties?: string[];
@@ -291,7 +287,7 @@ const simpleTypesAllowedProperties = {
     description: true,
 };
 
-function addSimpleType(def: Definition, type: string): boolean {
+function addSimpleType(def: Definition, type: JSONSchema7TypeName): boolean {
     for (const k in def) {
         if (!simpleTypesAllowedProperties[k]) {
             return false;
@@ -635,7 +631,8 @@ export class JsonSchemaGenerator {
         propertyType: ts.Type,
         reffedType: ts.Symbol,
         definition: Definition,
-        defaultNumberType = this.args.defaultNumberType
+        defaultNumberType = this.args.defaultNumberType,
+        ignoreUndefined = false,
     ): Definition {
         const tupleType = resolveTupleType(propertyType);
 
@@ -675,11 +672,15 @@ export class JsonSchemaGenerator {
             } else if (flags & ts.TypeFlags.Boolean) {
                 definition.type = "boolean";
             } else if (flags & ts.TypeFlags.ESSymbol) {
-                definition.type = "symbol";
+                definition.type = "object";
             } else if (flags & ts.TypeFlags.Null) {
                 definition.type = "null";
             } else if (flags & ts.TypeFlags.Undefined || propertyTypeString === "void") {
-                definition.type = "undefined";
+                if (!ignoreUndefined) {
+                    throw new Error("Not supported: root type undefined");
+                }
+                // will be deleted
+                definition.type = "undefined" as any;
             } else if (flags & ts.TypeFlags.Any || flags & ts.TypeFlags.Unknown) {
                 // no type restriction, so that anything will match
             } else if (propertyTypeString === "Date" && !this.args.rejectDateType) {
@@ -692,7 +693,22 @@ export class JsonSchemaGenerator {
             } else {
                 const value = extractLiteralValue(propertyType);
                 if (value !== undefined) {
-                    definition.type = typeof value;
+                    // typeof value can be: "string", "boolean", "number", or "object" if value is null
+                    const typeofValue = typeof value;
+                    switch (typeofValue) {
+                        case "string":
+                        case "boolean":
+                            definition.type = typeofValue;
+                            break;
+                        case "number":
+                            definition.type = this.args.defaultNumberType;
+                            break;
+                        case "object":
+                            definition.type = "null";
+                            break;
+                        default:
+                            throw new Error(`Not supported: ${value} as a enum value`);
+                    }
                     definition.const = value;
                 } else if (arrayType !== undefined) {
                     if (
@@ -806,9 +822,9 @@ export class JsonSchemaGenerator {
                 ? (node as ts.EnumDeclaration).members
                 : ts.factory.createNodeArray([node as ts.EnumMember]);
         var enumValues: (number | boolean | string | null)[] = [];
-        const enumTypes: string[] = [];
+        const enumTypes: JSONSchema7TypeName[] = [];
 
-        const addType = (type: string) => {
+        const addType = (type: JSONSchema7TypeName) => {
             if (enumTypes.indexOf(type) === -1) {
                 enumTypes.push(type);
             }
@@ -819,7 +835,7 @@ export class JsonSchemaGenerator {
             const constantValue = this.tc.getConstantValue(member);
             if (constantValue !== undefined) {
                 enumValues.push(constantValue);
-                addType(typeof constantValue);
+                addType(typeof constantValue as JSONSchema7TypeName); // can be only string or number;
             } else {
                 // try to extract the enums value; it will probably by a cast expression
                 const initial: ts.Expression | undefined = member.initializer;
@@ -867,15 +883,14 @@ export class JsonSchemaGenerator {
 
     private getUnionDefinition(
         unionType: ts.UnionType,
-        prop: ts.Symbol,
         unionModifier: string,
         definition: Definition
     ): Definition {
         const enumValues: PrimitiveType[] = [];
-        const simpleTypes: string[] = [];
+        const simpleTypes: JSONSchema7TypeName[] = [];
         const schemas: Definition[] = [];
 
-        const pushSimpleType = (type: string) => {
+        const pushSimpleType = (type: JSONSchema7TypeName) => {
             if (simpleTypes.indexOf(type) === -1) {
                 simpleTypes.push(type);
             }
@@ -893,22 +908,19 @@ export class JsonSchemaGenerator {
                 pushEnumValue(value);
             } else {
                 const symbol = valueType.aliasSymbol;
-                const def = this.getTypeDefinition(valueType, undefined, undefined, symbol, symbol);
-                if (def.type === "undefined") {
-                    if (prop) {
-                        (<any>prop).mayBeUndefined = true;
+                const def = this.getTypeDefinition(valueType, undefined, undefined, symbol, symbol, undefined, undefined, true);
+                if (def.type === "undefined" as any) {
+                    continue;
+                }
+                const keys = Object.keys(def);
+                if (keys.length === 1 && keys[0] === "type") {
+                    if (typeof def.type !== "string") {
+                        console.error("Expected only a simple type.");
+                    } else {
+                        pushSimpleType(def.type);
                     }
                 } else {
-                    const keys = Object.keys(def);
-                    if (keys.length === 1 && keys[0] === "type") {
-                        if (typeof def.type !== "string") {
-                            console.error("Expected only a simple type.");
-                        } else {
-                            pushSimpleType(def.type);
-                        }
-                    } else {
-                        schemas.push(def);
-                    }
+                    schemas.push(def);
                 }
             }
         }
@@ -968,10 +980,10 @@ export class JsonSchemaGenerator {
     }
 
     private getIntersectionDefinition(intersectionType: ts.IntersectionType, definition: Definition): Definition {
-        const simpleTypes: string[] = [];
+        const simpleTypes: JSONSchema7TypeName[] = [];
         const schemas: Definition[] = [];
 
-        const pushSimpleType = (type: string) => {
+        const pushSimpleType = (type: JSONSchema7TypeName) => {
             if (simpleTypes.indexOf(type) === -1) {
                 simpleTypes.push(type);
             }
@@ -979,19 +991,15 @@ export class JsonSchemaGenerator {
 
         for (const intersectionMember of intersectionType.types) {
             const def = this.getTypeDefinition(intersectionMember);
-            if (def.type === "undefined") {
-                console.error("Undefined in intersection makes no sense.");
-            } else {
-                const keys = Object.keys(def);
-                if (keys.length === 1 && keys[0] === "type") {
-                    if (typeof def.type !== "string") {
-                        console.error("Expected only a simple type.");
-                    } else {
-                        pushSimpleType(def.type);
-                    }
+            const keys = Object.keys(def);
+            if (keys.length === 1 && keys[0] === "type") {
+                if (typeof def.type !== "string") {
+                    console.error("Expected only a simple type.");
                 } else {
-                    schemas.push(def);
+                    pushSimpleType(def.type);
                 }
+            } else {
+                schemas.push(def);
             }
         }
 
@@ -1027,9 +1035,9 @@ export class JsonSchemaGenerator {
 
         const clazz = <ts.ClassDeclaration>node;
         const props = this.tc.getPropertiesOfType(clazzType).filter((prop) => {
-            // filter never
-            const propertyType = this.tc.getTypeOfSymbolAtLocation(prop, node);
-            if (ts.TypeFlags.Never === propertyType.getFlags()) {
+            // filter never and undefined
+            const propertyFlagType = this.tc.getTypeOfSymbolAtLocation(prop, node).getFlags();
+            if (ts.TypeFlags.Never === propertyFlagType || ts.TypeFlags.Undefined === propertyFlagType) {
                 return false;
             }
             if (!this.args.excludePrivate) {
@@ -1142,10 +1150,12 @@ export class JsonSchemaGenerator {
                 const requiredProps = props.reduce((required: string[], prop: ts.Symbol) => {
                     const def = {};
                     this.parseCommentsIntoDefinition(prop, def, {});
+                    const allUnionTypesFlags: number[] = (<any>prop).type?.types?.map?.((t: any) => t.flags) || [];
                     if (
                         !(prop.flags & ts.SymbolFlags.Optional) &&
                         !(prop.flags & ts.SymbolFlags.Method) &&
-                        !(<any>prop).mayBeUndefined &&
+                        !allUnionTypesFlags.includes(ts.TypeFlags.Undefined) &&
+                        !allUnionTypesFlags.includes(ts.TypeFlags.Void) &&
                         !def.hasOwnProperty("ignore")
                     ) {
                         required.push(prop.getName());
@@ -1206,7 +1216,8 @@ export class JsonSchemaGenerator {
         prop?: ts.Symbol,
         reffedType?: ts.Symbol,
         pairedSymbol?: ts.Symbol,
-        forceNotRef: boolean = false
+        forceNotRef: boolean = false,
+        ignoreUndefined = false,
     ): Definition {
         const definition: Definition = {}; // real definition
 
@@ -1359,7 +1370,7 @@ export class JsonSchemaGenerator {
             if (definition.type === undefined) {
                 // if users override the type, do not try to infer it
                 if (typ.flags & ts.TypeFlags.Union) {
-                    this.getUnionDefinition(typ as ts.UnionType, prop!, unionModifier, definition);
+                    this.getUnionDefinition(typ as ts.UnionType, unionModifier, definition);
                 } else if (typ.flags & ts.TypeFlags.Intersection) {
                     if (this.args.noExtraProps) {
                         // extend object instead of using allOf because allOf does not work well with additional properties. See #107
@@ -1390,7 +1401,7 @@ export class JsonSchemaGenerator {
                     if (pairedSymbol) {
                         this.parseCommentsIntoDefinition(pairedSymbol, definition, {});
                     }
-                    this.getDefinitionForRootType(typ, reffedType!, definition);
+                    this.getDefinitionForRootType(typ, reffedType!, definition, undefined, ignoreUndefined);
                 } else if (
                     node &&
                     (node.kind === ts.SyntaxKind.EnumDeclaration || node.kind === ts.SyntaxKind.EnumMember)

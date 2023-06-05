@@ -59,7 +59,6 @@ export function assertSchema(
         // test against the meta schema
         if (actual !== null) {
             ajv.validateSchema(actual);
-
             assert.equal(ajv.errors, null, "The schema is not valid");
 
             // Compiling the schema can reveal warnings that validateSchema doesn't.
@@ -113,7 +112,8 @@ export function assertRejection(
     group: string,
     type: string,
     settings: TJS.PartialArgs = {},
-    compilerOptions?: TJS.CompilerOptions
+    compilerOptions?: TJS.CompilerOptions,
+    errType?: RegExp | ErrorConstructor,
 ) {
     it(group + " should reject input", () => {
         let schema = null;
@@ -124,7 +124,7 @@ export function assertRejection(
 
             const files = [resolve(BASE + group + "/main.ts")];
             schema = TJS.generateSchema(TJS.getProgramFromFiles(files, compilerOptions), type, settings, files);
-        });
+        }, errType || /.*/);
         assert.equal(schema, null, "Expected no schema to be generated");
     });
 }
@@ -241,6 +241,7 @@ describe("schema", () => {
         */
         assertSchema("type-aliases-tuple-of-variable-length", "MyTuple");
         assertSchema("type-aliases-tuple-with-rest-element", "MyTuple");
+        assertRejection("type-alias-never", "MyNever", {}, {}, /Unsupported type: never/);
     });
 
     describe("enums", () => {
@@ -393,6 +394,13 @@ describe("schema", () => {
         });
     });
 
+    describe("undefined", () => {
+        assertSchema("undefined-property", "MyObject");
+
+        // Creating a schema for main type = undefined should fail
+        assertRejection("type-alias-undefined", "MyUndefined", undefined, undefined, /Not supported: root type undefined/);
+    });
+
     describe("other", () => {
         assertSchema("array-and-description", "MyObject");
 
@@ -424,6 +432,8 @@ describe("schema", () => {
         });
 
         assertSchema("prop-override", "MyObject");
+
+        assertSchema("symbol", "MyObject");
     });
 
     describe("object index", () => {
@@ -479,21 +489,21 @@ describe("Functionality 'required' in annotation", () => {
 });
 
 describe("when reusing a generator", () => {
-  it("should not add unrelated definitions to schemas", () => {
-    // regression test for https://github.com/YousefED/typescript-json-schema/issues/465
-    const testProgramPath = BASE + "no-unrelated-definitions/";
-    const program = TJS.programFromConfig(resolve(testProgramPath + "tsconfig.json"));
-    const generator = TJS.buildGenerator(program);
+    it("should not add unrelated definitions to schemas", () => {
+        // regression test for https://github.com/YousefED/typescript-json-schema/issues/465
+        const testProgramPath = BASE + "no-unrelated-definitions/";
+        const program = TJS.programFromConfig(resolve(testProgramPath + "tsconfig.json"));
+        const generator = TJS.buildGenerator(program);
 
-    ["MyObject", "MyOtherObject"].forEach(symbolName => {
-      const expectedSchemaString = readFileSync(testProgramPath + `schema.${symbolName}.json`, "utf8");
-      const expectedSchemaObject = JSON.parse(expectedSchemaString);
+        ["MyObject", "MyOtherObject"].forEach(symbolName => {
+            const expectedSchemaString = readFileSync(testProgramPath + `schema.${symbolName}.json`, "utf8");
+            const expectedSchemaObject = JSON.parse(expectedSchemaString);
 
-      const actualSchemaObject = generator?.getSchemaForSymbol(symbolName);
+            const actualSchemaObject = generator?.getSchemaForSymbol(symbolName);
 
-      assert.deepEqual(actualSchemaObject, expectedSchemaObject, `The schema for ${symbolName} is not as expected`);
+            assert.deepEqual(actualSchemaObject, expectedSchemaObject, `The schema for ${symbolName} is not as expected`);
+        });
     });
-  });
 });
 
 describe("satisfies keyword - ignore from a \"satisfies\" and build by rally type", () => {

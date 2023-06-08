@@ -266,6 +266,15 @@ describe("schema", () => {
         });
     });
 
+    describe("no-refs", () => {
+        assertSchema("no-ref", "MyModule", {
+            ref: false,
+            aliasRef: false,
+            topRef: false,
+            noExtraProps: true,
+        });
+    });
+
     describe("annotations", () => {
         assertSchema("annotation-default", "MyObject");
         assertSchema("annotation-ref", "MyObject", {}, undefined, undefined, {

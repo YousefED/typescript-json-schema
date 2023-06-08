@@ -1422,7 +1422,7 @@ export class JsonSchemaGenerator {
             }
         }
 
-        if (this.recursiveTypeRef.get(fullTypeName) === definition && !forceNotRef) {
+        if (this.recursiveTypeRef.get(fullTypeName) === definition) {
             this.recursiveTypeRef.delete(fullTypeName);
             // If the type was recursive (there is reffedDefinitions) - lets replace it to reference
             if (this.reffedDefinitions[fullTypeName]) {

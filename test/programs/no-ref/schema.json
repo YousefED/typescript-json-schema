@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "properties": {
+    "address": {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "extraProp": {
+          "type": "number"
+        }
+      },
+      "required": ["extraProp", "id"]
+    },
+    "address2": {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": ["id"]
+    },
+    "address3": {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": ["id"]
+    }
+  },
+  "additionalProperties": false,
+  "required": ["address", "address2", "address3"],
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

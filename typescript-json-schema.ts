@@ -969,7 +969,7 @@ export class JsonSchemaGenerator {
 
         if (schemas.length === 1) {
             for (const k in schemas[0]) {
-                if (schemas[0].hasOwnProperty(k)) {
+                if (schemas[0].hasOwnProperty(k) && !definition.hasOwnProperty(k)) {
                     definition[k] = schemas[0][k];
                 }
             }

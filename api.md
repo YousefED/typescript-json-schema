@@ -1061,6 +1061,29 @@ export type Main = {
 ```
 
 
+## [key-in-key-of-multi-underscores](./test/programs/key-in-key-of-multi-underscores)
+
+```ts
+type Util = {
+    __2Underscores: {
+        utilDeepKey2: string;
+    };
+    ___3Underscores: {
+        utilDeepKey3: string;
+    };
+    ____4Underscores: {
+        utilDeepKey4: string;
+    };
+};
+
+export type Main = {
+    [Key in keyof Util]: {
+        [key: string]: Util[Key];
+    };
+};
+```
+
+
 ## [key-in-key-of-single](./test/programs/key-in-key-of-single)
 
 ```ts
@@ -1213,6 +1236,21 @@ export interface Never {
   neverProp: never;
   propA: string;
 }
+```
+
+
+## [no-ref](./test/programs/no-ref)
+
+```ts
+type MySubType = {
+    id: string;
+};
+
+export type MyModule = {
+    address: MySubType & { extraProp: number };
+    address2: MySubType;
+    address3: MySubType;
+};
 ```
 
 
@@ -1995,6 +2033,34 @@ interface MyObject {
     var1: MyType1;
     var2: MyType2;
 }
+```
+
+
+## [type-union-strict-null-keep-description](./test/programs/type-union-strict-null-keep-description)
+
+```ts
+/**
+ * Description of InnerObject.
+ */
+type InnerObject = {
+	/**
+	 * Description of foo.
+	 */
+	foo: string;
+};
+
+/**
+ * Description of MyObject.
+ */
+type MyObject = {
+
+	inner1?: InnerObject;
+
+	/**
+	 * Override description.
+	 */
+	inner2?: InnerObject;
+};
 ```
 
 

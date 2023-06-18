@@ -1,0 +1,53 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "__2Underscores": {
+            "additionalProperties": {
+                "properties": {
+                    "utilDeepKey2": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "utilDeepKey2"
+                ],
+                "type": "object"
+            },
+            "type": "object"
+        },
+        "___3Underscores": {
+            "additionalProperties": {
+                "properties": {
+                    "utilDeepKey3": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "utilDeepKey3"
+                ],
+                "type": "object"
+            },
+            "type": "object"
+        },
+        "____4Underscores": {
+            "additionalProperties": {
+                "properties": {
+                    "utilDeepKey4": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "utilDeepKey4"
+                ],
+                "type": "object"
+            },
+            "type": "object"
+        }
+    },
+    "required": [
+        "__2Underscores",
+        "___3Underscores",
+        "____4Underscores"
+    ],
+    "type": "object"
+}

@@ -1085,9 +1085,9 @@ export class JsonSchemaGenerator {
                     const typ = this.tc.getTypeAtLocation(indexSignature.type!);
                     let def: Definition | undefined;
                     if (typ.flags & ts.TypeFlags.IndexedAccess) {
-                        const targetName: string = (<any>clazzType).mapper?.target?.value;
+                        const targetName = ts.escapeLeadingUnderscores((<any>clazzType).mapper?.target?.value);
                         const indexedAccessType = <ts.IndexedAccessType>typ;
-                        const symbols: Map<string, ts.Symbol> = (<any>indexedAccessType.objectType).members;
+                        const symbols: Map<ts.__String, ts.Symbol> = (<any>indexedAccessType.objectType).members;
                         const targetSymbol = symbols?.get(targetName);
 
                         if (targetSymbol) {

@@ -464,6 +464,7 @@ describe("schema", () => {
     describe("key in key of", () => {
         assertSchema("key-in-key-of-single", "Main");
         assertSchema("key-in-key-of-multi", "Main");
+        assertSchema("key-in-key-of-multi-underscores", "Main");
     });
 });
 

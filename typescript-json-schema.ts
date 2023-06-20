@@ -1085,16 +1085,10 @@ export class JsonSchemaGenerator {
                     const typ = this.tc.getTypeAtLocation(indexSignature.type!);
                     let def: Definition | undefined;
                     if (typ.flags & ts.TypeFlags.IndexedAccess) {
-                        const targetName: string = (<any>clazzType).mapper?.target?.value;
+                        const targetName = ts.escapeLeadingUnderscores((<any>clazzType).mapper?.target?.value);
                         const indexedAccessType = <ts.IndexedAccessType>typ;
-                        const symbols: Map<string, ts.Symbol> = (<any>indexedAccessType.objectType).members;
-                        let targetSymbol = symbols?.get(targetName);
-
-                        // it looks like a bug in typescript,
-                        // if property start with 2 underscores and more, in objectType.members, have a 1 unnecessary underscore
-                        if (!targetSymbol && targetName.startsWith("__")) {
-                            targetSymbol = symbols?.get(`_${targetName}`);
-                        }
+                        const symbols: Map<ts.__String, ts.Symbol> = (<any>indexedAccessType.objectType).members;
+                        const targetSymbol = symbols?.get(targetName);
 
                         if (targetSymbol) {
                             const targetNode = targetSymbol.getDeclarations()![0];

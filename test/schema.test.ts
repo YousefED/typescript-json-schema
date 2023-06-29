@@ -300,6 +300,10 @@ describe("schema", () => {
     describe("generics", () => {
         assertSchema("generic-simple", "MyObject");
         assertSchema("generic-arrays", "MyObject");
+        assertSchema("generic-object-index", "*", {
+            topRef: true,
+            avoidSymbolRefs: true,
+        });
         assertSchema("generic-multiple", "MyObject");
         assertSchema("generic-multiargs", "MyObject");
         assertSchema("generic-anonymous", "MyObject");

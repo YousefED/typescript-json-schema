@@ -8,6 +8,8 @@ export function run() {
     var args = require("yargs")
         .usage(helpText)
         .demand(2)
+        .boolean("avoidSymbolRefs").default("avoidSymbolRefs", defaultArgs.avoidSymbolRefs)
+            .describe("avoidSymbolRefs", "Avoids making refs to type names with symbols.")
         .boolean("refs").default("refs", defaultArgs.ref)
             .describe("refs", "Create shared ref definitions.")
         .boolean("aliasRefs").default("aliasRefs", defaultArgs.aliasRef)
@@ -56,6 +58,7 @@ export function run() {
         .argv;
 
     exec(args._[0], args._[1], {
+        avoidSymbolRefs: args.avoidSymbolRefs,
         ref: args.refs,
         aliasRef: args.aliasRefs,
         topRef: args.topRef,

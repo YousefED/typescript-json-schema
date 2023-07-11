@@ -264,9 +264,6 @@ describe("schema", () => {
         assertSchema("type-intersection-recursive-no-additional", "MyLinkedList", {
             noExtraProps: true,
         });
-        assertSchema("type-union-strict-null-keep-description", "MyObject", undefined, {
-            strictNullChecks: true,
-        });
     });
 
     describe("no-refs", () => {

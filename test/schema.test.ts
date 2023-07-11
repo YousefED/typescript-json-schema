@@ -221,6 +221,7 @@ describe("schema", () => {
         //     useTypeAliasRef: true,
         //     useRootRef: true
         // });
+        assertSchema("type-literals", "MyObject");
         assertSchema("type-no-aliases-recursive-topref", "MyAlias", {
             aliasRef: false,
             topRef: true,

@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "param1": {
+      "enum": ["1", "2", "3"],
+      "type": "string"
+    },
+    "param2": {
+      "enum": ["1", "2", 3, true]
+    },
+    "param3": {
+      "enum": ["1", "2", "3"],
+      "type": "string"
+    },
+    "param4": {
+      "enum": ["1", "2", 3, true]
+    }
+  },
+  "required": ["param1", "param2", "param3", "param4"],
+  "type": "object"
+}

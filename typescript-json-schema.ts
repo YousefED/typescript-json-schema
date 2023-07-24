@@ -5,6 +5,7 @@ import { createHash } from "crypto";
 import * as ts from "typescript";
 import { JSONSchema7, JSONSchema7TypeName } from "json-schema";
 import { pathEqual } from "path-equal";
+import { capitalCase } from "case-anything";
 export { Program, CompilerOptions, Symbol } from "typescript";
 
 const vm = require("vm");
@@ -767,7 +768,7 @@ export class JsonSchemaGenerator {
         const definition = this.getTypeDefinition(propertyType, undefined, undefined, prop, reffedType);
 
         if (this.args.titles) {
-            definition.title = propertyName;
+            definition.title = capitalCase(propertyName);
         }
 
         if (definition.hasOwnProperty("ignore")) {

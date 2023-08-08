@@ -44,6 +44,9 @@ export function assertSchema(
         if (!("required" in settings)) {
             settings.required = true;
         }
+        if (!("noExtraProps" in settings)) {
+            settings.noExtraProps = true;
+        }
 
         const files = [resolve(BASE + group + "/main.ts")];
         const actual = TJS.generateSchema(TJS.getProgramFromFiles(files, compilerOptions), type, settings, files);

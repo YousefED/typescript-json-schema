@@ -1,10 +1,13 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
     "definitions": {
         "A": {
+            "additionalProperties": false,
             "type": "object"
         },
         "B": {
+            "additionalProperties": false,
             "type": "object"
         },
         "C": {

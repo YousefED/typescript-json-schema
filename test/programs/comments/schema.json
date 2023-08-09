@@ -19,6 +19,7 @@
             "type": "array"
         },
         "rotation": {
+            "additionalProperties": false,
             "description": "Description of rotation, a field with an anonymous type",
             "properties": {
                 "yaw": {

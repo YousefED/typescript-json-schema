@@ -85,6 +85,10 @@ export function assertSchemas(
             settings.required = true;
         }
 
+        if (!("noExtraProps" in settings)) {
+            settings.noExtraProps = true;
+        }
+
         const generator = TJS.buildGenerator(
             TJS.getProgramFromFiles([resolve(BASE + group + "/main.ts")], compilerOptions),
             settings

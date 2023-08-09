@@ -3,6 +3,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
         "MyGeneric<number,string>": {
+            "additionalProperties": false,
             "properties": {
                 "field": {
                     "$ref": "#/definitions/MyGeneric<string,number>"
@@ -14,6 +15,7 @@
             "type": "object"
         },
         "MyGeneric<string,number>": {
+            "additionalProperties": false,
             "properties": {
                 "field": {
                     "$ref": "#/definitions/MyGeneric<number,string>"
@@ -25,6 +27,7 @@
             "type": "object"
         },
         "MyObject": {
+            "additionalProperties": false,
             "properties": {
                 "value": {
                     "$ref": "#/definitions/MyGeneric<string,number>"

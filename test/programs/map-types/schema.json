@@ -1,5 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
     "definitions": {
         "MyMap1": {
             "additionalProperties": {
@@ -18,6 +19,7 @@
             "type": "object"
         },
         "MyType": {
+            "additionalProperties": false,
             "type": "object"
         }
     },

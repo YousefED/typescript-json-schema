@@ -3,6 +3,7 @@
     "$ref": "#/definitions/RootNamespace.Def",
     "definitions": {
         "RootNamespace.Def": {
+            "additionalProperties": false,
             "properties": {
                 "nest": {
                     "$ref": "#/definitions/RootNamespace.Def"
@@ -26,6 +27,7 @@
             "type": "object"
         },
         "RootNamespace.SubNamespace.HelperA": {
+            "additionalProperties": false,
             "properties": {
                 "propA": {
                     "type": "number"
@@ -41,6 +43,7 @@
             "type": "object"
         },
         "RootNamespace.SubNamespace.HelperB": {
+            "additionalProperties": false,
             "properties": {
                 "propA": {
                     "$ref": "#/definitions/RootNamespace.SubNamespace.HelperA"

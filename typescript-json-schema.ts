@@ -497,6 +497,8 @@ export class JsonSchemaGenerator {
      */
     private typeIdsByName: { [name: string]: number } = {};
 
+    private definitionsMap: Map<string, Definition> = new Map();
+
     constructor(
         symbols: SymbolRef[],
         allSymbols: { [name: string]: ts.Type },
@@ -529,6 +531,7 @@ export class JsonSchemaGenerator {
         this.reffedDefinitions = {};
         this.typeIdsByName = {};
         this.typeNamesById = {};
+        this.definitionsMap = new Map();
 
         // restore schema overrides
         this.schemaOverrides.forEach((value, key) => {
@@ -1382,7 +1385,11 @@ export class JsonSchemaGenerator {
 
                         const types = (<ts.IntersectionType>typ).types;
                         for (const member of types) {
-                            const other = this.getTypeDefinition(member, false, undefined, undefined, undefined, undefined, true);
+                            const memberTypeName = this.tc.typeToString(member);
+                            if (!this.definitionsMap.has(memberTypeName)) {
+                                this.definitionsMap.set(memberTypeName, this.getTypeDefinition(member, false, undefined, undefined, undefined, undefined, true));
+                            }
+                            const other = this.definitionsMap.get(memberTypeName)!;
                             definition.type = other.type; // should always be object
                             definition.properties = {
                                 ...definition.properties,

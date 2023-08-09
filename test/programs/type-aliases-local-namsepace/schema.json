@@ -5,7 +5,8 @@
         "B.B": {
             "additionalProperties": false,
             "properties": {
-                "b": {}
+                "b": {
+                }
             },
             "required": [
                 "b"

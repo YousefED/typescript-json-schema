@@ -19,8 +19,8 @@
         "noLib": false,
         "preserveConstEnums": true,
         "sourceMap": true,
-        "watch": false,
-        "typeRoots" : ["node_modules/@types"]
+        "typeRoots" : ["node_modules/@types"],
+        "ignoreDeprecations": "5.0"
     },
     "include": [
         "**/*.ts",

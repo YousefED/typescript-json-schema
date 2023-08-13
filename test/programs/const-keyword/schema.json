@@ -1,0 +1,12 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "value": {
+            "const": "value",
+            "type": "string"
+        }
+    },
+    "required": ["value"],
+    "type": "object"
+}
+

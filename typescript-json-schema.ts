@@ -1052,8 +1052,8 @@ export class JsonSchemaGenerator {
             return !(
                 decls &&
                 decls.filter((decl) => {
-                    const mods = decl.modifiers;
-                    return mods && mods.filter((mod) => mod.kind === ts.SyntaxKind.PrivateKeyword).length > 0;
+                    const mods = (decl as any).modifiers;
+                    return mods && mods.filter((mod: any) => mod.kind === ts.SyntaxKind.PrivateKeyword).length > 0;
                 }).length > 0
             );
         });
@@ -1154,7 +1154,7 @@ export class JsonSchemaGenerator {
                 const requiredProps = props.reduce((required: string[], prop: ts.Symbol) => {
                     const def = {};
                     this.parseCommentsIntoDefinition(prop, def, {});
-                    const allUnionTypesFlags: number[] = (<any>prop).type?.types?.map?.((t: any) => t.flags) || [];
+                    const allUnionTypesFlags: number[] = (<any>prop).links?.type?.types?.map?.((t: any) => t.flags) || [];
                     if (
                         !(prop.flags & ts.SymbolFlags.Optional) &&
                         !(prop.flags & ts.SymbolFlags.Method) &&
@@ -1373,7 +1373,7 @@ export class JsonSchemaGenerator {
 
             if (definition.type === undefined) {
                 // if users override the type, do not try to infer it
-                if (typ.flags & ts.TypeFlags.Union) {
+                if (typ.flags & ts.TypeFlags.Union && (node === null || node.kind !== ts.SyntaxKind.EnumDeclaration)) {
                     this.getUnionDefinition(typ as ts.UnionType, unionModifier, definition);
                 } else if (typ.flags & ts.TypeFlags.Intersection) {
                     if (this.args.noExtraProps) {

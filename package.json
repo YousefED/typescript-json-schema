@@ -67,7 +67,7 @@
     "test": "tsc && mocha -t 5000 --require source-map-support/register dist/test",
     "debug": "node --inspect=19248 --inspect-brk -r ts-node/register typescript-json-schema-cli.ts",
     "docs": "./update-docs.js",
-    "run": "ts-node typescript-json-schema-cli.ts test/programs/type-intersection-recursive-no-additional/main.ts MyNode --out schema.json --required --noExtraProps",
+    "run": "ts-node typescript-json-schema-cli.ts test/programs/type-intersection-recursive-no-additional/main.ts MyNode --out schema.json --required --noExtraProps true",
     "build": "tsc",
     "lint": "tslint --project tsconfig.json -c tslint.json --exclude '**/*.d.ts'",
     "style": "prettier --write *.js *.ts test/*.ts",

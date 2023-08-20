@@ -44,6 +44,9 @@ export function assertSchema(
         if (!("required" in settings)) {
             settings.required = true;
         }
+        if (!("noExtraProps" in settings)) {
+            settings.noExtraProps = true;
+        }
 
         const files = [resolve(BASE + group + "/main.ts")];
         const actual = TJS.generateSchema(TJS.getProgramFromFiles(files, compilerOptions), type, settings, files);
@@ -80,6 +83,10 @@ export function assertSchemas(
     it(group + " should create correct schema", () => {
         if (!("required" in settings)) {
             settings.required = true;
+        }
+
+        if (!("noExtraProps" in settings)) {
+            settings.noExtraProps = true;
         }
 
         const generator = TJS.buildGenerator(
@@ -120,6 +127,10 @@ export function assertRejection(
         assert.throws(() => {
             if (!("required" in settings)) {
                 settings.required = true;
+            }
+
+            if (!("noExtraProps" in settings)) {
+                settings.noExtraProps = true;
             }
 
             const files = [resolve(BASE + group + "/main.ts")];

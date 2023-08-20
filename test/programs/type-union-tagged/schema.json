@@ -13,6 +13,7 @@
     ],
     "definitions": {
         "Circle": {
+            "additionalProperties": false,
             "properties": {
                 "kind": {
                     "const": "circle",
@@ -29,6 +30,7 @@
             "type": "object"
         },
         "Rectangle": {
+            "additionalProperties": false,
             "properties": {
                 "height": {
                     "type": "number"
@@ -49,6 +51,7 @@
             "type": "object"
         },
         "Square": {
+            "additionalProperties": false,
             "properties": {
                 "kind": {
                     "const": "square",

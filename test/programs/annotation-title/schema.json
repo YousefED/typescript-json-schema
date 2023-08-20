@@ -1,7 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
   "definitions": {
     "AnotherSubObject": {
+      "additionalProperties": false,
       "properties": {
         "b": {
           "type": "boolean"
@@ -11,6 +13,7 @@
       "type": "object"
     },
     "MySubObject": {
+      "additionalProperties": false,
       "title": "filled#",
       "type": "object",
       "properties": {

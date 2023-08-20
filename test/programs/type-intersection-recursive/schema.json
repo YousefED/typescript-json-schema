@@ -3,17 +3,19 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
         "ChildFoo": {
+            "additionalProperties": false,
             "type": "object"
         },
         "Foo": {
+            "additionalProperties": false,
             "properties": {
                 "childFoos": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/Foo"
-                        },
+                    "anyOf": [
                         {
                             "$ref": "#/definitions/ChildFoo"
+                        },
+                        {
+                            "$ref": "#/definitions/Foo"
                         }
                     ]
                 }

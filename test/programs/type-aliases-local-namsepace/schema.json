@@ -1,7 +1,9 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
     "definitions": {
         "B.B": {
+            "additionalProperties": false,
             "properties": {
                 "b": {
                 }
@@ -12,6 +14,7 @@
             "type": "object"
         },
         "C.C": {
+            "additionalProperties": false,
             "properties": {
                 "c": {
                     "$ref": "#/definitions/B.B"

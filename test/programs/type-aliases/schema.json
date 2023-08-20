@@ -1,5 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
     "definitions": {
         "MyAlias": {
             "$ref": "#/definitions/MySubObject",
@@ -10,6 +11,7 @@
             "type": "string"
         },
         "MySubObject": {
+            "additionalProperties": false,
             "description": "My sub object",
             "properties": {
                 "propA": {

@@ -1,5 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
     "description": "This is MyObject. It extends {@link MyOtherObject} and {@link SomeOtherObject}.",
     "properties": {
         "prop1": {

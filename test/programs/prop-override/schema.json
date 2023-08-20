@@ -1,5 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
     "properties": {
         "_id": {
             "description": "Overrides aliased type definition with this JSDoc if at least TJS-type annotation is present",

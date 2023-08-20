@@ -1,7 +1,9 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
     "definitions": {
         "MyInterface": {
+            "additionalProperties": false,
             "properties": {
                 "fieldInMain": {
                     "type": "number"
@@ -13,6 +15,7 @@
             "type": "object"
         },
         "MyInterface_1": {
+            "additionalProperties": false,
             "properties": {
                 "fieldInModule1": {
                     "type": "string"
@@ -24,6 +27,7 @@
             "type": "object"
         },
         "MyInterface_2": {
+            "additionalProperties": false,
             "properties": {
                 "fieldInModule2": {
                     "type": "number"

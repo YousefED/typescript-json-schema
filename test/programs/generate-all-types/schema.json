@@ -6,9 +6,11 @@
             "type": "number"
         },
         "MyInterface": {
+            "additionalProperties": false,
             "type": "object"
         },
         "MyObject": {
+            "additionalProperties": false,
             "type": "object"
         }
     }

@@ -1,5 +1,6 @@
 {
   "description": "Use this comment",
+  "additionalProperties": false,
   "type": "object",
   "properties": {
     "prop1": {

@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "foo": {
       "$ref": "#/definitions/Partial"
@@ -14,6 +15,7 @@
   ],
   "definitions": {
     "__type": {
+      "additionalProperties": false,
       "type": "object",
       "properties": {
         "x": {
@@ -29,6 +31,7 @@
     },
     "__type_1": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "a": {
           "type": "number"

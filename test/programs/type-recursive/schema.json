@@ -3,6 +3,7 @@
   "$ref": "#/definitions/TestChildren",
   "definitions": {
     "TestChild": {
+      "additionalProperties": false,
       "properties": {
         "type": {
           "type": "string"

@@ -1,5 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
     "definitions": {
         "MyType2": {
             "type": [
@@ -21,6 +22,7 @@
             ]
         },
         "MyType6": {
+            "additionalProperties": false,
             "type": "object"
         }
     },
@@ -72,6 +74,7 @@
                             "type": "number"
                         }
                     },
+                    "additionalProperties": false,
                     "required": [
                         "foo"
                     ],

@@ -1052,8 +1052,8 @@ export class JsonSchemaGenerator {
             return !(
                 decls &&
                 decls.filter((decl) => {
-                    const mods = decl.modifiers;
-                    return mods && mods.filter((mod) => mod.kind === ts.SyntaxKind.PrivateKeyword).length > 0;
+                    const mods = (decl as any).modifiers;
+                    return mods && mods.filter((mod: any) => mod.kind === ts.SyntaxKind.PrivateKeyword).length > 0;
                 }).length > 0
             );
         });
@@ -1154,7 +1154,7 @@ export class JsonSchemaGenerator {
                 const requiredProps = props.reduce((required: string[], prop: ts.Symbol) => {
                     const def = {};
                     this.parseCommentsIntoDefinition(prop, def, {});
-                    const allUnionTypesFlags: number[] = (<any>prop).type?.types?.map?.((t: any) => t.flags) || [];
+                    const allUnionTypesFlags: number[] = (<any>prop).links?.type?.types?.map?.((t: any) => t.flags) || [];
                     if (
                         !(prop.flags & ts.SymbolFlags.Optional) &&
                         !(prop.flags & ts.SymbolFlags.Method) &&
@@ -1209,20 +1209,6 @@ export class JsonSchemaGenerator {
         this.typeNamesById[id] = name;
         this.typeIdsByName[name] = id;
         return name;
-    }
-
-    private removeUnnecessaryRefs(definition: Definition) {
-        const definitionAsJson = JSON.stringify(definition);
-        // tslint:disable-next-line:forin
-        for (const typeName in definition.definitions || {}) {
-            const stringToSearch = `${this.args.id}#/definitions/${typeName}`;
-            if (!definitionAsJson.includes(stringToSearch)) {
-                delete definition.definitions?.[typeName];
-            }
-        }
-        if (!Object.keys(definition.definitions || {}).length) {
-            delete definition.definitions;
-        }
     }
 
     private recursiveTypeRef = new Map();
@@ -1387,35 +1373,33 @@ export class JsonSchemaGenerator {
 
             if (definition.type === undefined) {
                 // if users override the type, do not try to infer it
-                if (typ.flags & ts.TypeFlags.Union) {
+                if (typ.flags & ts.TypeFlags.Union && (node === null || node.kind !== ts.SyntaxKind.EnumDeclaration)) {
                     this.getUnionDefinition(typ as ts.UnionType, unionModifier, definition);
                 } else if (typ.flags & ts.TypeFlags.Intersection) {
-                    const unifiedRefDefinition = this.getIntersectionDefinition(typ as ts.IntersectionType, {});
-                    if (this.args.noExtraProps && unifiedRefDefinition.allOf) {
+                    if (this.args.noExtraProps) {
                         // extend object instead of using allOf because allOf does not work well with additional properties. See #107
-                        const allDefinitions = unifiedRefDefinition.allOf.map((refDefinition) => {
-                            if (typeof refDefinition === "boolean") {
-                                return {};
-                            }
-                            if (!refDefinition.$ref) {
-                                return refDefinition;
-                            }
-                            const typeName = refDefinition.$ref.match(/\/definitions\/(?<typeName>.*)/)?.groups?.typeName;
-                            return typeName && this.reffedDefinitions[typeName] ? this.reffedDefinitions[typeName] : {};
-                        });
-
-                        const unifiedDefinition: Definition = extend({}, ...allDefinitions);
-                        const unifiedProperties = extend({}, ...allDefinitions.map(({ properties }) => properties));
-                        unifiedDefinition.properties = unifiedProperties;
-
-                        const unifiedRequired = unique(allDefinitions.map(({ required }) => required || []).flat()).sort();
-                        if (unifiedRequired.length) {
-                            unifiedDefinition.required = unifiedRequired;
+                        if (this.args.noExtraProps) {
+                            definition.additionalProperties = false;
                         }
 
-                        returnedDefinition = unifiedDefinition;
+                        const types = (<ts.IntersectionType>typ).types;
+                        for (const member of types) {
+                            const other = this.getTypeDefinition(member, false, undefined, undefined, undefined, undefined, true);
+                            definition.type = other.type; // should always be object
+                            definition.properties = {
+                                ...definition.properties,
+                                ...other.properties,
+                            };
+
+                            if (Object.keys(other.default || {}).length > 0) {
+                                definition.default = extend(definition.default || {}, other.default);
+                            }
+                            if (other.required) {
+                                definition.required = unique((definition.required || []).concat(other.required)).sort();
+                            }
+                        }
                     } else {
-                        returnedDefinition = unifiedRefDefinition;
+                        this.getIntersectionDefinition(typ as ts.IntersectionType, definition);
                     }
                 } else if (isRawType) {
                     if (pairedSymbol) {
@@ -1490,7 +1474,6 @@ export class JsonSchemaGenerator {
         if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
             def.definitions = this.reffedDefinitions;
         }
-        this.removeUnnecessaryRefs(def);
         def["$schema"] = "http://json-schema.org/draft-07/schema#";
         const id = this.args.id;
         if (id) {

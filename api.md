@@ -607,6 +607,16 @@ export interface MyObject {
 ```
 
 
+## [const-keyword](./test/programs/const-keyword)
+
+```ts
+const fn = <const T>(value: T) =>
+  ({ value });
+
+export type Object = ReturnType<typeof fn<"value">>;
+```
+
+
 ## [custom-dates](./test/programs/custom-dates)
 
 ```ts

@@ -1,11 +1,11 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "definitions": {
-          "MySubObject": {
-           "additionalProperties": false,
-             "type": "object"
-           }
-      },
+        "MySubObject": {
+            "additionalProperties": false,
+            "type": "object"
+        }
+    },
     "additionalProperties": false,
     "properties": {
         "externalRef": {

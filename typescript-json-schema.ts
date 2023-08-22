@@ -1384,6 +1384,7 @@ export class JsonSchemaGenerator {
                 } else if (typ.flags & ts.TypeFlags.Intersection) {
                     if (this.args.noExtraProps) {
                         // extend object instead of using allOf because allOf does not work well with additional properties. See #107
+                        definition.additionalProperties = false;
 
                         const types = (<ts.IntersectionType>typ).types;
                         for (const member of types) {
@@ -1400,10 +1401,6 @@ export class JsonSchemaGenerator {
                             if (other.required) {
                                 definition.required = unique((definition.required || []).concat(other.required)).sort();
                             }
-                        }
-
-                        if (definition.additionalProperties === undefined && !Object.keys(definition.patternProperties || {}).length) {
-                            definition.additionalProperties = false;
                         }
                     } else {
                         this.getIntersectionDefinition(typ as ts.IntersectionType, definition);

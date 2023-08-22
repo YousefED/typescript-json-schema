@@ -1386,7 +1386,6 @@ export class JsonSchemaGenerator {
                         // extend object instead of using allOf because allOf does not work well with additional properties. See #107
                         if (this.args.noExtraProps) {
                             definition.additionalProperties = false;
-                            definition.additionalProperties = false;
                         }
 
                         const types = (<ts.IntersectionType>typ).types;

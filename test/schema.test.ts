@@ -379,7 +379,7 @@ describe("schema", () => {
         assertSchema("array-empty", "MyEmptyArray");
         assertSchema("map-types", "MyObject");
         assertSchema("extra-properties", "MyObject");
-        assertSchema("numeric-keys", "NumericKeys", { noExtraProps: true });
+        assertSchema("numeric-keys-and-others", "NumericKeysAndOthers");
     });
 
     describe("string literals", () => {

@@ -721,6 +721,10 @@ export class JsonSchemaGenerator {
                         definition.patternProperties = {
                             [NUMERIC_INDEX_PATTERN]: this.getTypeDefinition(arrayType),
                         };
+                        const otherMembers = Array.from((propertyType as any).members)?.filter((member: [string]) => member[0] !== "__index") as [string, ts.Symbol][];
+                        if (otherMembers.length) {
+                            this.getClassDefinition(propertyType, definition);
+                        }
                     } else {
                         definition.type = "array";
                         if (!definition.items) {
@@ -1079,8 +1083,8 @@ export class JsonSchemaGenerator {
                     }
                     const indexSymbol: ts.Symbol = (<any>indexSignature.parameters[0]).symbol;
                     const indexType = this.tc.getTypeOfSymbolAtLocation(indexSymbol, node);
-                    const isStringIndexed = indexType.flags === ts.TypeFlags.String;
-                    if (indexType.flags !== ts.TypeFlags.Number && !isStringIndexed) {
+                    const isIndexedObject = indexType.flags === ts.TypeFlags.String || indexType.flags === ts.TypeFlags.Number;
+                    if (indexType.flags !== ts.TypeFlags.Number && !isIndexedObject) {
                         throw new Error(
                             "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string"
                         );
@@ -1105,9 +1109,11 @@ export class JsonSchemaGenerator {
                     if (!def) {
                         def = this.getTypeDefinition(typ, undefined, "anyOf");
                     }
-                    if (isStringIndexed) {
+                    if (isIndexedObject) {
                         definition.type = "object";
-                        definition.additionalProperties = def;
+                        if (!Object.keys(definition.patternProperties || {}).length) {
+                            definition.additionalProperties = def;
+                        }
                     } else {
                         definition.type = "array";
                         if (!definition.items) {
@@ -1396,7 +1402,7 @@ export class JsonSchemaGenerator {
                             }
                         }
 
-                        if ( definition.additionalProperties === undefined && !Object.keys(definition.patternProperties || {}).length) {
+                        if (definition.additionalProperties === undefined && !Object.keys(definition.patternProperties || {}).length) {
                             definition.additionalProperties = false;
                         }
                     } else {

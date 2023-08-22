@@ -1285,6 +1285,17 @@ interface SomeOtherDefinition {
 ```
 
 
+## [numeric-keys-and-others](./test/programs/numeric-keys-and-others)
+
+```ts
+interface NumericKeysAndOthers {
+    [key: number]: number;
+    a: string;
+    b: boolean;
+}
+```
+
+
 ## [object-numeric-index](./test/programs/object-numeric-index)
 
 ```ts

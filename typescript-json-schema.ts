@@ -721,8 +721,7 @@ export class JsonSchemaGenerator {
                         definition.patternProperties = {
                             [NUMERIC_INDEX_PATTERN]: this.getTypeDefinition(arrayType),
                         };
-                        const otherMembers = Array.from((propertyType as any).members)?.filter((member: [string]) => member[0] !== "__index") as [string, ts.Symbol][];
-                        if (otherMembers.length) {
+                        if (!!Array.from((<any>propertyType).members)?.find((member: [string]) => member[0] !== "__index")) {
                             this.getClassDefinition(propertyType, definition);
                         }
                     } else {

@@ -387,6 +387,10 @@ describe("schema", () => {
         assertSchema("string-literals-inline", "MyObject");
     });
 
+    describe("template string", () => {
+        assertSchema("string-template-literal", "MyObject");
+    });
+
     describe("custom dates", () => {
         assertSchema("custom-dates", "foo.Bar");
     });

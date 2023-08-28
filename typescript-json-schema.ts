@@ -724,6 +724,42 @@ export class JsonSchemaGenerator {
                         if (!!Array.from((<any>propertyType).members)?.find((member: [string]) => member[0] !== "__index")) {
                             this.getClassDefinition(propertyType, definition);
                         }
+                    } else if (propertyType.flags & ts.TypeFlags.TemplateLiteral) {
+                        definition.type = "string";
+                        // @ts-ignore
+                        const {texts, types} = propertyType;
+                        const pattern = [];
+                        for (let i = 0; i < texts.length; i++) {
+                            const text = texts[i];
+                            if (i === 0) {
+                                pattern.push(text === "" ? text : `^${text}`);
+                            }
+
+                            if (i === texts.length - 1) {
+                                pattern.push(text === "" ? text : `${text}$`);
+                            }
+
+                            const type = types[i];
+                            if (i >= 1 && type) {
+                                if (type.flags & ts.TypeFlags.String) {
+                                    pattern.push(`${text}.*`);
+                                }
+
+                                if (type.flags & ts.TypeFlags.Number
+                                    || type.flags & ts.TypeFlags.BigInt) {
+                                    pattern.push(`${text}[0-9]*`);
+                                }
+
+                                if (type.flags & ts.TypeFlags.Undefined) {
+                                    pattern.push(`${text}undefined`);
+                                }
+
+                                if (type.flags & ts.TypeFlags.Null) {
+                                    pattern.push(`${text}null`);
+                                }
+                            }
+                        }
+                        definition.pattern = pattern.join("");
                     } else {
                         definition.type = "array";
                         if (!definition.items) {

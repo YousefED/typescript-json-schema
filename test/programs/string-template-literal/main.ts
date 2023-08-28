@@ -6,5 +6,6 @@ interface MyObject {
   e: `@${undefined}`,
   f: `@${null}`,
   g: `${string}@`,
-  h: `${string}@${number}`,
+  h: `${number}@`,
+  i: `${string}@${number}`,
 }

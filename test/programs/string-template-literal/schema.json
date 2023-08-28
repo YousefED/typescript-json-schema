@@ -3,15 +3,15 @@
     "properties": {
       "a": {
         "type": "string",
-        "pattern": "^@"
+        "pattern": "^@.*$"
       },
       "b": {
         "type": "string",
-        "pattern": "^@"
+        "pattern": "^@[0-9]*$"
       },
       "c": {
         "type": "string",
-        "pattern": "^@"
+        "pattern": "^@[0-9]*$"
       },
       "d": {
         "enum": [
@@ -30,11 +30,15 @@
       },
       "g": {
         "type": "string",
-        "pattern": "@$"
+        "pattern": "^.*@$"
       },
       "h": {
         "type": "string",
-        "pattern": "@[0-9]*"
+        "pattern": "^[0-9]*@$"
+      },
+      "i": {
+        "type": "string",
+        "pattern": "^.*@[0-9]*$"
       }
     },
     "additionalProperties": false,
@@ -46,7 +50,8 @@
       "e",
       "f",
       "g",
-      "h"
+      "h",
+      "i"
     ],
     "$schema": "http://json-schema.org/draft-07/schema#"
-  }
+}

@@ -731,16 +731,13 @@ export class JsonSchemaGenerator {
                         const pattern = [];
                         for (let i = 0; i < texts.length; i++) {
                             const text = texts[i];
-                            if (i === 0) {
-                                pattern.push(text === "" ? text : `^${text}`);
-                            }
-
-                            if (i === texts.length - 1) {
-                                pattern.push(text === "" ? text : `${text}$`);
-                            }
-
                             const type = types[i];
-                            if (i >= 1 && type) {
+
+                            if (i === 0) {
+                                pattern.push(`^`);
+                            }
+
+                            if (type) {
                                 if (type.flags & ts.TypeFlags.String) {
                                     pattern.push(`${text}.*`);
                                 }
@@ -757,6 +754,11 @@ export class JsonSchemaGenerator {
                                 if (type.flags & ts.TypeFlags.Null) {
                                     pattern.push(`${text}null`);
                                 }
+                            }
+
+
+                            if (i === texts.length - 1) {
+                                pattern.push(`${text}$`);
                             }
                         }
                         definition.pattern = pattern.join("");

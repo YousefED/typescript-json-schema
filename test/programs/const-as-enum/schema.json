@@ -1,0 +1,16 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+        "reference": {
+            "enum": [
+              true
+            ],
+            "type": "boolean"
+        }
+    },
+    "required": [
+        "reference"
+    ],
+    "type": "object"
+}

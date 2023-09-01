@@ -1,0 +1,57 @@
+{
+    "type": "object",
+    "properties": {
+      "a": {
+        "type": "string",
+        "pattern": "^@.*$"
+      },
+      "b": {
+        "type": "string",
+        "pattern": "^@[0-9]*$"
+      },
+      "c": {
+        "type": "string",
+        "pattern": "^@[0-9]*$"
+      },
+      "d": {
+        "enum": [
+          "@false",
+          "@true"
+        ],
+        "type": "string"
+      },
+      "e": {
+        "type": "string",
+        "const": "@undefined"
+      },
+      "f": {
+        "type": "string",
+        "const": "@null"
+      },
+      "g": {
+        "type": "string",
+        "pattern": "^.*@$"
+      },
+      "h": {
+        "type": "string",
+        "pattern": "^[0-9]*@$"
+      },
+      "i": {
+        "type": "string",
+        "pattern": "^.*@[0-9]*$"
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "a",
+      "b",
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i"
+    ],
+    "$schema": "http://json-schema.org/draft-07/schema#"
+}

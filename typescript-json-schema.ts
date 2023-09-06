@@ -490,7 +490,7 @@ export class JsonSchemaGenerator {
 
     /**
      * If true, this makes constants be defined as enums with a single value. This is useful
-    * for cases where constant values are not supported, such as OpenAPI.
+     * for cases where constant values are not supported, such as OpenAPI.
      */
     private constAsEnum: boolean;
 
@@ -719,9 +719,9 @@ export class JsonSchemaGenerator {
                             throw new Error(`Not supported: ${value} as a enum value`);
                     }
                     if (this.constAsEnum) {
-                      definition.enum = [value]
+                        definition.enum = [value];
                     } else {
-                      definition.const = value;
+                        definition.const = value;
                     }
                 } else if (arrayType !== undefined) {
                     if (

@@ -543,3 +543,7 @@ describe("satisfies keyword - ignore from a \"satisfies\" and build by rally typ
 describe("const keyword", () => {
     assertSchema("const-keyword", "Object");
 });
+
+describe("constAsEnum option", () => {
+    assertSchema("const-as-enum", "MyObject", { constAsEnum: true });
+});

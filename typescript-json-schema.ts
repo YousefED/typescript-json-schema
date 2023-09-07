@@ -59,6 +59,7 @@ export function getDefaultArgs(): Args {
         id: "",
         defaultNumberType: "number",
         tsNodeRegister: false,
+        constAsEnum: false,
     };
 }
 
@@ -89,6 +90,7 @@ export type Args = {
     id: string;
     defaultNumberType: "number" | "integer";
     tsNodeRegister: boolean;
+    constAsEnum: boolean;
 };
 
 export type PartialArgs = Partial<Args>;
@@ -487,6 +489,12 @@ export class JsonSchemaGenerator {
     private userValidationKeywords: ValidationKeywords;
 
     /**
+     * If true, this makes constants be defined as enums with a single value. This is useful
+     * for cases where constant values are not supported, such as OpenAPI.
+     */
+    private constAsEnum: boolean;
+
+    /**
      * Types are assigned names which are looked up by their IDs.  This is the
      * map from type IDs to type names.
      */
@@ -511,6 +519,7 @@ export class JsonSchemaGenerator {
         this.inheritingTypes = inheritingTypes;
         this.tc = tc;
         this.userValidationKeywords = args.validationKeywords.reduce((acc, word) => ({ ...acc, [word]: true }), {});
+        this.constAsEnum = args.constAsEnum;
     }
 
     public get ReffedDefinitions(): { [key: string]: Definition } {
@@ -709,7 +718,11 @@ export class JsonSchemaGenerator {
                         default:
                             throw new Error(`Not supported: ${value} as a enum value`);
                     }
-                    definition.const = value;
+                    if (this.constAsEnum) {
+                        definition.enum = [value];
+                    } else {
+                        definition.const = value;
+                    }
                 } else if (arrayType !== undefined) {
                     if (
                         propertyType.flags & ts.TypeFlags.Object &&

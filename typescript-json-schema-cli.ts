@@ -53,6 +53,8 @@ export function run() {
             .describe("defaultNumberType", "Default number type.")
         .boolean("tsNodeRegister").default("tsNodeRegister", defaultArgs.tsNodeRegister)
             .describe("tsNodeRegister", "Use ts-node/register (needed for requiring typescript files).")
+        .boolean("constAsEnum").default("constAsEnum", defaultArgs.constAsEnum)
+            .describe("constAsEnum", "Use enums with a single value when declaring constants. Needed for OpenAPI compatibility")
         .argv;
 
     exec(args._[0], args._[1], {
@@ -78,6 +80,7 @@ export function run() {
         id: args.id,
         defaultNumberType: args.defaultNumberType,
         tsNodeRegister: args.tsNodeRegister,
+        constAsEnum: args.constAsEnum,
     });
 }
 

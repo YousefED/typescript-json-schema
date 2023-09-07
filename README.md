@@ -51,6 +51,7 @@ Options:
   --id                  Set schema id.                                               [string]  [default: ""]
   --defaultNumberType   Default number type.                                         [choices: "number", "integer"] [default: "number"]
   --tsNodeRegister      Use ts-node/register (needed for require typescript files).  [boolean] [default: false]
+  --constAsEnum         Use enums with a single value when declaring constants.      [boolean] [default: false]
 ```
 
 ### Programmatic use

@@ -4,9 +4,9 @@
     "definitions": {
         "Enum": {
             "enum": [
-                "123",
                 "x",
-                "y"
+                "y",
+                "123"
             ],
             "type": "string"
         }

@@ -6,9 +6,9 @@
             "enum": [
                 0,
                 1,
-                null,
+                true,
                 "str",
-                true
+                null
             ],
             "type": [
                 "number",

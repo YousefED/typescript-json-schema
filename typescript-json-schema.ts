@@ -926,7 +926,7 @@ export class JsonSchemaGenerator {
 
         if (enumValues.length > 0) {
             if (enumValues.length > 1) {
-                definition.enum = enumValues.sort();
+                definition.enum = enumValues;
             } else {
                 definition.const = enumValues[0];
             }

@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "MyObject": {
+      "properties": {
+        "sub": {
+          "$ref": "#/definitions/SomeDefinition"
+        }
+      },
+      "type": "object"
+    },
+    "MyOtherObject": {
+      "properties": {
+        "sub": {
+          "$ref": "#/definitions/SomeOtherDefinition"
+        }
+      },
+      "type": "object"
+    },
+    "SomeDefinition": {
+      "properties": {
+        "is": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "SomeOtherDefinition": {
+      "properties": {
+        "is": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "UnrelatedDefinition": {
+      "type": "string"
+    }
+  }
+}

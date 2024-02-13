@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "SomeOtherDefinition": {
+      "type": "string"
+    }
+  },
+  "properties": {
+      "sub": {
+          "$ref": "#/definitions/SomeOtherDefinition"
+      }
+  },
+  "type": "object"
+}

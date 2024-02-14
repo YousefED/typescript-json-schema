@@ -534,15 +534,17 @@ export class JsonSchemaGenerator {
         return false;
     }
 
-    private resetSchemaSpecificProperties() {
+    private resetSchemaSpecificProperties(includeAllOverrides: boolean = false) {
         this.reffedDefinitions = {};
         this.typeIdsByName = {};
         this.typeNamesById = {};
 
         // restore schema overrides
-        this.schemaOverrides.forEach((value, key) => {
-            this.reffedDefinitions[key] = value;
-        });
+        if (includeAllOverrides) {
+            this.schemaOverrides.forEach((value, key) => {
+                this.reffedDefinitions[key] = value;
+            });
+        }
     }
 
     /**
@@ -1410,8 +1412,12 @@ export class JsonSchemaGenerator {
         }
 
         // Create the actual definition only if is an inline definition, or
-        // if it will be a $ref and it is not yet created
-        if (!asRef || !this.reffedDefinitions[fullTypeName]) {
+        // if it will be a $ref and it is not yet created.
+        // Prioritise overrides.
+        const overrideDefinition = this.schemaOverrides.get(fullTypeName);
+        if (overrideDefinition) {
+            this.reffedDefinitions[fullTypeName] = overrideDefinition;
+        } else if (!asRef || !this.reffedDefinitions[fullTypeName]) {
             if (asRef) {
                 // must be here to prevent recursivity problems
                 let reffedDefinition: Definition;
@@ -1511,12 +1517,12 @@ export class JsonSchemaGenerator {
         this.schemaOverrides.set(symbolName, schema);
     }
 
-    public getSchemaForSymbol(symbolName: string, includeReffedDefinitions: boolean = true): Definition {
+    public getSchemaForSymbol(symbolName: string, includeReffedDefinitions: boolean = true, includeAllOverrides: boolean = false): Definition {
         if (!this.allSymbols[symbolName]) {
             throw new Error(`type ${symbolName} not found`);
         }
 
-        this.resetSchemaSpecificProperties();
+        this.resetSchemaSpecificProperties(includeAllOverrides);
 
         const def = this.getTypeDefinition(
             this.allSymbols[symbolName],
@@ -1538,13 +1544,13 @@ export class JsonSchemaGenerator {
         return def;
     }
 
-    public getSchemaForSymbols(symbolNames: string[], includeReffedDefinitions: boolean = true): Definition {
+    public getSchemaForSymbols(symbolNames: string[], includeReffedDefinitions: boolean = true, includeAllOverrides: boolean = false): Definition {
         const root = {
             $schema: "http://json-schema.org/draft-07/schema#",
             definitions: {},
         };
 
-        this.resetSchemaSpecificProperties();
+        this.resetSchemaSpecificProperties(includeAllOverrides);
 
         const id = this.args.id;
 
@@ -1742,7 +1748,7 @@ export function generateSchema(
 
     if (fullTypeName === "*") {
         // All types in file(s)
-        return generator.getSchemaForSymbols(generator.getMainFileSymbols(program, onlyIncludeFiles));
+        return generator.getSchemaForSymbols(generator.getMainFileSymbols(program, onlyIncludeFiles), true, true);
     } else if (args.uniqueNames) {
         // Find the hashed type name to use as the root object
         const matchingSymbols = generator.getSymbols(fullTypeName);

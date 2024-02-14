@@ -534,6 +534,43 @@ describe("when reusing a generator", () => {
             assert.deepEqual(actualSchemaObject, expectedSchemaObject, `The schema for ${symbolName} is not as expected`);
         });
     });
+
+    it("should not add unrelated schemaOverrides to schemas", () => {
+        const testProgramPath = BASE + "no-unrelated-definitions/";
+        const program = TJS.programFromConfig(resolve(testProgramPath + "tsconfig.json"));
+        const generator = TJS.buildGenerator(program);
+
+        const schemaOverride: TJS.Definition = { type: "string" };
+        generator?.setSchemaOverride("SomeOtherDefinition", schemaOverride);
+
+        [
+            { symbolName: "MyObject", schemaName: "MyObject" },
+            { symbolName: "MyOtherObject", schemaName: "MyOtherObjectWithOverride" },
+        ].forEach(({ symbolName, schemaName }) => {
+            const expectedSchemaString = readFileSync(`${testProgramPath}schema.${schemaName}.json`, "utf8");
+            const expectedSchemaObject = JSON.parse(expectedSchemaString);
+
+            const actualSchemaObject = generator?.getSchemaForSymbol(symbolName);
+
+            assert.deepEqual(actualSchemaObject, expectedSchemaObject, `The schema for ${symbolName} is not as expected`);
+        });
+    });
+
+    it("should include all schemaOverrides when generating program schemas", () => {
+        const testProgramPath = BASE + "no-unrelated-definitions/";
+        const program = TJS.programFromConfig(resolve(`${testProgramPath}tsconfig.json`));
+        const generator = TJS.buildGenerator(program)!;
+
+        const schemaOverride: TJS.Definition = { type: "string" };
+        generator.setSchemaOverride("UnrelatedDefinition", schemaOverride);
+
+        const expectedSchemaString = readFileSync(`${testProgramPath}schema.program.json`, "utf8");
+        const expectedSchemaObject = JSON.parse(expectedSchemaString);
+
+        const actualSchemaObject = TJS.generateSchema(program, "*", {}, undefined, generator);
+
+        assert.deepEqual(actualSchemaObject, expectedSchemaObject, `The schema for whole program is not as expected`);
+    });
 });
 
 describe("satisfies keyword - ignore from a \"satisfies\" and build by rally type", () => {

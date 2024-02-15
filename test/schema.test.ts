@@ -168,6 +168,52 @@ describe("interfaces", () => {
             assert.deepEqual(schema.definitions!["MySubObject"], schemaOverride);
         }
     });
+    it("should output the schemas set by setSchemaOverride with getSchemaForSymbol", () => {
+        const program = TJS.getProgramFromFiles([resolve(BASE + "interface-multi/main.ts")]);
+        const generator = TJS.buildGenerator(program);
+        assert(generator !== null);
+
+        const schemaOverride1: TJS.Definition = { type: "string" };
+        const schemaOverride2: TJS.Definition = { type: "integer" };
+
+        generator?.setSchemaOverride("MySubObject", schemaOverride1);
+        generator?.setSchemaOverride("MySubObject2", schemaOverride2);
+        const schema = generator?.getSchemaForSymbol("MySubObject");
+
+        // Should not change original schema object.
+        assert.deepEqual(schemaOverride1,  { type: "string" });
+        assert.deepEqual(schemaOverride2,  { type: "integer" });
+
+        assert.deepEqual(schema, { ...schemaOverride1, $schema: "http://json-schema.org/draft-07/schema#" });
+    });
+    it("should output the schemas set by setSchemaOverride with getSchemaForSymbol and other overrides", () => {
+        const program = TJS.getProgramFromFiles([resolve(BASE + "interface-multi/main.ts")]);
+        const generator = TJS.buildGenerator(program);
+        assert(generator !== null);
+        const schemaOverride1: TJS.Definition = { type: "string" };
+        const schemaOverride2: TJS.Definition = { type: "integer" };
+
+        generator?.setSchemaOverride("MySubObject1", schemaOverride1);
+        generator?.setSchemaOverride("MySubObject2", schemaOverride2);
+        const schema = generator?.getSchemaForSymbol("MySubObject1", true, true);
+
+        // Should not change original schema object.
+        assert.deepEqual(schemaOverride1,  { type: "string" });
+        assert.deepEqual(schemaOverride2,  { type: "integer" });
+
+        assert.deepEqual(schema, {
+            ...schemaOverride1,
+            $schema: "http://json-schema.org/draft-07/schema#",
+            definitions: {
+                MySubObject1: {
+                    type: "string"
+                },
+                MySubObject2: {
+                    type: "integer"
+                }
+            }
+        });
+    });
     it("should ignore type aliases that have schema overrides", () => {
         const program = TJS.getProgramFromFiles([resolve(BASE + "type-alias-schema-override/main.ts")]);
         const generator = TJS.buildGenerator(program);

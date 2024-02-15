@@ -1518,20 +1518,26 @@ export class JsonSchemaGenerator {
     }
 
     public getSchemaForSymbol(symbolName: string, includeReffedDefinitions: boolean = true, includeAllOverrides: boolean = false): Definition {
-        if (!this.allSymbols[symbolName]) {
+        const overrideDefinition = this.schemaOverrides.get(symbolName);
+        if (!this.allSymbols[symbolName] && !overrideDefinition) {
             throw new Error(`type ${symbolName} not found`);
         }
 
         this.resetSchemaSpecificProperties(includeAllOverrides);
 
-        const def = this.getTypeDefinition(
-            this.allSymbols[symbolName],
-            this.args.topRef,
-            undefined,
-            undefined,
-            undefined,
-            this.userSymbols[symbolName] || undefined
-        );
+        let def;
+        if (overrideDefinition) {
+            def = { ...overrideDefinition };
+        } else {
+            def = overrideDefinition ? overrideDefinition : this.getTypeDefinition(
+              this.allSymbols[symbolName],
+              this.args.topRef,
+              undefined,
+              undefined,
+              undefined,
+              this.userSymbols[symbolName] || undefined
+            );
+        }
 
         if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
             def.definitions = this.reffedDefinitions;

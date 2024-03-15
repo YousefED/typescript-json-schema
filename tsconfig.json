@@ -9,7 +9,6 @@
         "emitDecoratorMetadata": true,
         "declaration": true,
         "noImplicitAny": true,
-        "suppressImplicitAnyIndexErrors": true,
         "strictNullChecks": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
@@ -20,7 +19,6 @@
         "preserveConstEnums": true,
         "sourceMap": true,
         "typeRoots" : ["node_modules/@types"],
-        "ignoreDeprecations": "5.0"
     },
     "include": [
         "**/*.ts",

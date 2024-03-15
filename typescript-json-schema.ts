@@ -149,6 +149,9 @@ export interface Definition extends Omit<JSONSchema7, RedefinedFields> {
     };
 }
 
+/** A looser Definition type that allows for indexing with arbitrary strings. */
+type DefinitionIndex = { [key: string]: Definition[keyof Definition] };
+
 export type SymbolRef = {
     name: string;
     typeName: string;
@@ -181,7 +184,7 @@ function extend(target: any, ..._: any[]): any {
 }
 
 function unique(arr: string[]): string[] {
-    const temp = {};
+    const temp: Record<string, true> = {};
     for (const e of arr) {
         temp[e] = true;
     }
@@ -284,7 +287,7 @@ function resolveTupleType(propertyType: ts.Type): ts.TupleTypeNode | null {
     return propertyType as any;
 }
 
-const simpleTypesAllowedProperties = {
+const simpleTypesAllowedProperties: Record<string, true> = {
     type: true,
     description: true,
 };
@@ -328,11 +331,11 @@ function makeNullable(def: Definition): Definition {
         if (union) {
             union.push({ type: "null" });
         } else {
-            const subdef = {};
-            for (var k in def) {
+            const subdef: DefinitionIndex = {};
+            for (var k in def as any) {
                 if (def.hasOwnProperty(k)) {
-                    subdef[k] = def[k];
-                    delete def[k];
+                    subdef[k] = def[k as keyof Definition];
+                    delete def[k as keyof typeof def];
                 }
             }
             def.anyOf = [subdef, { type: "null" }];
@@ -441,7 +444,7 @@ const annotationKeywords: { [k in keyof typeof validationKeywords]?: true } = {
     $ref: true,
 };
 
-const subDefinitions = {
+const subDefinitions: Record<string, true> = {
     items: true,
     additionalProperties: true,
     contains: true,
@@ -550,7 +553,7 @@ export class JsonSchemaGenerator {
     /**
      * Parse the comments of a symbol into the definition and other annotations.
      */
-    private parseCommentsIntoDefinition(symbol: ts.Symbol, definition: Definition, otherAnnotations: {}): void {
+    private parseCommentsIntoDefinition(symbol: ts.Symbol, definition: Definition, otherAnnotations: Record<string, true>): void {
         if (!symbol) {
             return;
         }
@@ -613,7 +616,7 @@ export class JsonSchemaGenerator {
                 if (match) {
                     const k = match[1];
                     const v = match[2];
-                    definition[name] = { ...definition[name], [k]: v ? parseValue(symbol, k, v) : true };
+                    (definition as DefinitionIndex)[name] = { ...(definition as Record<string, Record<string, unknown>>)[name], [k]: v ? parseValue(symbol, k, v) : true };
                     return;
                 }
             }
@@ -621,16 +624,17 @@ export class JsonSchemaGenerator {
             // In TypeScript 3.7+, the "." is kept as part of the annotation name
             if (name.includes(".")) {
                 const parts = name.split(".");
-                if (parts.length === 2 && subDefinitions[parts[0]]) {
-                    definition[parts[0]] = {
-                        ...definition[parts[0]],
+                const key = parts[0] as keyof Definition;
+                if (parts.length === 2 && subDefinitions[key]) {
+                    (definition as DefinitionIndex)[key] = {
+                        ...definition[key] as Record<string, unknown>,
                         [parts[1]]: text ? parseValue(symbol, name, text) : true,
                     };
                 }
             }
 
-            if (validationKeywords[name] || this.userValidationKeywords[name]) {
-                definition[name] = text === undefined ? "" : parseValue(symbol, name, text);
+            if (validationKeywords[name as keyof typeof validationKeywords] || this.userValidationKeywords[name]) {
+                (definition as DefinitionIndex)[name] = text === undefined ? "" : parseValue(symbol, name, text);
             } else {
                 // special annotations
                 otherAnnotations[doc.name] = true;
@@ -939,7 +943,7 @@ export class JsonSchemaGenerator {
 
     private getUnionDefinition(
         unionType: ts.UnionType,
-        unionModifier: string,
+        unionModifier: keyof Definition,
         definition: Definition
     ): Definition {
         const enumValues: PrimitiveType[] = [];
@@ -1030,11 +1034,11 @@ export class JsonSchemaGenerator {
                         // If we already have a more specific description, don't overwrite it.
                         continue;
                     }
-                    definition[k] = schemas[0][k];
+                    (definition as DefinitionIndex)[k] = schemas[0][k as keyof Definition];
                 }
             }
         } else {
-            definition[unionModifier] = schemas;
+            (definition as DefinitionIndex)[unionModifier] = schemas;
         }
         return definition;
     }
@@ -1070,7 +1074,7 @@ export class JsonSchemaGenerator {
         if (schemas.length === 1) {
             for (const k in schemas[0]) {
                 if (schemas[0].hasOwnProperty(k)) {
-                    definition[k] = schemas[0][k];
+                    (definition as DefinitionIndex)[k] = schemas[0][k as keyof Definition];
                 }
             }
         } else {
@@ -1175,7 +1179,7 @@ export class JsonSchemaGenerator {
                 }
             }
 
-            const propertyDefinitions = props.reduce((all, prop) => {
+            const propertyDefinitions = props.reduce<Record<string, Definition>>((all, prop) => {
                 const propertyName = prop.getName();
                 const propDef = this.getDefinitionForProperty(prop, node);
                 if (propDef != null) {
@@ -1274,7 +1278,7 @@ export class JsonSchemaGenerator {
     private getTypeDefinition(
         typ: ts.Type,
         asRef = this.args.ref,
-        unionModifier: string = "anyOf",
+        unionModifier: keyof Definition = "anyOf",
         prop?: ts.Symbol,
         reffedType?: ts.Symbol,
         pairedSymbol?: ts.Symbol,
@@ -1400,7 +1404,7 @@ export class JsonSchemaGenerator {
         }
 
         // Parse comments
-        const otherAnnotations = {};
+        const otherAnnotations: Record<string, true> = {};
         this.parseCommentsIntoDefinition(reffedType!, definition, otherAnnotations); // handle comments in the type alias declaration
         this.parseCommentsIntoDefinition(symbol!, definition, otherAnnotations);
         this.parseCommentsIntoDefinition(typ.aliasSymbol!, definition, otherAnnotations);
@@ -1492,8 +1496,8 @@ export class JsonSchemaGenerator {
             this.recursiveTypeRef.delete(fullTypeName);
             // If the type was recursive (there is reffedDefinitions) - lets replace it to reference
             if (this.reffedDefinitions[fullTypeName]) {
-                const annotations = Object.entries(returnedDefinition).reduce((acc, [key, value]) => {
-                    if (annotationKeywords[key] && typeof value !== undefined) {
+                const annotations = Object.entries(returnedDefinition).reduce<Record<string, unknown>>((acc, [key, value]) => {
+                    if (annotationKeywords[key as keyof typeof annotationKeywords] && typeof value !== undefined) {
                         acc[key] = value;
                     }
                     return acc;
@@ -1551,7 +1555,11 @@ export class JsonSchemaGenerator {
     }
 
     public getSchemaForSymbols(symbolNames: string[], includeReffedDefinitions: boolean = true, includeAllOverrides: boolean = false): Definition {
-        const root = {
+        const root: {
+            $id?: string,
+            $schema: string,
+            definitions: Record<string, Definition>
+        } = {
             $schema: "http://json-schema.org/draft-07/schema#",
             definitions: {},
         };
@@ -1660,7 +1668,7 @@ export function buildGenerator(
 
     for (const pref in args) {
         if (args.hasOwnProperty(pref)) {
-            settings[pref] = args[pref];
+            (settings as Record<string, Partial<Args>[keyof Args]>)[pref as keyof Args] = args[pref as keyof Args];
         }
     }
 

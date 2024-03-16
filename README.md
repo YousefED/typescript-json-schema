@@ -30,6 +30,7 @@ Usage: typescript-json-schema <path-to-typescript-files-or-tsconfig> <type>
 
 Options:
   --refs                Create shared ref definitions.                               [boolean] [default: true]
+  --avoidSymbolRefs     Avoids making refs to type names with symbols.               [boolean] [default: false]
   --aliasRefs           Create shared ref definitions for the type aliases.          [boolean] [default: false]
   --topRef              Create a top-level ref definition.                           [boolean] [default: false]
   --titles              Creates titles in the output schema.                         [boolean] [default: false]

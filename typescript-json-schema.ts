@@ -708,7 +708,7 @@ export class JsonSchemaGenerator {
             } else if (propertyTypeString === "bigint") {
                 definition.type = "number";
                 definition.properties = {};
-                definition.additionalProperties = false;     
+                definition.additionalProperties = false;
             } else {
                 const value = extractLiteralValue(propertyType);
                 if (value !== undefined) {

@@ -39,6 +39,10 @@
       "i": {
         "type": "string",
         "pattern": "^.*@[0-9]*$"
+      },
+      "j": {
+        "type": "string",
+        "pattern": "^.*\\..*$"
       }
     },
     "additionalProperties": false,
@@ -51,7 +55,8 @@
       "f",
       "g",
       "h",
-      "i"
+      "i",
+      "j"
     ],
     "$schema": "http://json-schema.org/draft-07/schema#"
 }

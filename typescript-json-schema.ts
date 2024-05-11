@@ -751,40 +751,48 @@ export class JsonSchemaGenerator {
                         definition.type = "string";
                         // @ts-ignore
                         const {texts, types} = propertyType;
-                        const pattern = [];
+                        let pattern = "^";
                         for (let i = 0; i < texts.length; i++) {
-                            const text = texts[i];
-                            const type = types[i];
+                            const text: string = texts[i];
+                            const type: ts.Type = types[i];
 
-                            if (i === 0) {
-                                pattern.push(`^`);
+                            // https://json-schema.org/understanding-json-schema/reference/regular_expressions
+                            // `-` should not be escaped;
+                            // it is escaped only if it is used like `[a-z]`, which never happens here.
+                            const control = ["[", "]", "(", ")", "{", "}", "^", "$", ".", "|", "?", "*", "+", "!"];
+                            const escaped: { [char: string]: string } = { "\n": "\\n", "\r": "\\r", "\t": "\\t" };
+                            for (const char of text) {
+                                if (control.includes(char)) {
+                                    pattern += `\\${char}`;
+                                } else if (escaped[char]) {
+                                    pattern += escaped[char];
+                                } else {
+                                    pattern += char;
+                                }
                             }
 
                             if (type) {
                                 if (type.flags & ts.TypeFlags.String) {
-                                    pattern.push(`${text}.*`);
+                                    pattern += ".*";
                                 }
 
                                 if (type.flags & ts.TypeFlags.Number
                                     || type.flags & ts.TypeFlags.BigInt) {
-                                    pattern.push(`${text}[0-9]*`);
+                                    pattern += "[0-9]*";
                                 }
 
                                 if (type.flags & ts.TypeFlags.Undefined) {
-                                    pattern.push(`${text}undefined`);
+                                    pattern += "undefined";
                                 }
 
                                 if (type.flags & ts.TypeFlags.Null) {
-                                    pattern.push(`${text}null`);
+                                    pattern += "null";
                                 }
                             }
-
-
-                            if (i === texts.length - 1) {
-                                pattern.push(`${text}$`);
-                            }
                         }
-                        definition.pattern = pattern.join("");
+
+                        pattern += "$";
+                        definition.pattern = pattern;
                     } else {
                         definition.type = "array";
                         if (!definition.items) {

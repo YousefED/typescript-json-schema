@@ -753,7 +753,7 @@ export class JsonSchemaGenerator {
                         const {texts, types} = propertyType;
                         const pattern = [];
                         for (let i = 0; i < texts.length; i++) {
-                            const text = texts[i].replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
+                            const text = texts[i].replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
                             const type = types[i];
 
                             if (i === 0) {

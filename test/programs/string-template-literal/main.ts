@@ -8,4 +8,5 @@ interface MyObject {
   g: `${string}@`,
   h: `${number}@`,
   i: `${string}@${number}`,
+  j: `${string}.${string}`,
 }

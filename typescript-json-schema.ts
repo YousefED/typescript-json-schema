@@ -121,6 +121,7 @@ export interface Definition extends Omit<JSONSchema7, RedefinedFields> {
     propertyOrder?: string[];
     defaultProperties?: string[];
     typeof?: "function";
+    parameters?: Definition[];
 
     // Fields that must be redefined because they make use of this definition itself
     items?: DefinitionOrBoolean | DefinitionOrBoolean[];
@@ -1087,17 +1088,24 @@ export class JsonSchemaGenerator {
         return definition;
     }
 
+    private getFunctionDefinition(funcType: ts.Type, definition: Definition): Definition {
+        const node = funcType.getSymbol()!.getDeclarations()![0];
+
+        const parameters = (node as ts.FunctionLikeDeclaration).parameters;
+        definition.typeof = "function";
+        definition.parameters = parameters
+            .map((p) => this.tc.getTypeAtLocation(p.type!))
+            .map((type) => this.getTypeDefinition(type));
+
+        return definition;
+    }
+
     private getClassDefinition(clazzType: ts.Type, definition: Definition): Definition {
         const node = clazzType.getSymbol()!.getDeclarations()![0];
 
         // Example: typeof globalThis may not have any declaration
         if (!node) {
             definition.type = "object";
-            return definition;
-        }
-
-        if (this.args.typeOfKeyword && node.kind === ts.SyntaxKind.FunctionType) {
-            definition.typeof = "function";
             return definition;
         }
 
@@ -1302,15 +1310,6 @@ export class JsonSchemaGenerator {
             reffedType = undefined;
         }
 
-        if (
-            this.args.typeOfKeyword &&
-            typ.flags & ts.TypeFlags.Object &&
-            (<ts.ObjectType>typ).objectFlags & ts.ObjectFlags.Anonymous
-        ) {
-            definition.typeof = "function";
-            return definition;
-        }
-
         let returnedDefinition = definition; // returned definition, may be a $ref
 
         // Parse property comments now to skip recursive if ignore.
@@ -1490,6 +1489,8 @@ export class JsonSchemaGenerator {
                     // {} is TypeLiteral with no members. Need special case because it doesn't have declarations.
                     definition.type = "object";
                     definition.properties = {};
+                } else if (this.args.typeOfKeyword && node && ts.isFunctionLike(node)) {
+                    this.getFunctionDefinition(typ, definition);
                 } else {
                     this.getClassDefinition(typ, definition);
                 }

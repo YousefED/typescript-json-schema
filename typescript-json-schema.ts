@@ -426,6 +426,7 @@ const validationKeywords = {
     $ref: true,
     id: true,
     $id: true,
+    $comment: true,
     title: true
 };
 

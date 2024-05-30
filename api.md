@@ -492,6 +492,21 @@ interface MyObject {
 ```
 
 
+## [comments-comment](./test/programs/comments-comment)
+
+```ts
+/**
+ * @$comment Object comment
+ */
+interface MyObject {
+  /**
+   * @$comment Property comment
+   */
+  text: string;
+}
+```
+
+
 ## [comments-from-lib](./test/programs/comments-from-lib)
 
 ```ts
@@ -603,6 +618,15 @@ export interface MyObject {
      * Date property description
      */
     date: Date;
+}
+```
+
+
+## [const-as-enum](./test/programs/const-as-enum)
+
+```ts
+export interface MyObject {
+    reference: true;
 }
 ```
 

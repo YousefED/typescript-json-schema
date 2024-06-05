@@ -32,6 +32,8 @@ export function run() {
             .describe("esModuleInterop", "Use esModuleInterop when loading typescript modules.")
         .boolean("skipLibCheck").default("skipLibCheck", defaultArgs.skipLibCheck)
             .describe("skipLibCheck", "Use skipLibCheck when loading typescript modules.")
+        .boolean("experimentalDecorators").default("experimentalDecorators", defaultArgs.experimentalDecorators)
+            .describe("skipLibCheck", "Use experimentalDecorators when loading typescript modules.")
         .boolean("ignoreErrors").default("ignoreErrors", defaultArgs.ignoreErrors)
             .describe("ignoreErrors", "Generate even if the program has errors.")
         .alias("out", "o")
@@ -70,6 +72,7 @@ export function run() {
         strictNullChecks: args.strictNullChecks,
         esModuleInterop: args.esModuleInterop,
         skipLibCheck: args.skipLibCheck,
+        experimentalDecorators: args.experimentalDecorators,
         ignoreErrors: args.ignoreErrors,
         out: args.out,
         validationKeywords: args.validationKeywords,

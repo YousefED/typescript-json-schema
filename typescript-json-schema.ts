@@ -49,6 +49,7 @@ export function getDefaultArgs(): Args {
         strictNullChecks: false,
         esModuleInterop: false,
         skipLibCheck: false,
+        experimentalDecorators: true,
         ignoreErrors: false,
         out: "",
         validationKeywords: [],
@@ -81,6 +82,7 @@ export type Args = {
     esModuleInterop: boolean;
     skipLibCheck: boolean;
     ignoreErrors: boolean;
+    experimentalDecorators: boolean;
     out: string;
     validationKeywords: string[];
     include: string[];
@@ -1833,6 +1835,8 @@ export async function exec(filePattern: string, fullTypeName: string, args = get
             strictNullChecks: args.strictNullChecks,
             esModuleInterop: args.esModuleInterop,
             skipLibCheck: args.skipLibCheck,
+            emitDecoratorMetadata: args.experimentalDecorators,
+            experimentalDecorators: args.experimentalDecorators,
         });
         onlyIncludeFiles = onlyIncludeFiles.map(normalizeFileName);
     }

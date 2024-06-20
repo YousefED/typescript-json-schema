@@ -925,6 +925,17 @@ export interface MyObject {
 ```
 
 
+## [generic-objects](./test/programs/generic-objects)
+
+```ts
+type MyObject<Key extends string, Value> = {
+    [K in Key]: Value
+}
+
+export type TheObject = MyObject<'foo'|'bar', 'baz'|'bar'>
+```
+
+
 ## [generic-recursive](./test/programs/generic-recursive)
 
 ```ts

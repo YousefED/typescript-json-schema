@@ -657,12 +657,20 @@ export class JsonSchemaGenerator {
         if (tupleType) {
             // tuple
             const elemTypes: ts.NodeArray<ts.TypeNode> = (propertyType as any).typeArguments;
-            const fixedTypes = elemTypes.map((elType) => this.getTypeDefinition(elType as any));
+            const targetTupleType = (propertyType as ts.TupleTypeReference).target;
+
+            const fixedTypes = elemTypes.map((elType, index) => {
+                const def = this.getTypeDefinition(elType as any);
+                const label = targetTupleType.labeledElementDeclarations?.[index]?.name?.getFullText().trim();
+                if (label) {
+                    def.title = label;
+                }
+                return def;
+            });
             definition.type = "array";
             if (fixedTypes.length > 0) {
                 definition.items = fixedTypes;
             }
-            const targetTupleType = (propertyType as ts.TupleTypeReference).target;
             definition.minItems = targetTupleType.minLength;
             if (targetTupleType.hasRestElement) {
                 definition.additionalItems = fixedTypes[fixedTypes.length - 1];

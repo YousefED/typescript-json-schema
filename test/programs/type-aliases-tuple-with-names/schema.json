@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": [
+    {
+      "title": "a",
+      "type": "string"
+    },
+    {
+      "title": "b",
+      "type": "number",
+      "const": 123
+    },
+    {
+      "title": "c",
+      "type": "boolean"
+    }
+  ],
+  "minItems": 2,
+  "additionalItems": {
+    "title": "d",
+    "type": "number"
+  }
+}

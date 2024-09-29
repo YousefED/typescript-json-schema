@@ -9,7 +9,7 @@ export { Program, CompilerOptions, Symbol } from "typescript";
 
 const vm = require("vm");
 
-const REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;
+const REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"(, \{ assert: \{ "resolution-mode": "(import|require)" \} \})?\)|".*?")\.| /g;
 const REGEX_TSCONFIG_NAME = /^.*\.json$/;
 const REGEX_TJS_JSDOC = /^-([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
 const REGEX_GROUP_JSDOC = /^[.]?([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;

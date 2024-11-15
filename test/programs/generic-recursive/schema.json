@@ -6,7 +6,7 @@
             "additionalProperties": false,
             "properties": {
                 "field": {
-                    "$ref": "#/definitions/MyGeneric<string,number>"
+                    "$ref": "#/definitions/MyGeneric%3Cstring%2Cnumber%3E"
                 }
             },
             "required": [
@@ -18,7 +18,7 @@
             "additionalProperties": false,
             "properties": {
                 "field": {
-                    "$ref": "#/definitions/MyGeneric<number,string>"
+                    "$ref": "#/definitions/MyGeneric%3Cnumber%2Cstring%3E"
                 }
             },
             "required": [
@@ -30,7 +30,7 @@
             "additionalProperties": false,
             "properties": {
                 "value": {
-                    "$ref": "#/definitions/MyGeneric<string,number>"
+                    "$ref": "#/definitions/MyGeneric%3Cstring%2Cnumber%3E"
                 }
             },
             "required": [

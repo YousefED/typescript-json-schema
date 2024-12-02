@@ -37,6 +37,7 @@ const NUMERIC_INDEX_PATTERN = "^[0-9]+$";
 
 export function getDefaultArgs(): Args {
     return {
+        avoidSymbolRefs: false,
         ref: true,
         aliasRef: false,
         topRef: false,
@@ -69,6 +70,7 @@ export type ValidationKeywords = {
 };
 
 export type Args = {
+    avoidSymbolRefs: boolean;
     ref: boolean;
     aliasRef: boolean;
     topRef: boolean;
@@ -1401,8 +1403,10 @@ export class JsonSchemaGenerator {
             }
         }
 
+        const avoidRef = this.args.avoidSymbolRefs && /[^\d\w_]/.test(fullTypeName);
+        asRef = asRef && !avoidRef;
         // Handle recursive types
-        if (!isRawType || !!typ.aliasSymbol) {
+        if (!avoidRef && (!isRawType || !!typ.aliasSymbol)) {
             if (this.recursiveTypeRef.has(fullTypeName) && !forceNotRef) {
                 asRef = true;
             } else {

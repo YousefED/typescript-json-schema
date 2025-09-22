@@ -565,7 +565,11 @@ export class JsonSchemaGenerator {
     /**
      * Parse the comments of a symbol into the definition and other annotations.
      */
-    private parseCommentsIntoDefinition(symbol: ts.Symbol, definition: Definition, otherAnnotations: Record<string, true>): void {
+    private parseCommentsIntoDefinition(
+        symbol: ts.Symbol,
+        definition: Definition,
+        otherAnnotations: Record<string, true>
+    ): void {
         if (!symbol) {
             return;
         }
@@ -588,7 +592,8 @@ export class JsonSchemaGenerator {
 
                         return newlineNormalizedComment;
                     })
-                    .join("").trim();
+                    .join("")
+                    .trim();
             }
         }
 
@@ -628,7 +633,10 @@ export class JsonSchemaGenerator {
                 if (match) {
                     const k = match[1];
                     const v = match[2];
-                    (definition as DefinitionIndex)[name] = { ...(definition as Record<string, Record<string, unknown>>)[name], [k]: v ? parseValue(symbol, k, v) : true };
+                    (definition as DefinitionIndex)[name] = {
+                        ...(definition as Record<string, Record<string, unknown>>)[name],
+                        [k]: v ? parseValue(symbol, k, v) : true,
+                    };
                     return;
                 }
             }
@@ -639,7 +647,7 @@ export class JsonSchemaGenerator {
                 const key = parts[0] as keyof Definition;
                 if (parts.length === 2 && subDefinitions[key]) {
                     (definition as DefinitionIndex)[key] = {
-                        ...definition[key] as Record<string, unknown>,
+                        ...(definition[key] as Record<string, unknown>),
                         [parts[1]]: text ? parseValue(symbol, name, text) : true,
                     };
                 }
@@ -659,7 +667,7 @@ export class JsonSchemaGenerator {
         reffedType: ts.Symbol,
         definition: Definition,
         defaultNumberType = this.args.defaultNumberType,
-        ignoreUndefined = false,
+        ignoreUndefined = false
     ): Definition {
         const tupleType = resolveTupleType(propertyType);
 
@@ -757,20 +765,24 @@ export class JsonSchemaGenerator {
                     if (
                         propertyType.flags & ts.TypeFlags.Object &&
                         (propertyType as ts.ObjectType).objectFlags &
-                        (ts.ObjectFlags.Anonymous | ts.ObjectFlags.Interface | ts.ObjectFlags.Mapped)
+                            (ts.ObjectFlags.Anonymous | ts.ObjectFlags.Interface | ts.ObjectFlags.Mapped)
                     ) {
                         definition.type = "object";
                         definition.additionalProperties = false;
                         definition.patternProperties = {
                             [NUMERIC_INDEX_PATTERN]: this.getTypeDefinition(arrayType),
                         };
-                        if (!!Array.from((<any>propertyType).members)?.find((member: [string]) => member[0] !== "__index")) {
+                        if (
+                            !!Array.from((<any>propertyType).members)?.find(
+                                (member: [string]) => member[0] !== "__index"
+                            )
+                        ) {
                             this.getClassDefinition(propertyType, definition);
                         }
                     } else if (propertyType.flags & ts.TypeFlags.TemplateLiteral) {
                         definition.type = "string";
                         // @ts-ignore
-                        const {texts, types} = propertyType;
+                        const { texts, types } = propertyType;
                         const pattern = [];
                         for (let i = 0; i < texts.length; i++) {
                             const text = texts[i].replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
@@ -785,8 +797,7 @@ export class JsonSchemaGenerator {
                                     pattern.push(`${text}.*`);
                                 }
 
-                                if (type.flags & ts.TypeFlags.Number
-                                    || type.flags & ts.TypeFlags.BigInt) {
+                                if (type.flags & ts.TypeFlags.Number || type.flags & ts.TypeFlags.BigInt) {
                                     pattern.push(`${text}[0-9]*`);
                                 }
 
@@ -798,7 +809,6 @@ export class JsonSchemaGenerator {
                                     pattern.push(`${text}null`);
                                 }
                             }
-
 
                             if (i === texts.length - 1) {
                                 pattern.push(`${text}$`);
@@ -992,8 +1002,17 @@ export class JsonSchemaGenerator {
                 pushEnumValue(value);
             } else {
                 const symbol = valueType.aliasSymbol;
-                const def = this.getTypeDefinition(valueType, undefined, undefined, symbol, symbol, undefined, undefined, true);
-                if (def.type === "undefined" as any) {
+                const def = this.getTypeDefinition(
+                    valueType,
+                    undefined,
+                    undefined,
+                    symbol,
+                    symbol,
+                    undefined,
+                    undefined,
+                    true
+                );
+                if (def.type === ("undefined" as any)) {
                     continue;
                 }
                 const keys = Object.keys(def);
@@ -1020,7 +1039,8 @@ export class JsonSchemaGenerator {
             if (isOnlyBooleans) {
                 pushSimpleType("boolean");
             } else {
-                const enumSchema: Definition = enumValues.length > 1 ? { enum: enumValues.sort() } : { const: enumValues[0] };
+                const enumSchema: Definition =
+                    enumValues.length > 1 ? { enum: enumValues.sort() } : { const: enumValues[0] };
 
                 // If all values are of the same primitive type, add a "type" field to the schema
                 if (
@@ -1163,7 +1183,8 @@ export class JsonSchemaGenerator {
                     }
                     const indexSymbol: ts.Symbol = (<any>indexSignature.parameters[0]).symbol;
                     const indexType = this.tc.getTypeOfSymbolAtLocation(indexSymbol, node);
-                    const isIndexedObject = indexType.flags === ts.TypeFlags.String || indexType.flags === ts.TypeFlags.Number;
+                    const isIndexedObject =
+                        indexType.flags === ts.TypeFlags.String || indexType.flags === ts.TypeFlags.Number;
                     if (indexType.flags !== ts.TypeFlags.Number && !isIndexedObject) {
                         throw new Error(
                             "Not supported: IndexSignatureDeclaration with index symbol other than a number or a string"
@@ -1240,7 +1261,8 @@ export class JsonSchemaGenerator {
                 const requiredProps = props.reduce((required: string[], prop: ts.Symbol) => {
                     const def = {};
                     this.parseCommentsIntoDefinition(prop, def, {});
-                    const allUnionTypesFlags: number[] = (<any>prop).links?.type?.types?.map?.((t: any) => t.flags) || [];
+                    const allUnionTypesFlags: number[] =
+                        (<any>prop).links?.type?.types?.map?.((t: any) => t.flags) || [];
                     if (
                         !(prop.flags & ts.SymbolFlags.Optional) &&
                         !(prop.flags & ts.SymbolFlags.Method) &&
@@ -1307,7 +1329,7 @@ export class JsonSchemaGenerator {
         reffedType?: ts.Symbol,
         pairedSymbol?: ts.Symbol,
         forceNotRef: boolean = false,
-        ignoreUndefined = false,
+        ignoreUndefined = false
     ): Definition {
         const definition: Definition = {}; // real definition
 
@@ -1474,7 +1496,15 @@ export class JsonSchemaGenerator {
 
                         const types = (<ts.IntersectionType>typ).types;
                         for (const member of types) {
-                            const other = this.getTypeDefinition(member, false, undefined, undefined, undefined, undefined, true);
+                            const other = this.getTypeDefinition(
+                                member,
+                                false,
+                                undefined,
+                                undefined,
+                                undefined,
+                                undefined,
+                                true
+                            );
                             definition.type = other.type; // should always be object
                             definition.properties = {
                                 ...definition.properties,
@@ -1520,12 +1550,15 @@ export class JsonSchemaGenerator {
             this.recursiveTypeRef.delete(fullTypeName);
             // If the type was recursive (there is reffedDefinitions) - lets replace it to reference
             if (this.reffedDefinitions[fullTypeName]) {
-                const annotations = Object.entries(returnedDefinition).reduce<Record<string, unknown>>((acc, [key, value]) => {
-                    if (annotationKeywords[key as keyof typeof annotationKeywords] && typeof value !== undefined) {
-                        acc[key] = value;
-                    }
-                    return acc;
-                }, {});
+                const annotations = Object.entries(returnedDefinition).reduce<Record<string, unknown>>(
+                    (acc, [key, value]) => {
+                        if (annotationKeywords[key as keyof typeof annotationKeywords] && typeof value !== undefined) {
+                            acc[key] = value;
+                        }
+                        return acc;
+                    },
+                    {}
+                );
 
                 returnedDefinition = {
                     $ref: `${this.args.id}#/definitions/` + fullTypeName,
@@ -1545,7 +1578,11 @@ export class JsonSchemaGenerator {
         this.schemaOverrides.set(symbolName, schema);
     }
 
-    public getSchemaForSymbol(symbolName: string, includeReffedDefinitions: boolean = true, includeAllOverrides: boolean = false): Definition {
+    public getSchemaForSymbol(
+        symbolName: string,
+        includeReffedDefinitions: boolean = true,
+        includeAllOverrides: boolean = false
+    ): Definition {
         const overrideDefinition = this.schemaOverrides.get(symbolName);
         if (!this.allSymbols[symbolName] && !overrideDefinition) {
             throw new Error(`type ${symbolName} not found`);
@@ -1557,14 +1594,16 @@ export class JsonSchemaGenerator {
         if (overrideDefinition) {
             def = { ...overrideDefinition };
         } else {
-            def = overrideDefinition ? overrideDefinition : this.getTypeDefinition(
-              this.allSymbols[symbolName],
-              this.args.topRef,
-              undefined,
-              undefined,
-              undefined,
-              this.userSymbols[symbolName] || undefined
-            );
+            def = overrideDefinition
+                ? overrideDefinition
+                : this.getTypeDefinition(
+                      this.allSymbols[symbolName],
+                      this.args.topRef,
+                      undefined,
+                      undefined,
+                      undefined,
+                      this.userSymbols[symbolName] || undefined
+                  );
         }
 
         if (this.args.ref && includeReffedDefinitions && Object.keys(this.reffedDefinitions).length > 0) {
@@ -1578,11 +1617,15 @@ export class JsonSchemaGenerator {
         return def;
     }
 
-    public getSchemaForSymbols(symbolNames: string[], includeReffedDefinitions: boolean = true, includeAllOverrides: boolean = false): Definition {
+    public getSchemaForSymbols(
+        symbolNames: string[],
+        includeReffedDefinitions: boolean = true,
+        includeAllOverrides: boolean = false
+    ): Definition {
         const root: {
-            $id?: string,
-            $schema: string,
-            definitions: Record<string, Definition>
+            $id?: string;
+            $schema: string;
+            definitions: Record<string, Definition>;
         } = {
             $schema: "http://json-schema.org/draft-07/schema#",
             definitions: {},
@@ -1838,49 +1881,48 @@ function normalizeFileName(fn: string): string {
 }
 
 async function lintSchema(schemaJson: string, options: { fix?: boolean; strict?: boolean } = {}): Promise<string> {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'jsonschema-lint-'));
-    const tempFile = path.join(tempDir, 'schema.json');
-    
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "jsonschema-lint-"));
+    const tempFile = path.join(tempDir, "schema.json");
+
     try {
         fs.writeFileSync(tempFile, schemaJson);
-        
-        const jsonschemaCmd = path.join(process.cwd(), 'node_modules/.bin/jsonschema');
+
+        const jsonschemaCmd = path.join(process.cwd(), "node_modules/.bin/jsonschema");
         let cmd = `"${jsonschemaCmd}" lint "${tempFile}"`;
-        
+
         if (options.fix) {
-            cmd += ' --fix';
+            cmd += " --fix";
         }
-        
+
         if (options.strict) {
-            cmd += ' --strict';
+            cmd += " --strict";
         }
-        
+
         try {
-            const result = execSync(cmd, { 
-                stdio: 'pipe',
-                encoding: 'utf8'
+            const result = execSync(cmd, {
+                stdio: "pipe",
+                encoding: "utf8",
             });
-            
+
             if (!options.fix && result) {
-                console.log('JSON Schema lint results:');
+                console.log("JSON Schema lint results:");
                 console.log(result);
             } else if (options.fix) {
-                console.log('JSON Schema auto-fix completed successfully.');
+                console.log("JSON Schema auto-fix completed successfully.");
                 if (result) {
                     console.log(result);
                 }
             }
-            
         } catch (error: any) {
             if (error.status === 1) {
-                const output = error.stdout || error.stderr || '';
-                
+                const output = error.stdout || error.stderr || "";
+
                 if (!options.fix) {
-                    console.error('JSON Schema linting issues found:');
+                    console.error("JSON Schema linting issues found:");
                     console.error(output);
-                    console.log('Run with --fix to automatically fix these issues.');
+                    console.log("Run with --fix to automatically fix these issues.");
                 } else {
-                    console.log('JSON Schema linting issues were found and fixed:');
+                    console.log("JSON Schema linting issues were found and fixed:");
                     if (output) {
                         console.log(output);
                     }
@@ -1889,18 +1931,16 @@ async function lintSchema(schemaJson: string, options: { fix?: boolean; strict?:
                 throw new Error(`JSON Schema linting failed: ${error.message}`);
             }
         }
-        
-        const lintedSchema = fs.readFileSync(tempFile, 'utf8');
+
+        const lintedSchema = fs.readFileSync(tempFile, "utf8");
         return lintedSchema;
-        
     } catch (error: any) {
         throw new Error(`Failed to lint schema: ${error.message}`);
     } finally {
         try {
             fs.unlinkSync(tempFile);
             fs.rmdirSync(tempDir);
-        } catch (error) {
-        }
+        } catch (error) {}
     }
 }
 
@@ -1931,23 +1971,23 @@ export async function exec(filePattern: string, fullTypeName: string, args = get
     }
 
     let json = stringify(definition, null, 4) + "\n\n";
-    
+
     if (args.lint || args.fix) {
         try {
             json = await lintSchema(json, {
                 fix: args.fix,
-                strict: args.lintStrict
+                strict: args.lintStrict,
             });
         } catch (error: any) {
             if (args.ignoreErrors) {
-                console.warn('Schema linting failed:', error.message);
-                console.warn('Proceeding with original schema due to ignoreErrors flag...');
+                console.warn("Schema linting failed:", error.message);
+                console.warn("Proceeding with original schema due to ignoreErrors flag...");
             } else {
                 throw error;
             }
         }
     }
-    
+
     if (args.out) {
         return new Promise((resolve, reject) => {
             const fsModule = require("fs");

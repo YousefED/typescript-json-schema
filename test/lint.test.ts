@@ -4,7 +4,7 @@ import * as fs from "fs";
 
 describe("schema linting", () => {
     const testSchemaPath = "./test-lint-output.json";
-    
+
     afterEach(() => {
         try {
             if (fs.existsSync(testSchemaPath)) {
@@ -20,7 +20,7 @@ describe("schema linting", () => {
             ...getDefaultArgs(),
             out: testSchemaPath,
             lint: true,
-            fix: false
+            fix: false,
         };
 
         try {

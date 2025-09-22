@@ -5,6 +5,9 @@ import { createHash } from "crypto";
 import * as ts from "typescript";
 import { JSONSchema7, JSONSchema7TypeName } from "json-schema";
 import { pathEqual } from "path-equal";
+import { execSync } from "child_process";
+import * as fs from "fs";
+import * as os from "os";
 export { Program, CompilerOptions, Symbol } from "typescript";
 
 const vm = require("vm");
@@ -61,6 +64,9 @@ export function getDefaultArgs(): Args {
         defaultNumberType: "number",
         tsNodeRegister: false,
         constAsEnum: false,
+        lint: false,
+        fix: false,
+        lintStrict: false,
     };
 }
 
@@ -93,6 +99,9 @@ export type Args = {
     defaultNumberType: "number" | "integer";
     tsNodeRegister: boolean;
     constAsEnum: boolean;
+    lint: boolean;
+    fix: boolean;
+    lintStrict: boolean;
 };
 
 export type PartialArgs = Partial<Args>;
@@ -1828,6 +1837,73 @@ function normalizeFileName(fn: string): string {
     return fn;
 }
 
+async function lintSchema(schemaJson: string, options: { fix?: boolean; strict?: boolean } = {}): Promise<string> {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'jsonschema-lint-'));
+    const tempFile = path.join(tempDir, 'schema.json');
+    
+    try {
+        fs.writeFileSync(tempFile, schemaJson);
+        
+        const jsonschemaCmd = path.join(process.cwd(), 'node_modules/.bin/jsonschema');
+        let cmd = `"${jsonschemaCmd}" lint "${tempFile}"`;
+        
+        if (options.fix) {
+            cmd += ' --fix';
+        }
+        
+        if (options.strict) {
+            cmd += ' --strict';
+        }
+        
+        try {
+            const result = execSync(cmd, { 
+                stdio: 'pipe',
+                encoding: 'utf8'
+            });
+            
+            if (!options.fix && result) {
+                console.log('JSON Schema lint results:');
+                console.log(result);
+            } else if (options.fix) {
+                console.log('JSON Schema auto-fix completed successfully.');
+                if (result) {
+                    console.log(result);
+                }
+            }
+            
+        } catch (error: any) {
+            if (error.status === 1) {
+                const output = error.stdout || error.stderr || '';
+                
+                if (!options.fix) {
+                    console.error('JSON Schema linting issues found:');
+                    console.error(output);
+                    console.log('Run with --fix to automatically fix these issues.');
+                } else {
+                    console.log('JSON Schema linting issues were found and fixed:');
+                    if (output) {
+                        console.log(output);
+                    }
+                }
+            } else {
+                throw new Error(`JSON Schema linting failed: ${error.message}`);
+            }
+        }
+        
+        const lintedSchema = fs.readFileSync(tempFile, 'utf8');
+        return lintedSchema;
+        
+    } catch (error: any) {
+        throw new Error(`Failed to lint schema: ${error.message}`);
+    } finally {
+        try {
+            fs.unlinkSync(tempFile);
+            fs.rmdirSync(tempDir);
+        } catch (error) {
+        }
+    }
+}
+
 export async function exec(filePattern: string, fullTypeName: string, args = getDefaultArgs()): Promise<void> {
     let program: ts.Program;
     let onlyIncludeFiles: string[] | undefined = undefined;
@@ -1854,15 +1930,32 @@ export async function exec(filePattern: string, fullTypeName: string, args = get
         throw new Error("No output definition. Probably caused by errors prior to this?");
     }
 
-    const json = stringify(definition, null, 4) + "\n\n";
+    let json = stringify(definition, null, 4) + "\n\n";
+    
+    if (args.lint || args.fix) {
+        try {
+            json = await lintSchema(json, {
+                fix: args.fix,
+                strict: args.lintStrict
+            });
+        } catch (error: any) {
+            if (args.ignoreErrors) {
+                console.warn('Schema linting failed:', error.message);
+                console.warn('Proceeding with original schema due to ignoreErrors flag...');
+            } else {
+                throw error;
+            }
+        }
+    }
+    
     if (args.out) {
         return new Promise((resolve, reject) => {
-            const fs = require("fs");
-            fs.mkdir(path.dirname(args.out), { recursive: true }, function (mkErr: Error) {
+            const fsModule = require("fs");
+            fsModule.mkdir(path.dirname(args.out), { recursive: true }, function (mkErr: Error) {
                 if (mkErr) {
                     return reject(new Error("Unable to create parent directory for output file: " + mkErr.message));
                 }
-                fs.writeFile(args.out, json, function (wrErr: Error) {
+                fsModule.writeFile(args.out, json, function (wrErr: Error) {
                     if (wrErr) {
                         return reject(new Error("Unable to write output file: " + wrErr.message));
                     }

@@ -57,6 +57,12 @@ export function run() {
             .describe("tsNodeRegister", "Use ts-node/register (needed for requiring typescript files).")
         .boolean("constAsEnum").default("constAsEnum", defaultArgs.constAsEnum)
             .describe("constAsEnum", "Use enums with a single value when declaring constants. Needed for OpenAPI compatibility")
+        .boolean("lint").default("lint", defaultArgs.lint)
+            .describe("lint", "Lint generated schemas for JSON Schema best practices and report issues")
+        .boolean("fix").default("fix", defaultArgs.fix)
+            .describe("fix", "Automatically fix linting issues in generated schemas")
+        .boolean("lintStrict").default("lintStrict", defaultArgs.lintStrict)
+            .describe("lintStrict", "Enable strict linting rules (use with --fix to apply strict fixes)")
         .argv;
 
     exec(args._[0], args._[1], {
@@ -84,6 +90,9 @@ export function run() {
         defaultNumberType: args.defaultNumberType,
         tsNodeRegister: args.tsNodeRegister,
         constAsEnum: args.constAsEnum,
+        lint: args.lint,
+        fix: args.fix,
+        lintStrict: args.lintStrict,
     });
 }
 

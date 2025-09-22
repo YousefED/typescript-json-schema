@@ -11,6 +11,7 @@ describe("schema linting", () => {
                 fs.unlinkSync(testSchemaPath);
             }
         } catch (error) {
+            console.warn(`Warning: Failed to clean up test file: ${error instanceof Error ? error.message : error}`);
         }
     });
 

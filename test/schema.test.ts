@@ -120,7 +120,7 @@ export function assertRejection(
     type: string,
     settings: TJS.PartialArgs = {},
     compilerOptions?: TJS.CompilerOptions,
-    errType?: RegExp | ErrorConstructor,
+    errType?: RegExp | ErrorConstructor
 ) {
     it(group + " should reject input", () => {
         let schema = null;
@@ -181,8 +181,8 @@ describe("interfaces", () => {
         const schema = generator?.getSchemaForSymbol("MySubObject");
 
         // Should not change original schema object.
-        assert.deepEqual(schemaOverride1,  { type: "string" });
-        assert.deepEqual(schemaOverride2,  { type: "integer" });
+        assert.deepEqual(schemaOverride1, { type: "string" });
+        assert.deepEqual(schemaOverride2, { type: "integer" });
 
         assert.deepEqual(schema, { ...schemaOverride1, $schema: "http://json-schema.org/draft-07/schema#" });
     });
@@ -198,20 +198,20 @@ describe("interfaces", () => {
         const schema = generator?.getSchemaForSymbol("MySubObject1", true, true);
 
         // Should not change original schema object.
-        assert.deepEqual(schemaOverride1,  { type: "string" });
-        assert.deepEqual(schemaOverride2,  { type: "integer" });
+        assert.deepEqual(schemaOverride1, { type: "string" });
+        assert.deepEqual(schemaOverride2, { type: "integer" });
 
         assert.deepEqual(schema, {
             ...schemaOverride1,
             $schema: "http://json-schema.org/draft-07/schema#",
             definitions: {
                 MySubObject1: {
-                    type: "string"
+                    type: "string",
                 },
                 MySubObject2: {
-                    type: "integer"
-                }
-            }
+                    type: "integer",
+                },
+            },
         });
     });
     it("should ignore type aliases that have schema overrides", () => {
@@ -475,7 +475,13 @@ describe("schema", () => {
         assertSchema("undefined-property", "MyObject");
 
         // Creating a schema for main type = undefined should fail
-        assertRejection("type-alias-undefined", "MyUndefined", undefined, undefined, /Not supported: root type undefined/);
+        assertRejection(
+            "type-alias-undefined",
+            "MyUndefined",
+            undefined,
+            undefined,
+            /Not supported: root type undefined/
+        );
     });
 
     describe("other", () => {
@@ -573,13 +579,17 @@ describe("when reusing a generator", () => {
         const program = TJS.programFromConfig(resolve(testProgramPath + "tsconfig.json"));
         const generator = TJS.buildGenerator(program);
 
-        ["MyObject", "MyOtherObject"].forEach(symbolName => {
+        ["MyObject", "MyOtherObject"].forEach((symbolName) => {
             const expectedSchemaString = readFileSync(testProgramPath + `schema.${symbolName}.json`, "utf8");
             const expectedSchemaObject = JSON.parse(expectedSchemaString);
 
             const actualSchemaObject = generator?.getSchemaForSymbol(symbolName);
 
-            assert.deepEqual(actualSchemaObject, expectedSchemaObject, `The schema for ${symbolName} is not as expected`);
+            assert.deepEqual(
+                actualSchemaObject,
+                expectedSchemaObject,
+                `The schema for ${symbolName} is not as expected`
+            );
         });
     });
 
@@ -600,7 +610,11 @@ describe("when reusing a generator", () => {
 
             const actualSchemaObject = generator?.getSchemaForSymbol(symbolName);
 
-            assert.deepEqual(actualSchemaObject, expectedSchemaObject, `The schema for ${symbolName} is not as expected`);
+            assert.deepEqual(
+                actualSchemaObject,
+                expectedSchemaObject,
+                `The schema for ${symbolName} is not as expected`
+            );
         });
     });
 
@@ -621,7 +635,7 @@ describe("when reusing a generator", () => {
     });
 });
 
-describe("satisfies keyword - ignore from a \"satisfies\" and build by rally type", () => {
+describe('satisfies keyword - ignore from a "satisfies" and build by rally type', () => {
     assertSchema("satisfies-keyword", "Specific");
 });
 

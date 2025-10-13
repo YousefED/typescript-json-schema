@@ -4,7 +4,9 @@
   "description": "typescript-json-schema generates JSON Schema files from your Typescript sources",
   "main": "dist/typescript-json-schema.js",
   "typings": "dist/typescript-json-schema.d.ts",
-  "bin": "./bin/typescript-json-schema",
+  "bin": {
+    "typescript-json-schema": "./bin/typescript-json-schema"
+  },
   "author": "Yousef El-Dardiry and Dominik Moritz",
   "contributors": [
     {
@@ -49,7 +51,6 @@
     "yargs": "^17.1.1"
   },
   "devDependencies": {
-    "@sourcemeta/jsonschema": "^11.8.2",
     "@types/chai": "^4.2.21",
     "@types/glob": "^7.1.4",
     "@types/mocha": "^9.0.0",
@@ -69,11 +70,8 @@
     "run": "ts-node typescript-json-schema-cli.ts",
     "build": "tsc",
     "lint": "tslint --project tsconfig.json -c tslint.json --exclude '**/*.d.ts'",
-    "lint:schemas": "find test/programs -name '*.json' -exec npx @sourcemeta/jsonschema lint {} \\;",
-    "fix:schemas": "find test/programs -name '*.json' -exec npx @sourcemeta/jsonschema lint --fix {} \\;",
     "style": "prettier --write *.js *.ts test/*.ts",
     "dev": "tsc -w",
     "test:dev": "mocha -t 5000 --watch --require source-map-support/register dist/test"
-  },
-  "packageManager": "yarn@4.10.2"
+  }
 }

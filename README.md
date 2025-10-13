@@ -52,28 +52,8 @@ Options:
   --defaultNumberType   Default number type.                                         [choices: "number", "integer"] [default: "number"]
   --tsNodeRegister      Use ts-node/register (needed for require typescript files).  [boolean] [default: false]
   --constAsEnum         Use enums with a single value when declaring constants.      [boolean] [default: false]
-  --lint                Lint generated schemas for JSON Schema best practices.       [boolean] [default: false]
-  --fix                 Automatically fix linting issues in generated schemas.       [boolean] [default: false]
-  --lintStrict          Enable strict linting rules for generated schemas.           [boolean] [default: false]
   --experimentalDecorators  Use experimentalDecorators when loading typescript modules.
    [boolean] [default: true]
-```
-
-#### JSON Schema Linting
-
-This tool integrates with [@sourcemeta/jsonschema](https://github.com/sourcemeta/jsonschema) to provide JSON Schema linting capabilities. You can automatically validate and fix your generated schemas to follow JSON Schema best practices.
-
-**Example usage:**
-
-```bash
-# Generate schema with linting enabled
-typescript-json-schema types.ts MyType --lint --out schema.json
-
-# Generate schema with automatic fixes applied
-typescript-json-schema types.ts MyType --fix --out schema.json
-
-# Generate schema with strict linting rules
-typescript-json-schema types.ts MyType --lint --lintStrict --out schema.json
 ```
 
 ### Programmatic use
@@ -86,8 +66,6 @@ import * as TJS from "typescript-json-schema";
 // optionally pass argument to schema generator
 const settings: TJS.PartialArgs = {
     required: true,
-    lint: true,  // Enable linting
-    fix: true,   // Automatically fix linting issues
 };
 
 // optionally pass ts compiler options

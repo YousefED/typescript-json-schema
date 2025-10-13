@@ -15,7 +15,7 @@
           "type": "string"
         }
       },
-      "required": ["age", "name"],
+      "required": [ "age", "name" ],
       "type": "object"
     },
     "MySubObject": {
@@ -25,8 +25,6 @@
           "type": "boolean"
         },
         "object": {
-          "additionalProperties": true,
-          "properties": {},
           "type": "object"
         },
         "string": {
@@ -45,7 +43,7 @@
           ]
         }
       },
-      "required": ["bool", "object", "string"],
+      "required": [ "bool", "object", "string" ],
       "type": "object"
     },
     "MySubObject2": {
@@ -55,15 +53,13 @@
           "type": "boolean"
         },
         "object": {
-          "additionalProperties": true,
-          "properties": {},
           "type": "object"
         },
         "string": {
           "type": "string"
         }
       },
-      "required": ["bool", "object", "string"],
+      "required": [ "bool", "object", "string" ],
       "type": "object"
     }
   },
@@ -89,6 +85,6 @@
       ]
     }
   },
-  "required": ["defaultObject", "filled"],
+  "required": [ "defaultObject", "filled" ],
   "type": "object"
 }

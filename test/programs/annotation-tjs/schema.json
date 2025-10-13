@@ -1,93 +1,88 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "additionalProperties": false,
-    "properties": {
-        "dateTime": {
-            "format": "date-time",
-            "type": "string"
-        },
-        "email": {
-            "format": "email",
-            "type": "string"
-        },
-        "examples": {
-            "examples": [
-                "foo",
-                1
-            ],
-            "type": "string"
-        },        
-        "hostname": {
-            "format": "hostname",
-            "type": "string"
-        },
-        "ipv4": {
-            "format": "ipv4",
-            "type": "string"
-        },
-        "ipv6": {
-            "format": "ipv6",
-            "type": "string"
-        },
-        "jsonPointer": {
-            "format": "json-pointer",
-            "type": "string"
-        },
-        "oneCharacter": {
-            "minimum": 5,
-            "type": "number"
-        },
-        "regexPattern": {
-            "pattern": "^[a-zA-Z0-9]{4}-abc_123$",
-            "type": "string"
-        },
-        "regexPatternWithWhitespace": {
-            "pattern": "^[a-zA-Z0-9]{4}-abc_123$",
-            "type": "string"
-        },
-        "uri": {
-            "format": "uri",
-            "type": "string"
-        },
-        "uriReference": {
-            "format": "uri-reference",
-            "type": "string"
-        },
-        "uriTemplate": {
-            "format": "uri-template",
-            "type": "string"
-        },
-        "booleanAnnotationDefaultValue": {
-            "hide": true,
-            "type": "string"
-        },
-        "booleanAnnotationWithTrue": {
-            "hide": true,
-            "type": "string"
-        },
-        "booleanAnnotationWithFalse": {
-            "hide": false,
-            "type": "string"
-        }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "dateTime": {
+      "format": "date-time",
+      "type": "string"
     },
-    "required": [
-        "booleanAnnotationDefaultValue",
-        "booleanAnnotationWithFalse",
-        "booleanAnnotationWithTrue",
-        "dateTime",
-        "email",
-        "examples",
-        "hostname",
-        "ipv4",
-        "ipv6",
-        "jsonPointer",
-        "oneCharacter",
-        "regexPattern",
-        "regexPatternWithWhitespace",
-        "uri",
-        "uriReference",
-        "uriTemplate"
-    ],
-    "type": "object"
+    "email": {
+      "format": "email",
+      "type": "string"
+    },
+    "examples": {
+      "type": "string"
+    },
+    "hostname": {
+      "format": "hostname",
+      "type": "string"
+    },
+    "ipv4": {
+      "format": "ipv4",
+      "type": "string"
+    },
+    "ipv6": {
+      "format": "ipv6",
+      "type": "string"
+    },
+    "jsonPointer": {
+      "format": "json-pointer",
+      "type": "string"
+    },
+    "oneCharacter": {
+      "minimum": 5,
+      "type": "number"
+    },
+    "regexPattern": {
+      "pattern": "^[a-zA-Z0-9]{4}-abc_123$",
+      "type": "string"
+    },
+    "regexPatternWithWhitespace": {
+      "pattern": "^[a-zA-Z0-9]{4}-abc_123$",
+      "type": "string"
+    },
+    "uri": {
+      "format": "uri",
+      "type": "string"
+    },
+    "uriReference": {
+      "format": "uri-reference",
+      "type": "string"
+    },
+    "uriTemplate": {
+      "format": "uri-template",
+      "type": "string"
+    },
+    "booleanAnnotationDefaultValue": {
+      "x-hide": true,
+      "type": "string"
+    },
+    "booleanAnnotationWithTrue": {
+      "x-hide": true,
+      "type": "string"
+    },
+    "booleanAnnotationWithFalse": {
+      "x-hide": false,
+      "type": "string"
+    }
+  },
+  "required": [
+    "booleanAnnotationDefaultValue",
+    "booleanAnnotationWithFalse",
+    "booleanAnnotationWithTrue",
+    "dateTime",
+    "email",
+    "examples",
+    "hostname",
+    "ipv4",
+    "ipv6",
+    "jsonPointer",
+    "oneCharacter",
+    "regexPattern",
+    "regexPatternWithWhitespace",
+    "uri",
+    "uriReference",
+    "uriTemplate"
+  ],
+  "type": "object"
 }
-

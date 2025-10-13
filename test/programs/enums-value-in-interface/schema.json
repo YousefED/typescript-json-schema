@@ -1,20 +1,16 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "additionalProperties": false,
-    "definitions": {
-        "A.B": {
-            "const": 0,
-            "type": "number"
-        }
-    },
-    "properties": {
-        "code": {
-            "$ref": "#/definitions/A.B"
-        }
-    },
-    "required": [
-        "code"
-    ],
-    "type": "object"
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "A.B": {
+      "const": 0
+    }
+  },
+  "properties": {
+    "code": {
+      "$ref": "#/definitions/A.B"
+    }
+  },
+  "required": [ "code" ],
+  "type": "object"
 }
-

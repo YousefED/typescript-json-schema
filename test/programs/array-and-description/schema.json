@@ -1,23 +1,18 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "additionalProperties": false,
-    "properties": {
-        "description": {
-            "type": "string"
-        },
-        "name": {
-            "description": "A name",
-            "type": "string"
-        },
-        "test": {
-            "items": {
-            },
-            "type": "array"
-        }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "description": {
+      "type": "string"
     },
-    "required": [
-        "test"
-    ],
-    "type": "object"
+    "name": {
+      "description": "A name",
+      "type": "string"
+    },
+    "test": {
+      "type": "array"
+    }
+  },
+  "required": [ "test" ],
+  "type": "object"
 }
-

@@ -1,11 +1,4 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "enum": [
-        10,
-        11,
-        12,
-        1
-    ],
-    "type": "number"
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "enum": [ 10, 11, 12, 1 ]
 }
-

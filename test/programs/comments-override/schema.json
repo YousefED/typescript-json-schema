@@ -1,47 +1,38 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "additionalProperties": false,
-    "definitions": {
-        "MySubObject": {
-            "additionalProperties": true,
-            "description": "Type-level description",
-            "properties": {
-                "value": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "value"
-            ],
-            "type": "object"
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "MySubObject": {
+      "description": "Type-level description",
+      "properties": {
+        "value": {
+          "type": "string"
         }
+      },
+      "required": [ "value" ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "date": {
+      "description": "Date property description",
+      "format": "date-time",
+      "type": "string"
     },
-    "properties": {
-        "date": {
-            "description": "Date property description",
-            "format": "date-time",
-            "type": "string"
-        },
-        "list": {
-            "items": {
-                "$ref": "#/definitions/MySubObject"
-            },
-            "type": "array"
-        },
-        "sub1": {
-            "$ref": "#/definitions/MySubObject"
-        },
-        "sub2": {
-            "$ref": "#/definitions/MySubObject",
-            "description": "Property-level description"
-        }
+    "list": {
+      "items": {
+        "$ref": "#/definitions/MySubObject"
+      },
+      "type": "array"
     },
-    "required": [
-        "date",
-        "list",
-        "sub1",
-        "sub2"
-    ],
-    "type": "object"
+    "sub1": {
+      "$ref": "#/definitions/MySubObject"
+    },
+    "sub2": {
+      "$ref": "#/definitions/MySubObject",
+      "description": "Property-level description"
+    }
+  },
+  "required": [ "date", "list", "sub1", "sub2" ],
+  "type": "object"
 }
-

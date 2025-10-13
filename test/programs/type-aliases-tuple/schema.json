@@ -1,28 +1,4 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "definitions": {
-        "MyTuple": {
-            "type": "array",
-            "items": [
-                {
-                    "type": "string"
-                },
-                {
-                    "type": "number"
-                }
-            ],
-            "additionalItems": {
-                "anyOf": [
-                    {
-                        "type": "string"
-                    },
-                    {
-                        "type": "number"
-                    }
-                ]
-            },
-            "minItems": 2
-        }
-    },
-    "$ref": "#/definitions/MyTuple"
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/MyTuple"
 }

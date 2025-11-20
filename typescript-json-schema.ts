@@ -1414,7 +1414,7 @@ export class JsonSchemaGenerator {
             // We don't return the full definition, but we put it into
             // reffedDefinitions below.
             returnedDefinition = {
-                $ref: `${this.args.id}#/definitions/` + fullTypeName,
+                $ref: createRefURI(this.args.id, fullTypeName),
             };
         }
 
@@ -1519,7 +1519,7 @@ export class JsonSchemaGenerator {
                 }, {});
 
                 returnedDefinition = {
-                    $ref: `${this.args.id}#/definitions/` + fullTypeName,
+                    $ref: createRefURI(this.args.id, fullTypeName),
                     ...annotations,
                 };
             }
@@ -1638,6 +1638,22 @@ export class JsonSchemaGenerator {
         }
         return [];
     }
+}
+
+/**
+ * Generates the reference URI to the definition in the schema `id`
+ * containing the definition `name`.
+ *
+ * Encodes the `name` using `encodeURIComponent`.
+ *
+ * @see https://datatracker.ietf.org/doc/html/rfc3986
+ * @param id the id of the schema containing the definition
+ * @param name the name of the definition
+ * @returns the URI pointing to the definition in the schema
+ */
+function createRefURI(id: string, name: string): string {
+    const encoded = encodeURIComponent(name);
+    return `${id}#/definitions/${encoded}`;
 }
 
 export function getProgramFromFiles(

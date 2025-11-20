@@ -1846,6 +1846,13 @@ export type MyTuple = [string, number, boolean?];
 ```
 
 
+## [type-aliases-tuple-with-names](./test/programs/type-aliases-tuple-with-names)
+
+```ts
+export type MyTuple = [a: string, b: 123, c?: boolean, ...d: number[]];
+```
+
+
 ## [type-aliases-tuple-with-rest-element](./test/programs/type-aliases-tuple-with-rest-element)
 
 ```ts

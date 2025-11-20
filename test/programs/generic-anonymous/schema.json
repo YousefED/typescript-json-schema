@@ -37,10 +37,10 @@
     },
     "properties": {
         "value1": {
-            "$ref": "#/definitions/MyGeneric<string,number>"
+            "$ref": "#/definitions/MyGeneric%3Cstring%2Cnumber%3E"
         },
         "value2": {
-            "$ref": "#/definitions/MyGeneric<number,string>"
+            "$ref": "#/definitions/MyGeneric%3Cnumber%2Cstring%3E"
         }
     },
     "required": [

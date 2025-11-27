@@ -3,8 +3,9 @@ import addFormats from "ajv-formats";
 import { assert } from "chai";
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { versionMajorMinor as typescriptVersionMajorMinor } from "typescript";
 import * as TJS from "../typescript-json-schema";
+
+const { versionMajorMinor: typescriptVersionMajorMinor } = TJS.ts;
 
 let ajvWarnings: string[] = [];
 const ajv = new Ajv({

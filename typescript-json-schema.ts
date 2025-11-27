@@ -7,6 +7,8 @@ import { JSONSchema7, JSONSchema7TypeName } from "json-schema";
 import { pathEqual } from "path-equal";
 export { Program, CompilerOptions, Symbol } from "typescript";
 
+export { ts };
+
 const vm = require("vm");
 
 const REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;

@@ -832,6 +832,55 @@ export class JsonSchemaGenerator {
         return undefined;
     }
 
+    private getInitializerValue(initializer?: ts.Expression | ts.LiteralToken): any {
+        let val;
+        if (initializer === undefined) {
+            return;
+        }
+        switch (initializer.kind) {
+            case ts.SyntaxKind.NumericLiteral:
+                const txt = initializer.getText();
+                if (txt.includes(".")) {
+                    val = Number.parseFloat(initializer.getText());
+                } else {
+                    val = Number.parseInt(initializer.getText());
+                }
+                break;
+            case ts.SyntaxKind.StringLiteral:
+                val = (initializer as ts.StringLiteral).text;
+                break;
+            case ts.SyntaxKind.FalseKeyword:
+                val = false;
+                break;
+            case ts.SyntaxKind.TrueKeyword:
+                val = true;
+                break;
+        }
+        return val;
+    }
+
+    private getDeclarationValue(declaration?: ts.Declaration): any {
+        let val: any;
+        if (declaration === undefined) {
+            return;
+        }
+        switch (declaration.kind) {
+            case ts.SyntaxKind.VariableDeclaration:
+                val = this.getInitializerValue((declaration as ts.VariableDeclaration).initializer);
+                break;
+            case ts.SyntaxKind.EnumDeclaration:
+                const enumDecl = declaration as ts.EnumDeclaration;
+                val = enumDecl.members.reduce((prev, curr) => {
+                    const v = this.getInitializerValue(curr.initializer);
+                    prev[curr.name.getText()] = v;
+                    return prev;
+                }, {} as { [k: string]: any });
+
+                break;
+        }
+        return val;
+    }
+
     private getDefinitionForProperty(prop: ts.Symbol, node: ts.Node): Definition | null {
         if (prop.flags & ts.SymbolFlags.Method) {
             return null;
@@ -860,31 +909,30 @@ export class JsonSchemaGenerator {
                 initial = initial.expression;
             }
 
-            if ((<any>initial).expression) {
-                // node
-                console.warn("initializer is expression for property " + propertyName);
-            } else if ((<any>initial).kind && (<any>initial).kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
-                definition.default = initial.getText();
-            } else {
-                try {
-                    const sandbox = { sandboxvar: null as any };
-                    vm.runInNewContext("sandboxvar=" + initial.getText(), sandbox);
+            try {
+                const sandbox: Record<string, any> = { sandboxvar: null as any };
+                // Put user symbols into sandbox
+                Object.entries(this.userSymbols)
+                    .filter(([_, sym]) => sym.valueDeclaration)
+                    .forEach(([name, sym]) => {
+                        sandbox[name] = this.getDeclarationValue(sym.valueDeclaration);
+                    });
+                vm.runInNewContext("sandboxvar=" + initial.getText(), sandbox);
 
-                    const val = sandbox.sandboxvar;
-                    if (
-                        val === null ||
-                        typeof val === "string" ||
-                        typeof val === "number" ||
-                        typeof val === "boolean" ||
-                        Object.prototype.toString.call(val) === "[object Array]"
-                    ) {
-                        definition.default = val;
-                    } else if (val) {
-                        console.warn("unknown initializer for property " + propertyName + ": " + val);
-                    }
-                } catch (e) {
-                    console.warn("exception evaluating initializer for property " + propertyName);
+                const val = sandbox.sandboxvar;
+                if (
+                    val === null ||
+                    typeof val === "string" ||
+                    typeof val === "number" ||
+                    typeof val === "boolean" ||
+                    Object.prototype.toString.call(val) === "[object Array]"
+                ) {
+                    definition.default = val;
+                } else if (val) {
+                    console.warn("unknown initializer for property " + propertyName + ": " + val);
                 }
+            } catch (e) {
+                console.warn("exception evaluating initializer for property " + propertyName);
             }
         }
 
@@ -1729,6 +1777,7 @@ export function buildGenerator(
 
             function inspect(node: ts.Node, tc: ts.TypeChecker) {
                 if (
+                    node.kind === ts.SyntaxKind.VariableDeclaration ||
                     node.kind === ts.SyntaxKind.ClassDeclaration ||
                     node.kind === ts.SyntaxKind.InterfaceDeclaration ||
                     node.kind === ts.SyntaxKind.EnumDeclaration ||

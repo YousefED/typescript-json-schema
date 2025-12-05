@@ -1,0 +1,48 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+     "definitions": {
+       "FruitEnum": {
+         "enum": [
+           "apple",
+           "orange"
+         ],
+         "type": "string"
+       }
+     },
+     "properties": {
+        "propBooleanFalse": {
+            "type": "boolean",
+            "default": false
+        },
+        "propBooleanTrue": {
+            "type": "boolean",
+            "default": true
+        },
+        "propEnum": {
+            "$ref": "#/definitions/FruitEnum",
+            "default": "apple"
+        },
+        "propFloat": {
+            "type": "number",
+            "default": 12.3
+        },
+        "propInteger": {
+            "type": "number",
+            "default": 123
+        },
+        "propString": {
+            "type": "string",
+            "default": "test"
+        }
+    },
+    "required": [
+        "propBooleanFalse",
+        "propBooleanTrue",
+        "propEnum",
+        "propFloat",
+        "propInteger",
+        "propString"
+    ],
+    "type": "object"
+}

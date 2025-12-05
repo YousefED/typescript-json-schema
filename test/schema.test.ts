@@ -414,6 +414,7 @@ describe("schema", () => {
         assertSchema("ignored-required", "MyObject");
 
         assertSchema("default-properties", "MyObject");
+        assertSchema("default-properties-ref", "MyObject");
 
         // not supported yet #116
         // assertSchema("interface-extra-props", "MyObject");

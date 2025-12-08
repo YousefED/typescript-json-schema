@@ -9,7 +9,7 @@ export { Program, CompilerOptions, Symbol } from "typescript";
 
 export { ts };
 
-const vm = require("vm");
+const { VM } = require("vm2");
 
 const REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;
 const REGEX_TSCONFIG_NAME = /^.*\.json$/;
@@ -867,10 +867,8 @@ export class JsonSchemaGenerator {
                 definition.default = initial.getText();
             } else {
                 try {
-                    const sandbox = { sandboxvar: null as any };
-                    vm.runInNewContext("sandboxvar=" + initial.getText(), sandbox);
-
-                    const val = sandbox.sandboxvar;
+                    const vm = new VM();
+                    const val = vm.run("sandboxvar=" + initial.getText()) as any;
                     if (
                         val === null ||
                         typeof val === "string" ||

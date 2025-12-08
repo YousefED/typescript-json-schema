@@ -48,6 +48,7 @@
     "safe-stable-stringify": "^2.2.0",
     "ts-node": "^10.9.1",
     "typescript": "~5.5.0",
+    "vm2": "^3.10.0",
     "yargs": "^17.1.1"
   },
   "devDependencies": {

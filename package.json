@@ -43,7 +43,7 @@
   "dependencies": {
     "@types/json-schema": "^7.0.9",
     "@types/node": "^18.11.9",
-    "glob": "^7.1.7",
+    "glob": "^13.0.0",
     "path-equal": "^1.2.5",
     "safe-stable-stringify": "^2.2.0",
     "ts-node": "^10.9.1",
@@ -53,7 +53,6 @@
   },
   "devDependencies": {
     "@types/chai": "^4.2.21",
-    "@types/glob": "^7.1.4",
     "@types/mocha": "^9.0.0",
     "ajv": "^8.6.3",
     "ajv-formats": "^2.1.1",

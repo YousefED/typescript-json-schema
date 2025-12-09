@@ -1,35 +1,27 @@
 {
-    "compilerOptions": {
-        "target": "es5",
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "outDir": "dist",
-        "isolatedModules": false,
-        "experimentalDecorators": true,
-        "emitDecoratorMetadata": true,
-        "declaration": true,
-        "noImplicitAny": true,
-        "strictNullChecks": true,
-        "noImplicitReturns": true,
-        "noFallthroughCasesInSwitch": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        "removeComments": true,
-        "noLib": false,
-        "preserveConstEnums": true,
-        "sourceMap": true,
-        "typeRoots" : ["node_modules/@types"],
-    },
-    "include": [
-        "**/*.ts",
-        "node_modules/@types/**/*.d.ts"
-    ],
-    "exclude": [
-        "node_modules",
-        "example",
-        "test/programs",
-        "dist"
-    ],
-    "compileOnSave": true,
-    "buildOnSave": false
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "isolatedModules": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "declaration": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "removeComments": true,
+    "noLib": false,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "typeRoots": ["node_modules/@types"]
+  },
+  "include": ["**/*.ts", "node_modules/@types/**/*.d.ts"],
+  "exclude": ["node_modules", "example", "test/programs", "dist"],
+  "compileOnSave": true,
+  "buildOnSave": false
 }

@@ -4,6 +4,7 @@ import { assert } from "chai";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import * as TJS from "../typescript-json-schema";
+import { isRegExp } from "util/types";
 
 const { versionMajorMinor: typescriptVersionMajorMinor } = TJS.ts;
 
@@ -125,7 +126,8 @@ export function assertRejection(
 ) {
     it(group + " should reject input", () => {
         let schema = null;
-        assert.throws(() => {
+
+        const fn = () => {
             if (!("required" in settings)) {
                 settings.required = true;
             }
@@ -136,7 +138,13 @@ export function assertRejection(
 
             const files = [resolve(BASE + group + "/main.ts")];
             schema = TJS.generateSchema(TJS.getProgramFromFiles(files, compilerOptions), type, settings, files);
-        }, errType || /.*/);
+        };
+
+        if (isRegExp(errType)) {
+            assert.throws(fn, errType || /.*/);
+        } else {
+            assert.throws(fn, errType);
+        }
         assert.equal(schema, null, "Expected no schema to be generated");
     });
 }

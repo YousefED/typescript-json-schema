@@ -9,8 +9,6 @@ export { Program, CompilerOptions, Symbol } from "typescript";
 
 export { ts };
 
-const { VM } = require("vm2");
-
 const REGEX_FILE_NAME_OR_SPACE = /(\bimport\(".*?"\)|".*?")\.| /g;
 const REGEX_TSCONFIG_NAME = /^.*\.json$/;
 const REGEX_TJS_JSDOC = /^-([\w]+)\s+(\S|\S[\s\S]*\S)\s*$/g;
@@ -248,6 +246,40 @@ function parseValue(symbol: ts.Symbol, key: string, value: string): any {
     } catch (error) {
         return value;
     }
+}
+
+/**
+ * Evaluate a property initializer expression to its literal value, without
+ * executing any code. Only the literal forms that can be represented in a JSON
+ * Schema `default` are supported: string, number, boolean, null and arrays of
+ * those. Returns `undefined` for anything that is not a supported literal.
+ */
+function evaluateLiteralInitializer(node: ts.Node): PrimitiveType | any[] | undefined {
+    if (ts.isStringLiteralLike(node)) {
+        return node.text;
+    } else if (ts.isNumericLiteral(node)) {
+        return Number(node.text);
+    } else if (ts.isPrefixUnaryExpression(node) && node.operator === ts.SyntaxKind.MinusToken) {
+        const operand = evaluateLiteralInitializer(node.operand);
+        return typeof operand === "number" ? -operand : undefined;
+    } else if (node.kind === ts.SyntaxKind.TrueKeyword) {
+        return true;
+    } else if (node.kind === ts.SyntaxKind.FalseKeyword) {
+        return false;
+    } else if (node.kind === ts.SyntaxKind.NullKeyword) {
+        return null;
+    } else if (ts.isArrayLiteralExpression(node)) {
+        const values: any[] = [];
+        for (const element of node.elements) {
+            const value = evaluateLiteralInitializer(element);
+            if (value === undefined) {
+                return undefined;
+            }
+            values.push(value);
+        }
+        return values;
+    }
+    return undefined;
 }
 
 function extractLiteralValue(typ: ts.Type): PrimitiveType | undefined {
@@ -866,22 +898,11 @@ export class JsonSchemaGenerator {
             } else if ((<any>initial).kind && (<any>initial).kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
                 definition.default = initial.getText();
             } else {
-                try {
-                    const vm = new VM();
-                    const val = vm.run("sandboxvar=" + initial.getText()) as any;
-                    if (
-                        val === null ||
-                        typeof val === "string" ||
-                        typeof val === "number" ||
-                        typeof val === "boolean" ||
-                        Object.prototype.toString.call(val) === "[object Array]"
-                    ) {
-                        definition.default = val;
-                    } else if (val) {
-                        console.warn("unknown initializer for property " + propertyName + ": " + val);
-                    }
-                } catch (e) {
-                    console.warn("exception evaluating initializer for property " + propertyName);
+                const val = evaluateLiteralInitializer(initial);
+                if (val !== undefined) {
+                    definition.default = val;
+                } else {
+                    console.warn("unknown initializer for property " + propertyName + ": " + initial.getText());
                 }
             }
         }

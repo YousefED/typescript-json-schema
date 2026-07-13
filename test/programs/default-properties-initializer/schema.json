@@ -1,0 +1,67 @@
+{
+    "type": "object",
+    "properties": {
+        "varString": {
+            "type": "string",
+            "default": "foo"
+        },
+        "varSingleQuoted": {
+            "type": "string",
+            "default": "bar"
+        },
+        "varNumber": {
+            "type": "number",
+            "default": 123
+        },
+        "varFloat": {
+            "type": "number",
+            "default": 3.21
+        },
+        "varNegative": {
+            "type": "number",
+            "default": -5
+        },
+        "varBoolean": {
+            "type": "boolean",
+            "default": true
+        },
+        "varNull": {
+            "type": "null",
+            "default": null
+        },
+        "varArray": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "default": [
+                1,
+                2,
+                3
+            ]
+        },
+        "varStringArray": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "default": [
+                "a",
+                "b"
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "varArray",
+        "varBoolean",
+        "varFloat",
+        "varNegative",
+        "varNull",
+        "varNumber",
+        "varSingleQuoted",
+        "varString",
+        "varStringArray"
+    ],
+    "$schema": "http://json-schema.org/draft-07/schema#"
+}

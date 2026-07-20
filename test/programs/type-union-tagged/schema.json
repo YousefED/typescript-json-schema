@@ -1,72 +1,58 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "anyOf": [
-        {
-            "$ref": "#/definitions/Square"
-        },
-        {
-            "$ref": "#/definitions/Rectangle"
-        },
-        {
-            "$ref": "#/definitions/Circle"
-        }
-    ],
-    "definitions": {
-        "Circle": {
-            "additionalProperties": false,
-            "properties": {
-                "kind": {
-                    "const": "circle",
-                    "type": "string"
-                },
-                "radius": {
-                    "type": "number"
-                }
-            },
-            "required": [
-                "kind",
-                "radius"
-            ],
-            "type": "object"
-        },
-        "Rectangle": {
-            "additionalProperties": false,
-            "properties": {
-                "height": {
-                    "type": "number"
-                },
-                "kind": {
-                    "const": "rectangle",
-                    "type": "string"
-                },
-                "width": {
-                    "type": "number"
-                }
-            },
-            "required": [
-                "height",
-                "kind",
-                "width"
-            ],
-            "type": "object"
-        },
-        "Square": {
-            "additionalProperties": false,
-            "properties": {
-                "kind": {
-                    "const": "square",
-                    "type": "string"
-                },
-                "size": {
-                    "type": "number"
-                }
-            },
-            "required": [
-                "kind",
-                "size"
-            ],
-            "type": "object"
-        }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "anyOf": [
+    {
+      "$ref": "#/definitions/Square"
+    },
+    {
+      "$ref": "#/definitions/Rectangle"
+    },
+    {
+      "$ref": "#/definitions/Circle"
     }
+  ],
+  "definitions": {
+    "Circle": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "circle"
+        },
+        "radius": {
+          "type": "number"
+        }
+      },
+      "required": [ "kind", "radius" ],
+      "type": "object"
+    },
+    "Rectangle": {
+      "additionalProperties": false,
+      "properties": {
+        "height": {
+          "type": "number"
+        },
+        "kind": {
+          "const": "rectangle"
+        },
+        "width": {
+          "type": "number"
+        }
+      },
+      "required": [ "height", "kind", "width" ],
+      "type": "object"
+    },
+    "Square": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "square"
+        },
+        "size": {
+          "type": "number"
+        }
+      },
+      "required": [ "kind", "size" ],
+      "type": "object"
+    }
+  }
 }
-

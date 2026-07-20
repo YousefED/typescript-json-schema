@@ -1,18 +1,16 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "definitions": {
-        "MyEnum": {
-            "const": 0,
-            "type": "number"
-        },
-        "MyInterface": {
-            "additionalProperties": false,
-            "type": "object"
-        },
-        "MyObject": {
-            "additionalProperties": false,
-            "type": "object"
-        }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "MyEnum": {
+      "const": 0
+    },
+    "MyInterface": {
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "MyObject": {
+      "additionalProperties": false,
+      "type": "object"
     }
+  }
 }
-

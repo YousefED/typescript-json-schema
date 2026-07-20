@@ -8,7 +8,6 @@
     },
     {
       "title": "b",
-      "type": "number",
       "const": 123
     },
     {

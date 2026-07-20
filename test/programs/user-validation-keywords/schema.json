@@ -1,25 +1,19 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "additionalProperties": false,
-    "properties": {
-        "name": {
-            "chance": {
-                "pickone": [
-                    [
-                        "first",
-                        "last"
-                    ]
-                ]
-            },
-            "description": "Must be 'first' or 'last'",
-            "important": "",
-            "minLength": 1,
-            "type": "string"
-        }
-    },
-    "required": [
-        "name"
-    ],
-    "type": "object"
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "x-chance": {
+        "pickone": [
+          [ "first", "last" ]
+        ]
+      },
+      "description": "Must be 'first' or 'last'",
+      "x-important": "",
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [ "name" ],
+  "type": "object"
 }
-

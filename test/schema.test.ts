@@ -642,4 +642,7 @@ describe("const keyword", () => {
 
 describe("constAsEnum option", () => {
     assertSchema("const-as-enum", "MyObject", { constAsEnum: true });
+    assertSchema("const-as-enum-strict", "X", { constAsEnum: true, strictNullChecks: true }, {
+        strictNullChecks: true,
+    });
 });

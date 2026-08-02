@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "anyOf": [
+        {
+            "$ref": "#/definitions/Y"
+        },
+        {
+            "$ref": "#/definitions/Z"
+        }
+    ],
+    "definitions": {
+        "Y": {
+            "additionalProperties": false,
+            "properties": {
+                "myProp": {
+                    "enum": [
+                        false
+                    ],
+                    "type": "boolean"
+                }
+            },
+            "type": "object"
+        },
+        "Z": {
+            "additionalProperties": false,
+            "properties": {
+                "myProp": {
+                    "enum": [
+                        true
+                    ],
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "myProp"
+            ],
+            "type": "object"
+        }
+    }
+}

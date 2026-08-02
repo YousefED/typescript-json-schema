@@ -625,8 +625,29 @@ export interface MyObject {
 ## [const-as-enum](./test/programs/const-as-enum)
 
 ```ts
+export enum Enum {
+    X = 0,
+    Y = 1,
+}
+
 export interface MyObject {
     reference: true;
+    member: Enum.X;
+}
+```
+
+
+## [const-as-enum-strict](./test/programs/const-as-enum-strict)
+
+```ts
+export type X = Y | Z;
+
+export interface Y {
+    myProp?: false;
+}
+
+export interface Z {
+    myProp: true;
 }
 ```
 

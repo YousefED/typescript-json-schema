@@ -679,6 +679,15 @@ export class JsonSchemaGenerator {
         });
     }
 
+    private setSingleValue(definition: Definition, value: PrimitiveType): Definition {
+        if (this.constAsEnum) {
+            definition.enum = [value];
+        } else {
+            definition.const = value;
+        }
+        return definition;
+    }
+
     private getDefinitionForRootType(
         propertyType: ts.Type,
         reffedType: ts.Symbol,
@@ -773,11 +782,7 @@ export class JsonSchemaGenerator {
                         default:
                             throw new Error(`Not supported: ${value} as a enum value`);
                     }
-                    if (this.constAsEnum) {
-                        definition.enum = [value];
-                    } else {
-                        definition.const = value;
-                    }
+                    this.setSingleValue(definition, value);
                 } else if (arrayType !== undefined) {
                     if (
                         propertyType.flags & ts.TypeFlags.Object &&
@@ -970,7 +975,7 @@ export class JsonSchemaGenerator {
             if (enumValues.length > 1) {
                 definition.enum = enumValues;
             } else {
-                definition.const = enumValues[0];
+                this.setSingleValue(definition, enumValues[0]);
             }
         }
 
@@ -1032,7 +1037,8 @@ export class JsonSchemaGenerator {
             if (isOnlyBooleans) {
                 pushSimpleType("boolean");
             } else {
-                const enumSchema: Definition = enumValues.length > 1 ? { enum: enumValues.sort() } : { const: enumValues[0] };
+                const enumSchema: Definition =
+                    enumValues.length > 1 ? { enum: enumValues.sort() } : this.setSingleValue({}, enumValues[0]);
 
                 // If all values are of the same primitive type, add a "type" field to the schema
                 if (

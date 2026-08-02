@@ -1,15 +1,27 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "additionalProperties": false,
+    "definitions": {
+        "Enum.X": {
+            "enum": [
+                0
+            ],
+            "type": "number"
+        }
+    },
     "properties": {
+        "member": {
+            "$ref": "#/definitions/Enum.X"
+        },
         "reference": {
             "enum": [
-              true
+                true
             ],
             "type": "boolean"
         }
     },
     "required": [
+        "member",
         "reference"
     ],
     "type": "object"

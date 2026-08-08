@@ -1713,7 +1713,7 @@ export function buildGenerator(
         if (onlyIncludeFiles === undefined) {
             return !file.hasNoDefaultLib;
         }
-        return onlyIncludeFiles.indexOf(file.fileName) >= 0;
+        return onlyIncludeFiles.some((f) => pathEqual(f, file.fileName));
     }
     // Use defaults unless otherwise specified
     const settings = getDefaultArgs();

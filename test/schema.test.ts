@@ -425,6 +425,8 @@ describe("schema", () => {
 
         assertSchema("default-properties-initializer", "MyObject");
 
+        assertSchema("default-properties-initializer-expressions", "MyObject");
+
         // not supported yet #116
         // assertSchema("interface-extra-props", "MyObject");
 

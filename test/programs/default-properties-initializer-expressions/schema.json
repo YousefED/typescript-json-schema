@@ -1,0 +1,116 @@
+{
+    "type": "object",
+    "properties": {
+        "varSeconds": {
+            "type": "number",
+            "default": 3600000
+        },
+        "varSum": {
+            "type": "number",
+            "default": 3
+        },
+        "varDifference": {
+            "type": "number",
+            "default": 6
+        },
+        "varDivision": {
+            "type": "number",
+            "default": 2.5
+        },
+        "varRemainder": {
+            "type": "number",
+            "default": 2
+        },
+        "varPower": {
+            "type": "number",
+            "default": 1024
+        },
+        "varPrecedence": {
+            "type": "number",
+            "default": 14
+        },
+        "varParenthesized": {
+            "type": "number",
+            "default": 20
+        },
+        "varPositive": {
+            "type": "number",
+            "default": 5
+        },
+        "varNegatedExpression": {
+            "type": "number",
+            "default": -5
+        },
+        "varConcat": {
+            "type": "string",
+            "default": "foobar"
+        },
+        "varObject": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "number"
+                },
+                "window": {
+                    "type": "number"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "count",
+                "window"
+            ],
+            "default": {
+                "count": 10,
+                "window": 5
+            }
+        },
+        "varNestedObject": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "limits": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "limits",
+                "name"
+            ],
+            "default": {
+                "name": "a",
+                "limits": [
+                    1,
+                    6
+                ]
+            }
+        },
+        "varDivideByZero": {
+            "type": "number"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "varConcat",
+        "varDifference",
+        "varDivideByZero",
+        "varDivision",
+        "varNegatedExpression",
+        "varNestedObject",
+        "varObject",
+        "varParenthesized",
+        "varPositive",
+        "varPower",
+        "varPrecedence",
+        "varRemainder",
+        "varSeconds",
+        "varSum"
+    ],
+    "$schema": "http://json-schema.org/draft-07/schema#"
+}

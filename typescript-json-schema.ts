@@ -254,14 +254,72 @@ function parseValue(symbol: ts.Symbol, key: string, value: string): any {
  * Schema `default` are supported: string, number, boolean, null and arrays of
  * those. Returns `undefined` for anything that is not a supported literal.
  */
-function evaluateLiteralInitializer(node: ts.Node): PrimitiveType | any[] | undefined {
+function evaluateLiteralInitializer(node: ts.Node): PrimitiveType | any[] | { [key: string]: any } | undefined {
     if (ts.isStringLiteralLike(node)) {
         return node.text;
     } else if (ts.isNumericLiteral(node)) {
         return Number(node.text);
-    } else if (ts.isPrefixUnaryExpression(node) && node.operator === ts.SyntaxKind.MinusToken) {
+    } else if (ts.isParenthesizedExpression(node)) {
+        return evaluateLiteralInitializer(node.expression);
+    } else if (
+        ts.isPrefixUnaryExpression(node) &&
+        (node.operator === ts.SyntaxKind.MinusToken || node.operator === ts.SyntaxKind.PlusToken)
+    ) {
         const operand = evaluateLiteralInitializer(node.operand);
-        return typeof operand === "number" ? -operand : undefined;
+        if (typeof operand !== "number") {
+            return undefined;
+        }
+        return node.operator === ts.SyntaxKind.MinusToken ? -operand : operand;
+    } else if (ts.isBinaryExpression(node)) {
+        const left = evaluateLiteralInitializer(node.left);
+        const right = evaluateLiteralInitializer(node.right);
+        const operator = node.operatorToken.kind;
+        if (typeof left === "string" && typeof right === "string" && operator === ts.SyntaxKind.PlusToken) {
+            return left + right;
+        }
+        if (typeof left !== "number" || typeof right !== "number") {
+            return undefined;
+        }
+        let result: number;
+        switch (operator) {
+            case ts.SyntaxKind.PlusToken:
+                result = left + right;
+                break;
+            case ts.SyntaxKind.MinusToken:
+                result = left - right;
+                break;
+            case ts.SyntaxKind.AsteriskToken:
+                result = left * right;
+                break;
+            case ts.SyntaxKind.SlashToken:
+                result = left / right;
+                break;
+            case ts.SyntaxKind.PercentToken:
+                result = left % right;
+                break;
+            case ts.SyntaxKind.AsteriskAsteriskToken:
+                result = left ** right;
+                break;
+            default:
+                return undefined;
+        }
+        // Infinity and NaN cannot be written to a JSON schema
+        return Number.isFinite(result) ? result : undefined;
+    } else if (ts.isObjectLiteralExpression(node)) {
+        const obj: { [key: string]: any } = {};
+        for (const property of node.properties) {
+            const name = ts.isPropertyAssignment(property) ? property.name : undefined;
+            if (!name || !(ts.isIdentifier(name) || ts.isStringLiteralLike(name) || ts.isNumericLiteral(name))) {
+                // spreads, shorthands, methods, accessors and computed names are not literals
+                return undefined;
+            }
+            const value = evaluateLiteralInitializer((property as ts.PropertyAssignment).initializer);
+            if (value === undefined) {
+                return undefined;
+            }
+            obj[name.text] = value;
+        }
+        return obj;
     } else if (node.kind === ts.SyntaxKind.TrueKeyword) {
         return true;
     } else if (node.kind === ts.SyntaxKind.FalseKeyword) {
@@ -888,7 +946,7 @@ export class JsonSchemaGenerator {
         if (valDecl?.initializer) {
             let initial = valDecl.initializer;
 
-            while (ts.isTypeAssertionExpression(initial)) {
+            while (ts.isTypeAssertionExpression(initial) || ts.isParenthesizedExpression(initial)) {
                 initial = initial.expression;
             }
 

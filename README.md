@@ -7,6 +7,7 @@ Generate json-schemas from your Typescript sources. This library is lightweight 
 ## Features
 
 - Compiles your Typescript program to get complete type information.
+- Resolves generic index signatures. Given `interface Dictionary<T> { [key: string]: T }`, the schema for `Dictionary<Book>` uses the `Book` schema for `additionalProperties`.
 - Translates required properties, extends, annotation keywords, property initializers as defaults. You can find examples for these features in the [api doc](https://github.com/YousefED/typescript-json-schema/tree/master/api.md) or the [test examples](https://github.com/YousefED/typescript-json-schema/tree/master/test/programs).
 
 ## Usage

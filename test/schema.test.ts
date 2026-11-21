@@ -367,6 +367,7 @@ describe("schema", () => {
 
     describe("generics", () => {
         assertSchema("generic-simple", "MyObject");
+        assertSchema("generic-index-signature", "State");
         assertSchema("generic-arrays", "MyObject");
         assertSchema("generic-multiple", "MyObject");
         assertSchema("generic-multiargs", "MyObject");

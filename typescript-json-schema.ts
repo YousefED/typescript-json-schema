@@ -1199,7 +1199,10 @@ export class JsonSchemaGenerator {
                         }
                     }
                     if (!def) {
-                        def = this.getTypeDefinition(typ, undefined, "anyOf");
+                        const indexKind =
+                            indexType.flags === ts.TypeFlags.Number ? ts.IndexKind.Number : ts.IndexKind.String;
+                        const valueType = this.tc.getIndexTypeOfType(clazzType, indexKind) ?? typ;
+                        def = this.getTypeDefinition(valueType, undefined, "anyOf");
                     }
                     if (isIndexedObject) {
                         definition.type = "object";

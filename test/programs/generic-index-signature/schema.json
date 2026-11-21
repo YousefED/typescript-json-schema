@@ -1,0 +1,43 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "definitions": {
+        "Book": {
+            "additionalProperties": false,
+            "properties": {
+                "title": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "title"
+            ],
+            "type": "object"
+        },
+        "Dictionary<Book>": {
+            "additionalProperties": {
+                "$ref": "#/definitions/Book"
+            },
+            "type": "object"
+        },
+        "Dictionary<number>": {
+            "additionalProperties": {
+                "type": "number"
+            },
+            "type": "object"
+        }
+    },
+    "properties": {
+        "books": {
+            "$ref": "#/definitions/Dictionary%3CBook%3E"
+        },
+        "counts": {
+            "$ref": "#/definitions/Dictionary%3Cnumber%3E"
+        }
+    },
+    "required": [
+        "books",
+        "counts"
+    ],
+    "type": "object"
+}

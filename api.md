@@ -913,6 +913,24 @@ export interface MyObject extends GenericC<GenericC<GenericC<GenericA<string>>>>
 ```
 
 
+## [generic-index-signature](./test/programs/generic-index-signature)
+
+```ts
+interface Dictionary<T> {
+    [id: string]: T;
+}
+
+interface Book {
+    title: string;
+}
+
+export interface State {
+    books: Dictionary<Book>;
+    counts: Dictionary<number>;
+}
+```
+
+
 ## [generic-multiargs](./test/programs/generic-multiargs)
 
 ```ts

@@ -601,14 +601,22 @@ export class JsonSchemaGenerator {
 
             if (comments.length) {
                 definition.description = comments
-                    .map((comment) => {
+                    .map((comment, index) => {
                         const newlineNormalizedComment = comment.text.replace(/\r\n/g, "\n");
 
                         // If a comment contains a "{@link XYZ}" inline tag that could not be
                         // resolved by the TS checker, then this comment will contain a trailing
                         // whitespace that we need to remove.
                         if (comment.kind === "linkText") {
-                            return newlineNormalizedComment.trim();
+                            const text = newlineNormalizedComment.trim();
+                            const previous = comments[index - 1];
+
+                            // If the TS checker could resolve "XYZ" in a "{@link XYZ | text}"
+                            // inline tag, then the text comes as its own part, without the
+                            // separator, and we need to put one back unless "XYZ" ends with one.
+                            const separator = text && previous.kind === "linkName" && !/\s$/.test(previous.text) ? " " : "";
+
+                            return separator + text;
                         }
 
                         return newlineNormalizedComment;
